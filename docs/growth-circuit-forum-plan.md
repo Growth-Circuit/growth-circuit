@@ -80,7 +80,7 @@ Palette:
 
 - Ink: `#101418`
 - Porcelain: `#F7F8F3`
-- Matcha: `#B7D36B`
+- Matcha: `#8FA66A`
 - Signal blue: `#42D6FF`
 - Tomato: `#FF684F`
 - Steel: `#D9E0E7`
@@ -91,7 +91,7 @@ The homepage should show the actual community surface first: trending questions,
 
 ## MVP Roadmap
 
-1. Brand system, routes, seeded forum data, Supabase schema, Google SSO hooks, public thread pages.
+1. Brand system, routes, seeded forum data, Supabase schema, open application flow, public thread pages.
 2. Posting, replies, upvotes, tags, moderation, profile pages.
 3. SEO templates, structured data, sitemap, RSS, Open Graph images, Search Console, Turnstile.
 4. BYOB challenge pages, supper club application page, weekly digest, and private admin moderation.

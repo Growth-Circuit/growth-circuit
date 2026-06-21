@@ -4,8 +4,9 @@
   --ink-2: #20282f;
   --porcelain: #f7f8f3;
   --paper: #fffdfa;
-  --matcha: #b7d36b;
-  --matcha-2: #e9f3c7;
+  --matcha: #8fa66a;
+  --matcha-2: #eef3df;
+  --matcha-ink: #34451f;
   --signal: #42d6ff;
   --tomato: #ff684f;
   --steel: #d9e0e7;
@@ -419,7 +420,7 @@ h1 {
 
 .tag {
   background: var(--matcha-2);
-  color: #3c4c12;
+  color: var(--matcha-ink);
 }
 
 .pill {
@@ -727,8 +728,8 @@ h1 {
 
 .status-message.success {
   border-color: rgba(183, 211, 107, 0.8);
-  background: rgba(183, 211, 107, 0.18);
-  color: #34420f;
+  background: rgba(143, 166, 106, 0.18);
+  color: var(--matcha-ink);
 }
 
 .status-message.error {
@@ -739,10 +740,10 @@ h1 {
 
 .success-note {
   display: none;
-  border: 1px solid rgba(183, 211, 107, 0.8);
-  background: rgba(183, 211, 107, 0.18);
+  border: 1px solid rgba(143, 166, 106, 0.8);
+  background: rgba(143, 166, 106, 0.18);
   padding: 12px;
-  color: #34420f;
+  color: var(--matcha-ink);
   font-weight: 680;
 }
 

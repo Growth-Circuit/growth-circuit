@@ -5,9 +5,30 @@ A lightweight public forum and NYC supper club application layer for Growth Circ
 The product shape is:
 
 - Public, SEO-friendly forum pages for marketing engineer questions, builds, tags, and BYOB challenges.
-- Email/password authentication through Supabase Auth. LinkedIn and Google OAuth can be added later.
 - Open NYC supper club application flow with no login required.
+- Optional email/password authentication through Supabase Auth for later forum posting.
 - Supabase-backed persistence when credentials are configured, with local preview mode when they are not.
+
+## Current Status
+
+- GitHub repo is live at `nicklafferty/growth-circuit`.
+- Supabase project has been created and `supabase/schema.sql` has been run.
+- Local `.env` contains the Supabase project URL and publishable key.
+- `.env.example` is kept as a safe placeholder file and should not contain real keys.
+- `/nyc` applications are open to anyone and write to `public.applications`.
+- `/auth` exists for future email/password account flows, but applications do not require login.
+
+## Still To Do
+
+- Deploy to Cloudflare and set production environment variables.
+- Add the production domain and Supabase redirect URLs once the domain is final.
+- Build an admin review view for Lucy and Nick: list, search, notes, status, accept, waitlist, decline.
+- Add spam protection to applications with Cloudflare Turnstile or rate limiting.
+- Send a notification email or Slack message when a new application is submitted.
+- Wire the forum to Supabase for real thread posting, replies, voting, tags, and profiles.
+- Add moderation tools for reports, hidden posts, and trusted users.
+- Add Search Console, analytics, and production sitemap validation.
+- Replace seed forum content with real launch threads, builds, and BYOB challenges.
 
 ## Stack
 
@@ -38,15 +59,15 @@ SUPABASE_SERVICE_ROLE_KEY=""
 TURNSTILE_SECRET_KEY=""
 ```
 
-Without Supabase values, the application form runs in preview mode and does not persist submissions.
+Without Supabase values, the application form runs in preview mode and does not persist submissions. Keep real values in `.env`, not `.env.example`.
 
 ## Supabase Setup
 
 1. Create a Supabase project.
 2. Run `supabase/schema.sql` in the Supabase SQL editor.
-3. Keep Email enabled under Authentication providers.
-4. Decide whether email confirmation is on or off while testing.
-5. Add these redirect URLs in Supabase:
+3. Copy the project URL and publishable key into `.env`.
+4. Email auth is optional for now and only needed if you want to test `/auth`.
+5. If testing auth with email confirmation enabled, add these redirect URLs in Supabase:
 
 ```text
 http://localhost:4321/auth/callback
