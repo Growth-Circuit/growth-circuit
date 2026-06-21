@@ -9,6 +9,8 @@ type Props = {
   path?: string;
   noindex?: boolean;
   jsonLd?: unknown[];
+  hideHeader?: boolean;
+  bodyClass?: string;
 };
 
 const {
@@ -17,6 +19,8 @@ const {
   path = Astro.url.pathname,
   noindex = false,
   jsonLd = [],
+  hideHeader = false,
+  bodyClass,
 } = Astro.props;
 
 const fullTitle = title === "Growth Circuit" ? title : `${title} | Growth Circuit`;
@@ -41,25 +45,29 @@ const allJsonLd = [organizationJsonLd(), ...jsonLd];
     <meta name="twitter:card" content="summary_large_image" />
     {allJsonLd.map((entry) => <script is:inline type="application/ld+json" set:html={JSON.stringify(entry)} />)}
   </head>
-  <body>
-    <header class="site-header">
-      <div class="shell nav">
-        <a class="brand" href="/" aria-label="Growth Circuit home">
-          <span class="brand-mark">GC</span>
-          <span>Growth Circuit</span>
-        </a>
-        <nav class="nav-links" aria-label="Primary navigation">
-          <a href="/questions">Questions</a>
-          <a href="/builds">Builds</a>
-          <a href="/challenges">Challenges</a>
-          <a href="/submit">Submit</a>
-          <a href="/nyc">NYC Supper Club</a>
-        </nav>
-        <div class="header-actions">
-          <AuthBar client:load />
-        </div>
-      </div>
-    </header>
+  <body class={bodyClass}>
+    {
+      !hideHeader && (
+        <header class="site-header">
+          <div class="shell nav">
+            <a class="brand" href="/" aria-label="Growth Circuit home">
+              <span class="brand-mark">GC</span>
+              <span>Growth Circuit</span>
+            </a>
+            <nav class="nav-links" aria-label="Primary navigation">
+              <a href="/questions">Questions</a>
+              <a href="/builds">Builds</a>
+              <a href="/challenges">Challenges</a>
+              <a href="/submit">Submit</a>
+              <a href="/nyc">NYC Supper Club</a>
+            </nav>
+            <div class="header-actions">
+              <AuthBar client:load />
+            </div>
+          </div>
+        </header>
+      )
+    }
     <main>
       <slot />
     </main>

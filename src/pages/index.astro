@@ -10,60 +10,64 @@ const currentChallenge = challenges[0];
 <BaseLayout
   title="Growth Circuit"
   description="A public forum and NYC supper club for marketing engineers. Bring Your Own Build."
+  hideHeader
+  bodyClass="home-ink-page"
 >
-  <section class="shell hero">
-    <div class="hero-copy">
-      <p class="eyebrow">Bring Your Own Build</p>
-      <h1>Where marketing engineers compare notes in public.</h1>
-      <p class="lead">
-        Ask tactical questions, share the scrappy systems behind your growth work, and join the
-        monthly BYOB challenge. The open forum is global. The supper club starts in NYC.
-      </p>
-      <div class="hero-actions">
-        <a class="button matcha" href="/submit">Submit a post</a>
-        <a class="button" href="/questions">Browse questions</a>
-        <a class="button" href="/nyc">Apply for NYC</a>
-      </div>
-      <div class="stats-strip" aria-label="Community stats">
-        <div class="stat">
-          <strong>4</strong>
-          <span>seed threads live</span>
-        </div>
-        <div class="stat">
-          <strong>12</strong>
-          <span>target supper club seats</span>
-        </div>
-        <div class="stat">
-          <strong>1</strong>
-          <span>monthly BYOB challenge</span>
-        </div>
-      </div>
-    </div>
+  <div class="ink-hero">
+    <div class="ink-hero__grid" aria-hidden="true"></div>
+    <div class="ink-hero__glow" aria-hidden="true"></div>
 
-    <aside class="challenge-panel" aria-labelledby="challenge-title">
-      <header>
-        <span class="mono">Current challenge</span>
-        <span class="status-dot" aria-hidden="true"></span>
-      </header>
-      <div class="challenge-body">
-        <h2 id="challenge-title">{currentChallenge.title}</h2>
-        <p>{currentChallenge.prompt}</p>
-        <a class="button matcha" href={`/challenges#${currentChallenge.slug}`}>View prompt</a>
-      </div>
-      <div class="challenge-footer">
-        <div>
-          <span class="mono">Theme setter</span>
-          <strong>{currentChallenge.themeSetter}</strong>
-        </div>
-        <div>
-          <span class="mono">Submissions</span>
-          <strong>{currentChallenge.submissions}</strong>
+    <header class="ink-header">
+      <div class="shell ink-nav">
+        <a class="brand" href="/" aria-label="Growth Circuit home">
+          <span class="brand-mark brand-mark--light">GC</span>
+          <span class="brand-word">Growth Circuit</span>
+        </a>
+        <nav class="ink-links" aria-label="Primary navigation">
+          <a href="/questions">Forum</a>
+          <a href="/challenges">Challenge</a>
+          <a href="/nyc">Supper club</a>
+        </nav>
+        <div class="header-actions">
+          <a class="button button--ghost-light" href="/auth">Sign in</a>
+          <a class="button matcha" href="/submit">Submit a post</a>
         </div>
       </div>
-    </aside>
-  </section>
+    </header>
 
-  <section class="shell page-grid">
+    <section class="shell ink-section">
+      <div class="ink-intro">
+        <p class="eyebrow eyebrow--live">Bring your own build</p>
+        <h1 class="ink-title">
+          Where marketing engineers build <span>in public</span>
+        </h1>
+        <p class="ink-lead">
+          Growth Circuit is an open forum for tactical questions and build notes, plus a small NYC
+          supper club for people who want to bring the work into the room.
+        </p>
+        <div class="hero-actions">
+          <a class="button matcha" href="/submit">Submit a post</a>
+          <a class="button button--ghost-light" href="/nyc">Apply for NYC</a>
+        </div>
+      </div>
+
+      <div class="ink-ledger" aria-label="Community stats">
+        <div class="ink-stat"><strong>{threads.length}</strong><span>seed threads live</span></div>
+        <div class="ink-stat"><strong>12</strong><span>supper club seats</span></div>
+        <div class="ink-stat"><strong>{currentChallenge.submissions}</strong><span>submissions in</span></div>
+        <div class="ink-stat ink-stat--accent"><strong>1</strong><span>live BYOB challenge</span></div>
+      </div>
+
+      <a class="ink-ticker" href={`/challenges#${currentChallenge.slug}`}>
+        <span class="ink-ticker__tag">This month</span>
+        <span class="ink-ticker__rule" aria-hidden="true"></span>
+        <span class="ink-ticker__title">{currentChallenge.title}</span>
+        <span class="ink-ticker__cta">View prompt -></span>
+      </a>
+    </section>
+  </div>
+
+  <section class="shell page-grid home-forum-grid">
     <div>
       <div class="section-head">
         <div>
