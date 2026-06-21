@@ -485,6 +485,42 @@ h1 {
   padding: 44px 0 16px;
 }
 
+.auth-page {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(320px, 0.55fr);
+  gap: 28px;
+  align-items: start;
+  padding: 54px 0 80px;
+}
+
+.auth-card h1 {
+  font-size: 34px;
+  line-height: 1.05;
+}
+
+.segmented-control {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  border: 1px solid var(--line);
+  background: var(--line);
+  margin-bottom: 14px;
+}
+
+.segmented-control button {
+  min-height: 40px;
+  border: 0;
+  background: rgba(255, 253, 250, 0.78);
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 760;
+}
+
+.segmented-control button[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--porcelain);
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -817,6 +853,7 @@ h1 {
   .hero,
   .page-grid,
   .thread-page,
+  .auth-page,
   .nyc-hero {
     grid-template-columns: 1fr;
   }

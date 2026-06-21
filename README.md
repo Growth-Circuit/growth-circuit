@@ -5,7 +5,7 @@ A lightweight public forum and NYC supper club application layer for Growth Circ
 The product shape is:
 
 - Public, SEO-friendly forum pages for marketing engineer questions, builds, tags, and BYOB challenges.
-- LinkedIn-first authentication with Google as fallback.
+- Email/password authentication through Supabase Auth. LinkedIn and Google OAuth can be added later.
 - NYC supper club application flow with self-reported title, company, location, specialty, build history, video URL, and dish.
 - Supabase-backed persistence when credentials are configured, with local preview mode when they are not.
 
@@ -44,8 +44,8 @@ Without Supabase values, the application form runs in preview mode and does not 
 
 1. Create a Supabase project.
 2. Run `supabase/schema.sql` in the Supabase SQL editor.
-3. Enable LinkedIn OIDC under Authentication providers.
-4. Enable Google as a fallback provider.
+3. Keep Email enabled under Authentication providers.
+4. Decide whether email confirmation is on or off while testing.
 5. Add these redirect URLs in Supabase:
 
 ```text
@@ -53,7 +53,7 @@ http://localhost:4321/auth/callback
 https://growthcircuit.co/auth/callback
 ```
 
-LinkedIn OIDC supplies identity fields like name, email, and picture. Current title, company, location, specialty, and build context are collected as self-reported application fields.
+Current title, company, location, specialty, LinkedIn URL, and build context are collected as self-reported application fields. LinkedIn OIDC can be added later, but it is not required for the current flow.
 
 ## Application API
 

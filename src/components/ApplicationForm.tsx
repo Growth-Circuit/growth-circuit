@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, CheckCircle2, Loader2, Send, UserRound } from "lucide-react";
+import { CheckCircle2, Loader2, LogIn, Send, UserRound } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createBrowserSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
 import type { ApplicationPayload, ApplicationResult } from "@/lib/application";
@@ -72,30 +72,13 @@ export default function ApplicationForm() {
 
   const identityLabel = useMemo(() => {
     if (!profile) return "Not connected";
-    if (profile.provider.includes("linkedin")) return "LinkedIn-connected profile";
-    if (profile.provider.includes("google")) return "Google-connected profile";
+    if (profile.provider.includes("email")) return "Email/password account";
     return "Connected profile";
   }, [profile]);
 
   function updateField(field: keyof FormState, value: string | boolean) {
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
-  }
-
-  async function signIn(provider: "linkedin_oidc" | "google") {
-    const supabase = createBrowserSupabaseClient();
-
-    if (!supabase) {
-      setMessage("Supabase is not configured yet. You can still submit in local preview mode.");
-      return;
-    }
-
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
   }
 
   async function submitApplication(event: { preventDefault: () => void }) {
@@ -150,18 +133,15 @@ export default function ApplicationForm() {
           )}
           <div>
             <strong>{profile?.name || identityLabel}</strong>
-            <span>{profile?.email || "LinkedIn is preferred. Google is available as fallback."}</span>
+            <span>{profile?.email || "Create an account or sign in before submitting when Supabase is configured."}</span>
           </div>
         </div>
-        <div className="identity-actions">
-          <button className="button primary" type="button" onClick={() => signIn("linkedin_oidc")}>
-            <BriefcaseBusiness size={17} aria-hidden="true" />
-            LinkedIn
-          </button>
-          <button className="button" type="button" onClick={() => signIn("google")}>
-            Google
-          </button>
-        </div>
+        {!profile && (
+          <a className="button primary" href="/auth?next=%2Fnyc%23apply">
+            <LogIn size={17} aria-hidden="true" />
+            Sign in
+          </a>
+        )}
       </div>
 
       {!isSupabaseConfigured && (

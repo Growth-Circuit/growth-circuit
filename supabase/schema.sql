@@ -1,5 +1,5 @@
 -- Growth Circuit forum starter schema.
--- Run in Supabase SQL editor after creating the project and enabling LinkedIn OIDC + Google Auth.
+-- Run in Supabase SQL editor after creating the project and enabling email/password auth.
 
 create extension if not exists pgcrypto;
 

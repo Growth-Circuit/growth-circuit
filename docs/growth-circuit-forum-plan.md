@@ -28,14 +28,14 @@ Core actions:
 - Follow a thread.
 - Report spam or low-quality content.
 
-Read access should be public. Posting, replying, voting, and following should require lightweight auth. LinkedIn should be the preferred provider because it fits the professional community context; Google should remain as fallback.
+Read access should be public. Posting, replying, voting, and following should require lightweight auth. Email/password is the practical starting point; LinkedIn and Google can be added later.
 
 ## Recommended Stack
 
 - Astro for the public, SEO-friendly site.
 - React islands for interactive pieces like auth, voting, filters, and the composer.
 - Cloudflare Workers with static assets for low-cost hosting.
-- Supabase for Postgres, Auth, LinkedIn OIDC, Google fallback, profiles, row-level security, and optional uploads.
+- Supabase for Postgres, Auth, profiles, row-level security, and optional uploads.
 - Drizzle ORM later if schema discipline becomes useful.
 - Cloudflare Turnstile for spam protection on first posts.
 - Resend later for digest emails.

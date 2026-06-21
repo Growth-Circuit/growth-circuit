@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, LogIn, UserRound } from "lucide-react";
+import { LogIn, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createBrowserSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
 
@@ -47,22 +47,6 @@ export default function AuthBar() {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function signIn(provider: "linkedin_oidc" | "google") {
-    const supabase = createBrowserSupabaseClient();
-
-    if (!supabase) {
-      window.alert("Add Supabase env vars to enable LinkedIn and Google SSO.");
-      return;
-    }
-
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-  }
-
   async function signOut() {
     const supabase = createBrowserSupabaseClient();
     await supabase?.auth.signOut();
@@ -91,21 +75,9 @@ export default function AuthBar() {
   }
 
   return (
-    <div className="auth-actions">
-      <button
-        className="button primary"
-        type="button"
-        onClick={() => signIn("linkedin_oidc")}
-        title="Continue with LinkedIn"
-      >
-        <BriefcaseBusiness size={18} aria-hidden="true" />
-        {isSupabaseConfigured ? "LinkedIn" : "Preview auth"}
-      </button>
-      {isSupabaseConfigured && (
-        <button className="icon-button" type="button" onClick={() => signIn("google")} title="Continue with Google">
-          <LogIn size={18} aria-hidden="true" />
-        </button>
-      )}
-    </div>
+    <a className="button primary" href="/auth" title="Sign in">
+      <LogIn size={18} aria-hidden="true" />
+      {isSupabaseConfigured ? "Sign in" : "Preview auth"}
+    </a>
   );
 }

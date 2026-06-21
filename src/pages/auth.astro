@@ -1,0 +1,23 @@
+---
+import AuthForm from "@/components/AuthForm";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Sign In"
+  description="Sign in or create a Growth Circuit account."
+  path="/auth"
+  noindex
+>
+  <section class="shell auth-page">
+    <div>
+      <p class="eyebrow">Light auth</p>
+      <h1>Email and password for now.</h1>
+      <p class="lead">
+        This keeps the forum moving while LinkedIn and Google OAuth stay on the shelf. Application details still collect title,
+        company, location, specialty, and build context directly.
+      </p>
+    </div>
+    <AuthForm client:load />
+  </section>
+</BaseLayout>
