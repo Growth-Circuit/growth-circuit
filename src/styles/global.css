@@ -479,6 +479,14 @@ h1 {
   padding-left: 18px;
 }
 
+.submit-cta .eyebrow {
+  margin-bottom: 10px;
+}
+
+.submit-cta .button {
+  margin-top: 6px;
+}
+
 .topic-cloud {
   display: flex;
   flex-wrap: wrap;
@@ -629,9 +637,109 @@ h1 {
   padding: 20px;
 }
 
+.composer-head {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.composer-head .eyebrow {
+  margin-bottom: 0;
+}
+
+.composer-head h1,
+.composer-head h2 {
+  margin-bottom: 0;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.composer-head h1 {
+  font-size: clamp(36px, 5vw, 58px);
+}
+
+.composer-head h2 {
+  font-size: 24px;
+}
+
+.composer-head p {
+  max-width: 720px;
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .composer form {
   display: grid;
   gap: 12px;
+}
+
+.composer-flow {
+  display: grid;
+  gap: 18px;
+}
+
+.submit-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 28px;
+  align-items: start;
+  padding: 42px 0 80px;
+}
+
+.submit-main {
+  min-width: 0;
+}
+
+.submit-sidebar {
+  display: grid;
+  gap: 14px;
+}
+
+.submit-composer {
+  padding: 28px;
+}
+
+.submit-composer .composer-flow {
+  grid-template-columns: minmax(0, 0.72fr) minmax(280px, 0.42fr);
+  align-items: start;
+}
+
+.submit-composer form {
+  gap: 14px;
+}
+
+.submit-composer .field textarea {
+  min-height: 220px;
+}
+
+.submit-composer .button[type="submit"] {
+  width: 100%;
+  min-height: 50px;
+}
+
+.draft-preview {
+  position: sticky;
+  top: 96px;
+  min-height: 260px;
+  border: 1px solid var(--line);
+  background: rgba(247, 248, 243, 0.82);
+  padding: 18px;
+}
+
+.draft-preview h2 {
+  margin-bottom: 10px;
+  font-size: 24px;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.draft-preview p {
+  margin-bottom: 0;
+  color: var(--ink-2);
+  line-height: 1.58;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .field {
@@ -793,6 +901,19 @@ h1 {
   font-size: 14px;
 }
 
+.footer a {
+  color: var(--matcha-ink);
+  font-weight: 720;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--matcha-rgb), 0.42);
+  text-underline-offset: 4px;
+}
+
+.footer a:hover {
+  color: var(--ink);
+  text-decoration-color: var(--matcha);
+}
+
 @media (max-width: 920px) {
   .nav {
     align-items: flex-start;
@@ -808,8 +929,17 @@ h1 {
   .page-grid,
   .thread-page,
   .auth-page,
+  .submit-page,
   .nyc-hero {
     grid-template-columns: 1fr;
+  }
+
+  .submit-composer .composer-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .draft-preview {
+    position: static;
   }
 
   .hero-copy {
@@ -852,5 +982,13 @@ h1 {
 
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .submit-page {
+    padding-top: 24px;
+  }
+
+  .submit-composer {
+    padding: 20px;
   }
 }

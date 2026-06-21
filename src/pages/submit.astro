@@ -1,0 +1,51 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ThreadComposer from "@/components/ThreadComposer";
+import { breadcrumbJsonLd } from "@/lib/seo";
+---
+
+<BaseLayout
+  title="Submit a Post"
+  description="Start a Growth Circuit question, build note, or discussion thread for marketing engineers."
+  path="/submit"
+  jsonLd={[
+    breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Submit a Post", path: "/submit" },
+    ]),
+  ]}
+>
+  <section class="shell submit-page">
+    <div class="submit-main">
+      <ThreadComposer variant="page" client:load />
+    </div>
+
+    <aside class="submit-sidebar" aria-label="Posting guidance">
+      <section class="side-panel">
+        <h2>What belongs here</h2>
+        <ul>
+          <li>Tactical questions with enough context to answer.</li>
+          <li>Build notes from experiments, tools, agents, and workflows.</li>
+          <li>Discussion prompts that help marketing engineers compare notes.</li>
+        </ul>
+      </section>
+
+      <section class="side-panel">
+        <h2>A good post includes</h2>
+        <ul>
+          <li>The goal or decision you are working toward.</li>
+          <li>What you tried and what happened.</li>
+          <li>Specific constraints, tools, or metrics that matter.</li>
+        </ul>
+      </section>
+
+      <section class="side-panel">
+        <h2>Looking for dinner?</h2>
+        <p>
+          Supper club applications live separately so the open forum can stay global.
+        </p>
+        <a class="button" href="/nyc">Apply for NYC</a>
+      </section>
+    </aside>
+  </section>
+</BaseLayout>

@@ -17,8 +17,16 @@ export function organizationJsonLd() {
     foundingDate: "2026",
     slogan: "Bring Your Own Build",
     founder: [
-      { "@type": "Person", name: "Nick Lafferty" },
-      { "@type": "Person", name: "Lucy Hoyle" },
+      {
+        "@type": "Person",
+        name: "Nick Lafferty",
+        sameAs: "https://www.linkedin.com/in/nicklafferty/",
+      },
+      {
+        "@type": "Person",
+        name: "Lucy Hoyle",
+        sameAs: "https://www.linkedin.com/in/lucy-hoyle-883381138",
+      },
     ],
   };
 }

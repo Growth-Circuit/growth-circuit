@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ThreadCard from "@/components/ThreadCard.astro";
-import ThreadComposer from "@/components/ThreadComposer";
 import { allTags, challenges, threads } from "@/data/forum";
 
 const featuredThreads = [...threads].sort((a, b) => b.score - a.score).slice(0, 4);
@@ -21,7 +20,8 @@ const currentChallenge = challenges[0];
         monthly BYOB challenge. The open forum is global. The supper club starts in NYC.
       </p>
       <div class="hero-actions">
-        <a class="button matcha" href="/questions">Browse questions</a>
+        <a class="button matcha" href="/submit">Submit a post</a>
+        <a class="button" href="/questions">Browse questions</a>
         <a class="button" href="/nyc">Apply for NYC</a>
       </div>
       <div class="stats-strip" aria-label="Community stats">
@@ -78,7 +78,14 @@ const currentChallenge = challenges[0];
     </div>
 
     <aside class="side-stack">
-      <ThreadComposer client:load />
+      <section class="side-panel submit-cta">
+        <p class="eyebrow">Open forum</p>
+        <h2>Have a question or build note?</h2>
+        <p>
+          Start a dedicated post with the context people need to give useful answers.
+        </p>
+        <a class="button matcha" href="/submit">Create post</a>
+      </section>
       <section class="side-panel">
         <h2>Topics</h2>
         <div class="topic-cloud">
