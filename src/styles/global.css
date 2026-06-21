@@ -5,10 +5,13 @@
   --porcelain: #f7f8f3;
   --paper: #fffdfa;
   --matcha: #8fa66a;
+  --matcha-rgb: 143, 166, 106;
   --matcha-2: #eef3df;
   --matcha-ink: #34451f;
-  --signal: #42d6ff;
-  --tomato: #ff684f;
+  --signal: #287f91;
+  --signal-rgb: 40, 127, 145;
+  --tomato: #a9503f;
+  --tomato-rgb: 169, 80, 63;
   --steel: #d9e0e7;
   --muted: #6d767f;
   --line: rgba(16, 20, 24, 0.12);
@@ -45,8 +48,8 @@ body::before {
   pointer-events: none;
   background:
     linear-gradient(180deg, rgba(247, 248, 243, 0.3), rgba(247, 248, 243, 0.95) 72%),
-    radial-gradient(circle at top left, rgba(183, 211, 107, 0.24), transparent 34%),
-    radial-gradient(circle at 88% 12%, rgba(66, 214, 255, 0.18), transparent 28%);
+    radial-gradient(circle at top left, rgba(var(--matcha-rgb), 0.24), transparent 34%),
+    radial-gradient(circle at 88% 12%, rgba(var(--signal-rgb), 0.14), transparent 28%);
   z-index: -1;
 }
 
@@ -298,7 +301,7 @@ h1 {
   height: 9px;
   border-radius: 50%;
   background: var(--matcha);
-  box-shadow: 0 0 0 7px rgba(183, 211, 107, 0.16);
+  box-shadow: 0 0 0 7px rgba(var(--matcha-rgb), 0.18);
 }
 
 .challenge-body {
@@ -593,7 +596,7 @@ h1 {
 }
 
 .answer.accepted {
-  border-color: rgba(183, 211, 107, 0.8);
+  border-color: rgba(var(--matcha-rgb), 0.72);
   box-shadow: inset 4px 0 0 var(--matcha);
 }
 
@@ -691,8 +694,8 @@ h1 {
 }
 
 .form-note {
-  border: 1px solid rgba(66, 214, 255, 0.36);
-  background: rgba(66, 214, 255, 0.1);
+  border: 1px solid rgba(var(--signal-rgb), 0.34);
+  background: rgba(var(--signal-rgb), 0.1);
   margin-bottom: 14px;
   padding: 12px;
   color: var(--ink-2);
@@ -727,21 +730,21 @@ h1 {
 }
 
 .status-message.success {
-  border-color: rgba(183, 211, 107, 0.8);
-  background: rgba(143, 166, 106, 0.18);
+  border-color: rgba(var(--matcha-rgb), 0.72);
+  background: rgba(var(--matcha-rgb), 0.18);
   color: var(--matcha-ink);
 }
 
 .status-message.error {
-  border-color: rgba(255, 104, 79, 0.5);
-  background: rgba(255, 104, 79, 0.12);
+  border-color: rgba(var(--tomato-rgb), 0.5);
+  background: rgba(var(--tomato-rgb), 0.12);
   color: #713122;
 }
 
 .success-note {
   display: none;
-  border: 1px solid rgba(143, 166, 106, 0.8);
-  background: rgba(143, 166, 106, 0.18);
+  border: 1px solid rgba(var(--matcha-rgb), 0.72);
+  background: rgba(var(--matcha-rgb), 0.18);
   padding: 12px;
   color: var(--matcha-ink);
   font-weight: 680;
