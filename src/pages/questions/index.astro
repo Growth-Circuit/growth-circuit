@@ -1,0 +1,42 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ThreadCard from "@/components/ThreadCard.astro";
+import { getThreadsByType } from "@/data/forum";
+
+const questions = getThreadsByType("question");
+---
+
+<BaseLayout
+  title="Questions"
+  description="Practical Q&A for marketing engineers working across AI search, analytics, paid media, automation, and growth systems."
+  path="/questions"
+>
+  <section class="shell page-title">
+    <p class="eyebrow">Q&A</p>
+    <h1>Questions marketing engineers are actually trying to answer.</h1>
+    <p>Keep the setup concrete. The best answers include the tradeoff, the failure mode, and what shipped.</p>
+    <div class="filters" aria-label="Question filters">
+      <a href="/questions" aria-current="page">Top</a>
+      <a href="/tags/ai-search">AI search</a>
+      <a href="/tags/automation">Automation</a>
+      <a href="/tags/analytics">Analytics</a>
+      <a href="/tags/paid-media">Paid media</a>
+    </div>
+  </section>
+
+  <section class="shell page-grid">
+    <div class="thread-list">
+      {questions.map((thread) => <ThreadCard thread={thread} />)}
+    </div>
+    <aside class="side-stack">
+      <section class="side-panel">
+        <h2>Good question format</h2>
+        <p>Context first, then what you tried, then the decision you need help making.</p>
+      </section>
+      <section class="side-panel">
+        <h2>Indexing note</h2>
+        <p>Question pages ship with Q&A structured data so useful answers can travel beyond the forum.</p>
+      </section>
+    </aside>
+  </section>
+</BaseLayout>

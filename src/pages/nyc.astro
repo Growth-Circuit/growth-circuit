@@ -1,0 +1,34 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ApplicationForm from "@/components/ApplicationForm";
+---
+
+<BaseLayout
+  title="NYC Supper Club"
+  description="Apply for Growth Circuit's intimate NYC supper club for marketing engineers."
+  path="/nyc"
+>
+  <section class="shell nyc-hero">
+    <div class="nyc-copy">
+      <p class="eyebrow">NYC inner circle</p>
+      <h1>A small supper club for people who bring the build.</h1>
+      <p class="lead">
+        Once a month, one member sets the theme. Everyone goes away, builds something, and comes
+        back to demo what worked, what broke, and what they would try next.
+      </p>
+      <div class="hero-actions">
+        <a class="button matcha" href="#apply">Apply for the waitlist</a>
+        <a class="button" href="/challenges">Build async</a>
+      </div>
+      <div class="ritual-list" aria-label="Supper club structure">
+        <div><strong>0:00</strong><span>Arrival and informal catch-up</span></div>
+        <div><strong>0:15</strong><span>Theme setter shares the frame</span></div>
+        <div><strong>0:45</strong><span>Member demos and sharebacks</span></div>
+        <div><strong>1:30</strong><span>Discussion and next questions</span></div>
+        <div><strong>1:50</strong><span>Next theme announced</span></div>
+      </div>
+    </div>
+
+    <ApplicationForm client:load />
+  </section>
+</BaseLayout>

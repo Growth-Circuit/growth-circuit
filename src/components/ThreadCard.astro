@@ -1,0 +1,32 @@
+---
+import VoteButton from "@/components/VoteButton";
+import { formatDate, type Thread } from "@/data/forum";
+
+type Props = {
+  thread: Thread;
+};
+
+const { thread } = Astro.props;
+const href = thread.type === "build" ? `/builds/${thread.slug}` : `/questions/${thread.slug}`;
+---
+
+<article class="thread-card">
+  <div class="vote-column">
+    <VoteButton client:load score={thread.score} label={thread.title} />
+    <span class="score">{thread.score}</span>
+  </div>
+  <div class="thread-content">
+    <div class="thread-topline">
+      <span class="pill">{thread.status ?? thread.type}</span>
+      {thread.tags.slice(0, 3).map((tag) => <a class="tag" href={`/tags/${tag}`}>#{tag}</a>)}
+    </div>
+    <h3><a href={href}>{thread.title}</a></h3>
+    <p>{thread.summary}</p>
+    <div class="thread-meta">
+      <span>{thread.author} · {thread.role}</span>
+      <span>{thread.replies} replies</span>
+      <span>{thread.views.toLocaleString()} views</span>
+      <time datetime={thread.updatedAt}>Updated {formatDate(thread.updatedAt)}</time>
+    </div>
+  </div>
+</article>

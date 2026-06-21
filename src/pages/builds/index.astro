@@ -1,0 +1,36 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate, getThreadsByType } from "@/data/forum";
+
+const builds = getThreadsByType("build");
+---
+
+<BaseLayout
+  title="Builds"
+  description="BYOB demos and teardown posts from marketing engineers building agents, automations, dashboards, and launch systems."
+  path="/builds"
+>
+  <section class="shell page-title">
+    <p class="eyebrow">Build log</p>
+    <h1>Things people shipped, broke, and would build differently.</h1>
+    <p>The build library is the public artifact trail around the private supper club.</p>
+  </section>
+
+  <section class="shell build-grid" style="padding-bottom:80px;">
+    {builds.map((build) => (
+      <article class="build-card">
+        <div class="thread-topline">
+          <span class="pill">{build.status}</span>
+          {build.tags.map((tag) => <a class="tag" href={`/tags/${tag}`}>#{tag}</a>)}
+        </div>
+        <h2><a href={`/builds/${build.slug}`}>{build.title}</a></h2>
+        <p>{build.summary}</p>
+        <div class="thread-meta">
+          <span>{build.author} · {build.company}</span>
+          <time datetime={build.createdAt}>{formatDate(build.createdAt)}</time>
+          <span>{build.score} votes</span>
+        </div>
+      </article>
+    ))}
+  </section>
+</BaseLayout>

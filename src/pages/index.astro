@@ -1,0 +1,99 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ThreadCard from "@/components/ThreadCard.astro";
+import ThreadComposer from "@/components/ThreadComposer";
+import { allTags, challenges, threads } from "@/data/forum";
+
+const featuredThreads = [...threads].sort((a, b) => b.score - a.score).slice(0, 4);
+const currentChallenge = challenges[0];
+---
+
+<BaseLayout
+  title="Growth Circuit"
+  description="A public forum and NYC supper club for marketing engineers. Bring Your Own Build."
+>
+  <section class="shell hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Bring Your Own Build</p>
+      <h1>Where marketing engineers compare notes in public.</h1>
+      <p class="lead">
+        Ask tactical questions, share the scrappy systems behind your growth work, and join the
+        monthly BYOB challenge. The open forum is global. The supper club starts in NYC.
+      </p>
+      <div class="hero-actions">
+        <a class="button matcha" href="/questions">Browse questions</a>
+        <a class="button" href="/nyc">Apply for NYC</a>
+      </div>
+      <div class="stats-strip" aria-label="Community stats">
+        <div class="stat">
+          <strong>4</strong>
+          <span>seed threads live</span>
+        </div>
+        <div class="stat">
+          <strong>12</strong>
+          <span>target supper club seats</span>
+        </div>
+        <div class="stat">
+          <strong>1</strong>
+          <span>monthly BYOB challenge</span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="challenge-panel" aria-labelledby="challenge-title">
+      <header>
+        <span class="mono">Current challenge</span>
+        <span class="status-dot" aria-hidden="true"></span>
+      </header>
+      <div class="challenge-body">
+        <h2 id="challenge-title">{currentChallenge.title}</h2>
+        <p>{currentChallenge.prompt}</p>
+        <a class="button matcha" href={`/challenges#${currentChallenge.slug}`}>View prompt</a>
+      </div>
+      <div class="challenge-footer">
+        <div>
+          <span class="mono">Theme setter</span>
+          <strong>{currentChallenge.themeSetter}</strong>
+        </div>
+        <div>
+          <span class="mono">Submissions</span>
+          <strong>{currentChallenge.submissions}</strong>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="shell page-grid">
+    <div>
+      <div class="section-head">
+        <div>
+          <h2>Trending threads</h2>
+          <p>First-hand questions and build notes from the marketing engineer edge.</p>
+        </div>
+        <a class="button" href="/questions">All questions</a>
+      </div>
+      <div class="thread-list">
+        {featuredThreads.map((thread) => <ThreadCard thread={thread} />)}
+      </div>
+    </div>
+
+    <aside class="side-stack">
+      <ThreadComposer client:load />
+      <section class="side-panel">
+        <h2>Topics</h2>
+        <div class="topic-cloud">
+          {allTags.map((tag) => <a class="tag" href={`/tags/${tag}`}>#{tag}</a>)}
+        </div>
+      </section>
+      <section class="side-panel">
+        <h2>Community rules</h2>
+        <ul>
+          <li>Show the build, not just the idea.</li>
+          <li>Name what broke.</li>
+          <li>Use names only with permission.</li>
+          <li>No vendor pitch in the deep room.</li>
+        </ul>
+      </section>
+    </aside>
+  </section>
+</BaseLayout>

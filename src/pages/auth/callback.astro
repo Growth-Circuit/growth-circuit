@@ -1,0 +1,17 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import AuthCallback from "@/components/AuthCallback";
+---
+
+<BaseLayout
+  title="Signing in"
+  description="Completing your Growth Circuit sign-in."
+  path="/auth/callback"
+  noindex
+>
+  <section class="shell page-title">
+    <p class="eyebrow">Auth</p>
+    <h1>Signing you in.</h1>
+    <AuthCallback client:load />
+  </section>
+</BaseLayout>
