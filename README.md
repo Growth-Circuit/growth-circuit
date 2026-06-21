@@ -6,7 +6,7 @@ The product shape is:
 
 - Public, SEO-friendly forum pages for marketing engineer questions, builds, tags, and BYOB challenges.
 - Email/password authentication through Supabase Auth. LinkedIn and Google OAuth can be added later.
-- NYC supper club application flow with self-reported title, company, location, specialty, build history, video URL, and dish.
+- Open NYC supper club application flow with no login required.
 - Supabase-backed persistence when credentials are configured, with local preview mode when they are not.
 
 ## Stack
@@ -76,9 +76,6 @@ Optional fields:
 - `specialty`
 - `video_url`
 - `referral_source`
-- `auth_provider`
-- `profile_source`
-- `user_id`
 - `consent_to_promotional_clips`
 
 ## Build

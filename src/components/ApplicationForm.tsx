@@ -1,15 +1,7 @@
-import { CheckCircle2, Loader2, LogIn, Send, UserRound } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { createBrowserSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
+import { CheckCircle2, Loader2, Send } from "lucide-react";
+import { useState } from "react";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import type { ApplicationPayload, ApplicationResult } from "@/lib/application";
-
-type SessionProfile = {
-  userId: string | null;
-  email: string;
-  name: string;
-  avatar?: string;
-  provider: string;
-};
 
 type FormState = ApplicationPayload;
 
@@ -33,48 +25,10 @@ const blankForm: FormState = {
 };
 
 export default function ApplicationForm() {
-  const [profile, setProfile] = useState<SessionProfile | null>(null);
   const [form, setForm] = useState<FormState>(blankForm);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ApplicationPayload, string>>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    const supabase = createBrowserSupabaseClient();
-
-    if (!supabase) return;
-
-    supabase.auth.getUser().then(({ data }) => {
-      const user = data.user;
-
-      if (!user) return;
-
-      const metadata = user.user_metadata;
-      const provider = user.app_metadata?.provider || "unknown";
-      const sessionProfile = {
-        userId: user.id,
-        email: user.email || "",
-        name: metadata?.full_name || metadata?.name || user.email || "",
-        avatar: metadata?.avatar_url || metadata?.picture,
-        provider,
-      };
-
-      setProfile(sessionProfile);
-      setForm((current) => ({
-        ...current,
-        user_id: sessionProfile.userId,
-        full_name: current.full_name || sessionProfile.name,
-        email: current.email || sessionProfile.email,
-        auth_provider: provider,
-      }));
-    });
-  }, []);
-
-  const identityLabel = useMemo(() => {
-    if (!profile) return "Not connected";
-    if (profile.provider.includes("email")) return "Email/password account";
-    return "Connected profile";
-  }, [profile]);
 
   function updateField(field: keyof FormState, value: string | boolean) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -122,26 +76,8 @@ export default function ApplicationForm() {
         <span className="pill">12 seats</span>
       </div>
 
-      <div className="identity-panel">
-        <div className="identity-main">
-          {profile?.avatar ? (
-            <img src={profile.avatar} alt="" width={44} height={44} />
-          ) : (
-            <span className="identity-icon">
-              <UserRound size={22} aria-hidden="true" />
-            </span>
-          )}
-          <div>
-            <strong>{profile?.name || identityLabel}</strong>
-            <span>{profile?.email || "Create an account or sign in before submitting when Supabase is configured."}</span>
-          </div>
-        </div>
-        {!profile && (
-          <a className="button primary" href="/auth?next=%2Fnyc%23apply">
-            <LogIn size={17} aria-hidden="true" />
-            Sign in
-          </a>
-        )}
+      <div className="form-note">
+        No account required. We will use your email and LinkedIn URL only to review and follow up on your application.
       </div>
 
       {!isSupabaseConfigured && (

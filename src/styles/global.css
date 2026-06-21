@@ -689,56 +689,6 @@ h1 {
   margin-bottom: 10px;
 }
 
-.identity-panel {
-  display: grid;
-  gap: 14px;
-  border: 1px solid var(--line);
-  background: rgba(16, 20, 24, 0.035);
-  margin-bottom: 14px;
-  padding: 14px;
-}
-
-.identity-main {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.identity-main img,
-.identity-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-}
-
-.identity-main img {
-  object-fit: cover;
-}
-
-.identity-icon {
-  display: grid;
-  place-items: center;
-  background: var(--ink);
-  color: var(--matcha);
-}
-
-.identity-main strong,
-.identity-main span {
-  display: block;
-}
-
-.identity-main span {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.identity-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 .form-note {
   border: 1px solid rgba(66, 214, 255, 0.36);
   background: rgba(66, 214, 255, 0.1);

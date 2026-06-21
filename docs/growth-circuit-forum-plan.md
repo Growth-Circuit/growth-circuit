@@ -18,7 +18,7 @@ Core sections:
 - `/members/[handle]`: lightweight public profiles.
 - `/tags/[tag]`: indexable topic pages.
 
-Core actions:
+Core forum actions:
 
 - Ask a question.
 - Post a build.
@@ -28,7 +28,7 @@ Core actions:
 - Follow a thread.
 - Report spam or low-quality content.
 
-Read access should be public. Posting, replying, voting, and following should require lightweight auth. Email/password is the practical starting point; LinkedIn and Google can be added later.
+Read access should be public. Posting, replying, voting, and following can require lightweight auth later. The NYC supper club application should not require login.
 
 ## Recommended Stack
 
