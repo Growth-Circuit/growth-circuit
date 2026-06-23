@@ -29,7 +29,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, error: "Please fix the highlighted fields.", fieldErrors }, 422);
   }
 
-  if (!isServerSupabaseConfigured) {
+  if (!isServerSupabaseConfigured()) {
     return json({ ok: true, mode: "preview" }, 200);
   }
 

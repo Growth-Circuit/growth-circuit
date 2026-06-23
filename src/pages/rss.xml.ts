@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { threads } from "@/data/forum";
 
-const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.co";
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.club";
 
 function escapeXml(value: string) {
   return value

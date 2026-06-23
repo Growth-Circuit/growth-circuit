@@ -1,6 +1,10 @@
 /// <reference path="../.astro/types.d.ts" />
 /// <reference types="astro/client" />
 
+declare module "cloudflare:workers" {
+  export const env: Record<string, string | undefined>;
+}
+
 interface ImportMetaEnv {
   readonly PUBLIC_SITE_URL?: string;
   readonly PUBLIC_SUPABASE_URL?: string;

@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 
-const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.co";
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.club";
 
 export const GET: APIRoute = () => {
   return new Response(

@@ -10,6 +10,11 @@
     { "pattern": "growthcircuit.club", "custom_domain": true },
     { "pattern": "www.growthcircuit.club", "custom_domain": true }
   ],
+  "vars": {
+    "PUBLIC_SITE_URL": "https://growthcircuit.club",
+    "PUBLIC_SUPABASE_URL": "https://twkvclxsynnbktppeozg.supabase.co",
+    "PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_HtrWzzR4HB4Xu0rlSnLaXQ_mpKm0zun"
+  },
   "observability": {
     "enabled": true
   }
