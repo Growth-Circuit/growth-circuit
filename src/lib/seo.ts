@@ -1,6 +1,6 @@
 import type { Thread } from "@/data/forum";
 
-const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.co";
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.club";
 
 export function canonical(pathname: string) {
   return new URL(pathname, siteUrl).toString();

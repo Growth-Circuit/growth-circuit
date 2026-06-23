@@ -6,6 +6,10 @@
     "binding": "ASSETS",
     "directory": "./dist"
   },
+  "routes": [
+    { "pattern": "growthcircuit.club", "custom_domain": true },
+    { "pattern": "www.growthcircuit.club", "custom_domain": true }
+  ],
   "observability": {
     "enabled": true
   }

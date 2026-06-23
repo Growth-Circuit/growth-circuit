@@ -4,7 +4,7 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 
 export default defineConfig({
-  site: "https://growthcircuit.co",
+  site: "https://growthcircuit.club",
   output: "server",
   adapter: cloudflare({
     imageService: "passthrough",
