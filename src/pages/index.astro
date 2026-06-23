@@ -1,11 +1,12 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import AnnouncementFaq from "@/components/AnnouncementFaq.astro";
 import ApplicationForm from "@/components/ApplicationForm";
 ---
 
 <BaseLayout
   title="Growth Circuit"
-  description="An intimate, invite-only community for Marketing Engineers based in New York City or nearby."
+  description="A cohort-based build club for Marketing Engineers in New York City or nearby."
   hideHeader
   bodyClass="home-ink-page"
 >
@@ -20,7 +21,7 @@ import ApplicationForm from "@/components/ApplicationForm";
           <span class="brand-word">Growth Circuit</span>
         </a>
         <nav class="ink-links" aria-label="Primary navigation">
-          <a href="/nyc">NYC community</a>
+          <a href="/nyc">NYC build club</a>
           <a href="#global">Global community</a>
         </nav>
         <div class="header-actions">
@@ -31,14 +32,14 @@ import ApplicationForm from "@/components/ApplicationForm";
 
     <section class="shell ink-section">
       <div class="ink-intro">
-        <p class="eyebrow eyebrow--live">Invite-only NYC community</p>
+        <p class="eyebrow eyebrow--live">Invite-only NYC build club</p>
         <h1 class="ink-title">
-          Think book club, but for <span>hacking not reading</span>
+          A cohort-based build club for <span>marketing engineers</span>
         </h1>
         <p class="ink-lead">
           An intimate, invite-only community for Marketing Engineers based in New York City or nearby.
-          Once a month, one member sets a theme. Everyone goes away, builds something around it, then
-          meets up a few weeks later to demo, discuss, and learn from each other.
+          Think book club, but for hacking not reading: one member sets a theme, everyone builds
+          around it, then the group meets to demo, discuss, and learn from each other.
         </p>
         <div class="hero-actions">
           <a class="button matcha" href="#apply">Apply for NYC</a>
@@ -47,9 +48,9 @@ import ApplicationForm from "@/components/ApplicationForm";
       </div>
 
       <div class="ink-ledger" aria-label="Community overview">
-        <div class="ink-stat"><strong>Small</strong><span>quality over scale</span></div>
+        <div class="ink-stat"><strong>12-15</strong><span>members per cohort</span></div>
         <div class="ink-stat"><strong>NYC</strong><span>or nearby</span></div>
-        <div class="ink-stat"><strong>Monthly</strong><span>rotating themes</span></div>
+        <div class="ink-stat"><strong>3</strong><span>meetings per cohort</span></div>
         <div class="ink-stat ink-stat--accent"><strong>Global</strong><span>community next</span></div>
       </div>
 
@@ -103,4 +104,6 @@ import ApplicationForm from "@/components/ApplicationForm";
       </section>
     </aside>
   </section>
+
+  <AnnouncementFaq />
 </BaseLayout>

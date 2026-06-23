@@ -1,10 +1,10 @@
 # Growth Circuit
 
-A lightweight announcement site and application layer for Growth Circuit.
+A lightweight announcement site and application layer for Growth Circuit's cohort-based NYC build club.
 
 The product shape is:
 
-- Invite-only NYC community application flow with no login required.
+- Invite-only NYC build club application flow with no login required.
 - Hidden scaffolding for future public forum pages, builds, tags, and BYOB challenges.
 - Optional email/password authentication through Supabase Auth for later forum posting.
 - Supabase-backed persistence when credentials are configured, with local preview mode when they are not.

@@ -1,21 +1,22 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import AnnouncementFaq from "@/components/AnnouncementFaq.astro";
 import ApplicationForm from "@/components/ApplicationForm";
 ---
 
 <BaseLayout
-  title="NYC Community"
-  description="Apply for Growth Circuit's intimate, invite-only community for Marketing Engineers based in New York City or nearby."
+  title="NYC Build Club"
+  description="Apply for Growth Circuit's cohort-based build club for Marketing Engineers in New York City or nearby."
   path="/nyc"
 >
   <section class="shell nyc-hero">
     <div class="nyc-copy">
-      <p class="eyebrow">Invite-only NYC community</p>
-      <h1>Think book club, but for hacking not reading.</h1>
+      <p class="eyebrow">Invite-only NYC build club</p>
+      <h1>A cohort-based build club for marketing engineers</h1>
       <p class="lead">
         Growth Circuit is an intimate, invite-only community for Marketing Engineers based in New
-        York City or nearby. Once a month, one member sets a theme. Everyone builds around it, then
-        meets up a few weeks later to demo, discuss, and learn from each other.
+        York City or nearby. Think book club, but for hacking not reading: one member sets a theme,
+        everyone builds around it, then the group meets to demo, discuss, and learn from each other.
       </p>
       <div class="hero-actions">
         <a class="button matcha" href="#apply">Apply to join</a>
@@ -44,4 +45,6 @@ import ApplicationForm from "@/components/ApplicationForm";
 
     <ApplicationForm client:load />
   </section>
+
+  <AnnouncementFaq />
 </BaseLayout>

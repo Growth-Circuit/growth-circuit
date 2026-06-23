@@ -546,6 +546,48 @@ svg {
   margin-top: 22px;
 }
 
+.faq-section {
+  padding: 0 0 86px;
+}
+
+.faq-head {
+  margin-bottom: 18px;
+}
+
+.faq-head h2 {
+  max-width: 760px;
+  margin-bottom: 0;
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.03;
+  letter-spacing: 0;
+}
+
+.faq-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.faq-item {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 20px;
+  box-shadow: 0 1px 0 rgba(247, 248, 243, 0.03) inset;
+}
+
+.faq-item h3 {
+  margin-bottom: 10px;
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.faq-item p {
+  margin-bottom: 0;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+
 .home-ink-page .section-head p,
 .home-ink-page .thread-content p,
 .home-ink-page .side-panel p,
@@ -1468,6 +1510,7 @@ h1 {
 
   .hero,
   .page-grid,
+  .faq-list,
   .current-challenge-band,
   .thread-page,
   .auth-page,

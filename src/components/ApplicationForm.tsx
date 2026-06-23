@@ -96,9 +96,9 @@ export default function ApplicationForm() {
       <div className="application-card-head">
         <div>
           <p className="eyebrow">Application</p>
-          <h2 id="apply-title">Apply to join the NYC community</h2>
+          <h2 id="apply-title">Apply to join the first cohort</h2>
         </div>
-        <span className="pill">Invite-only</span>
+        <span className="pill">12-15 members</span>
       </div>
 
       <div className="form-note">
