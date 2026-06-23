@@ -1,15 +1,11 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import ThreadCard from "@/components/ThreadCard.astro";
-import { allTags, challenges, threads } from "@/data/forum";
-
-const featuredThreads = [...threads].sort((a, b) => b.score - a.score).slice(0, 4);
-const currentChallenge = challenges[0];
+import ApplicationForm from "@/components/ApplicationForm";
 ---
 
 <BaseLayout
   title="Growth Circuit"
-  description="A public forum and NYC supper club for marketing engineers. Bring Your Own Build."
+  description="A NYC supper club for marketing engineers who bring their own builds."
   hideHeader
   bodyClass="home-ink-page"
 >
@@ -24,86 +20,72 @@ const currentChallenge = challenges[0];
           <span class="brand-word">Growth Circuit</span>
         </a>
         <nav class="ink-links" aria-label="Primary navigation">
-          <a href="/questions">Forum</a>
-          <a href="/challenges">Challenge</a>
           <a href="/nyc">Supper club</a>
+          <a href="#global">Global community</a>
         </nav>
         <div class="header-actions">
-          <a class="button button--ghost-light" href="/auth">Sign in</a>
-          <a class="button matcha" href="/submit">Submit a post</a>
+          <a class="button matcha" href="#apply">Apply for NYC</a>
         </div>
       </div>
     </header>
 
     <section class="shell ink-section">
       <div class="ink-intro">
-        <p class="eyebrow eyebrow--live">Bring your own build</p>
+        <p class="eyebrow eyebrow--live">NYC supper club</p>
         <h1 class="ink-title">
-          Where marketing engineers build <span>in public</span>
+          A dinner series for people who <span>bring the build</span>
         </h1>
         <p class="ink-lead">
-          Growth Circuit is an open forum for tactical questions and build notes, plus a small NYC
-          supper club for people who want to bring the work into the room.
+          Growth Circuit starts as a small NYC supper club for marketing engineers, growth operators,
+          and technical marketers who want to compare real work in the room.
         </p>
         <div class="hero-actions">
-          <a class="button matcha" href="/submit">Submit a post</a>
-          <a class="button button--ghost-light" href="/nyc">Apply for NYC</a>
+          <a class="button matcha" href="#apply">Apply for NYC</a>
+          <a class="button button--ghost-light" href="#global">Not in NYC?</a>
         </div>
       </div>
 
-      <div class="ink-ledger" aria-label="Community stats">
-        <div class="ink-stat"><strong>{threads.length}</strong><span>seed threads live</span></div>
-        <div class="ink-stat"><strong>12</strong><span>supper club seats</span></div>
-        <div class="ink-stat"><strong>{currentChallenge.submissions}</strong><span>submissions in</span></div>
-        <div class="ink-stat ink-stat--accent"><strong>1</strong><span>live BYOB challenge</span></div>
+      <div class="ink-ledger" aria-label="Supper club overview">
+        <div class="ink-stat"><strong>12</strong><span>seats per dinner</span></div>
+        <div class="ink-stat"><strong>NYC</strong><span>first chapter</span></div>
+        <div class="ink-stat"><strong>Monthly</strong><span>build demos</span></div>
+        <div class="ink-stat ink-stat--accent"><strong>Global</strong><span>community next</span></div>
       </div>
 
-      <a class="ink-ticker" href={`/challenges#${currentChallenge.slug}`}>
-        <span class="ink-ticker__tag">This month</span>
+      <a class="ink-ticker" href="#global">
+        <span class="ink-ticker__tag">Not in NYC?</span>
         <span class="ink-ticker__rule" aria-hidden="true"></span>
-        <span class="ink-ticker__title">{currentChallenge.title}</span>
-        <span class="ink-ticker__cta">View prompt -></span>
+        <span class="ink-ticker__title">We are starting around one table, then opening a global community for everyone else.</span>
+        <span class="ink-ticker__cta">Read note -></span>
       </a>
     </section>
   </div>
 
-  <section class="shell page-grid home-forum-grid">
-    <div>
-      <div class="section-head">
-        <div>
-          <h2>Trending threads</h2>
-          <p>First-hand questions and build notes from the marketing engineer edge.</p>
-        </div>
-        <a class="button" href="/questions">All questions</a>
-      </div>
-      <div class="thread-list">
-        {featuredThreads.map((thread) => <ThreadCard thread={thread} />)}
+  <section class="shell page-grid home-forum-grid announcement-grid">
+    <div class="side-panel announcement-panel">
+      <p class="eyebrow">How it works</p>
+      <h2>One theme. A little homework. Dinner around the work.</h2>
+      <p>
+        Each supper club starts with a practical growth problem. Members bring what they built, what
+        broke, and what they would do differently. No panels, no pitches, no vague networking fog.
+      </p>
+      <div class="ritual-list" aria-label="Supper club structure">
+        <div><strong>Before dinner</strong><span>A theme goes out</span></div>
+        <div><strong>At the table</strong><span>Members demo and compare notes</span></div>
+        <div><strong>Afterward</strong><span>The useful lessons become the seed for the wider community</span></div>
       </div>
     </div>
 
     <aside class="side-stack">
-      <section class="side-panel submit-cta">
-        <p class="eyebrow">Open forum</p>
-        <h2>Have a question or build note?</h2>
+      <ApplicationForm client:load />
+      <section class="side-panel" id="global">
+        <p class="eyebrow">Global next</p>
+        <h2>Not in New York?</h2>
         <p>
-          Start a dedicated post with the context people need to give useful answers.
+          The public community is still part of the plan. We are keeping the launch focused on the
+          supper club first, then we will open up a global space for people who want the prompts,
+          sharebacks, and build notes without being in NYC.
         </p>
-        <a class="button matcha" href="/submit">Create post</a>
-      </section>
-      <section class="side-panel">
-        <h2>Topics</h2>
-        <div class="topic-cloud">
-          {allTags.map((tag) => <a class="tag" href={`/tags/${tag}`}>#{tag}</a>)}
-        </div>
-      </section>
-      <section class="side-panel">
-        <h2>Community rules</h2>
-        <ul>
-          <li>Show the build, not just the idea.</li>
-          <li>Name what broke.</li>
-          <li>Use names only with permission.</li>
-          <li>No vendor pitch in the deep room.</li>
-        </ul>
       </section>
     </aside>
   </section>

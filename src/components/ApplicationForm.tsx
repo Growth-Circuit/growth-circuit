@@ -17,14 +17,14 @@ const blankForm: FormState = {
   linkedin_url: "",
   current_title: "",
   current_company: "",
-  location: "New York, NY",
+  location: "",
   specialty: "",
   proud_build: "",
-  build_interest: "",
+  build_interest: "Not collected in the announcement form.",
   referral_source: "",
   video_url: "",
-  speciality_dish: "",
-  consent_to_promotional_clips: true,
+  speciality_dish: "Not collected in the announcement form.",
+  consent_to_promotional_clips: false,
   auth_provider: "manual",
   profile_source: "self_reported",
   user_id: null,
@@ -96,13 +96,13 @@ export default function ApplicationForm() {
       <div className="application-card-head">
         <div>
           <p className="eyebrow">Application</p>
-          <h2 id="apply-title">Apply to join Growth Circuit</h2>
+          <h2 id="apply-title">Apply for the NYC supper club</h2>
         </div>
         <span className="pill">12 seats</span>
       </div>
 
       <div className="form-note">
-        No account required. We will use your email and LinkedIn URL only to review and follow up on your application.
+        We will use this only to review and follow up on your supper club application.
       </div>
 
       {!isSupabaseConfigured && (
@@ -145,16 +145,7 @@ export default function ApplicationForm() {
         </Field>
 
         <div className="form-grid">
-          <Field label="Current title" error={fieldErrors.current_title}>
-            <input
-              name="current_title"
-              value={form.current_title}
-              onChange={(event) => updateField("current_title", event.target.value)}
-              placeholder="Growth, lifecycle, analytics, engineering..."
-              aria-invalid={Boolean(fieldErrors.current_title)}
-            />
-          </Field>
-          <Field label="Current company" error={fieldErrors.current_company}>
+          <Field label="Company" error={fieldErrors.current_company}>
             <input
               name="current_company"
               value={form.current_company}
@@ -163,29 +154,28 @@ export default function ApplicationForm() {
               aria-invalid={Boolean(fieldErrors.current_company)}
             />
           </Field>
-        </div>
-
-        <div className="form-grid">
-          <Field label="Location" error={fieldErrors.location}>
+          <Field label="Title" error={fieldErrors.current_title}>
             <input
-              name="location"
-              value={form.location}
-              onChange={(event) => updateField("location", event.target.value)}
-              placeholder="New York, NY"
-              aria-invalid={Boolean(fieldErrors.location)}
-            />
-          </Field>
-          <Field label="Specialty">
-            <input
-              name="specialty"
-              value={form.specialty}
-              onChange={(event) => updateField("specialty", event.target.value)}
-              placeholder="AI search, paid media, agents, analytics..."
+              name="current_title"
+              value={form.current_title}
+              onChange={(event) => updateField("current_title", event.target.value)}
+              placeholder="Growth, lifecycle, analytics, engineering..."
+              aria-invalid={Boolean(fieldErrors.current_title)}
             />
           </Field>
         </div>
 
-        <Field label="What is one thing you built or shipped?" error={fieldErrors.proud_build}>
+        <Field label="Location" error={fieldErrors.location}>
+          <input
+            name="location"
+            value={form.location}
+            onChange={(event) => updateField("location", event.target.value)}
+            placeholder="New York, NY"
+            aria-invalid={Boolean(fieldErrors.location)}
+          />
+        </Field>
+
+        <Field label="Something you've built" error={fieldErrors.proud_build}>
           <textarea
             name="proud_build"
             value={form.proud_build}
@@ -203,67 +193,20 @@ export default function ApplicationForm() {
           />
         </Field>
 
-        <Field label="What theme, tool, or problem would you bring?" error={fieldErrors.build_interest}>
-          <textarea
-            name="build_interest"
-            value={form.build_interest}
-            maxLength={APPLICATION_TEXT_LIMITS.build_interest.max}
-            onChange={(event) => updateField("build_interest", event.target.value)}
-            placeholder="Something you have explored, or something you want to explore with the room."
-            aria-describedby="build-interest-count"
-            aria-invalid={Boolean(fieldErrors.build_interest)}
-          />
-          <CharacterCount
-            id="build-interest-count"
-            count={form.build_interest.length}
-            min={APPLICATION_TEXT_LIMITS.build_interest.min}
-            max={APPLICATION_TEXT_LIMITS.build_interest.max}
-          />
+        <Field label="How did you hear about us?">
+          <select
+            name="referral_source"
+            value={form.referral_source}
+            onChange={(event) => updateField("referral_source", event.target.value)}
+          >
+            <option value="">Choose one</option>
+            <option value="lucy-linkedin">Lucy Hoyle's LinkedIn</option>
+            <option value="nick-linkedin">Nick Lafferty's LinkedIn</option>
+            <option value="friend">A friend recommended me</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="other">Other</option>
+          </select>
         </Field>
-
-        <div className="form-grid">
-          <Field label="Video URL">
-            <input
-              name="video_url"
-              value={form.video_url}
-              onChange={(event) => updateField("video_url", event.target.value)}
-              placeholder="Loom, YouTube, Drive..."
-            />
-          </Field>
-          <Field label="How did you hear about us?">
-            <select
-              name="referral_source"
-              value={form.referral_source}
-              onChange={(event) => updateField("referral_source", event.target.value)}
-            >
-              <option value="">Choose one</option>
-              <option value="lucy-linkedin">Lucy Hoyle's LinkedIn</option>
-              <option value="nick-linkedin">Nick Lafferty's LinkedIn</option>
-              <option value="friend">A friend recommended me</option>
-              <option value="forum">Growth Circuit forum</option>
-              <option value="other">Other</option>
-            </select>
-          </Field>
-        </div>
-
-        <Field label="Speciality dish" error={fieldErrors.speciality_dish}>
-          <input
-            name="speciality_dish"
-            value={form.speciality_dish}
-            onChange={(event) => updateField("speciality_dish", event.target.value)}
-            placeholder="The most important field"
-            aria-invalid={Boolean(fieldErrors.speciality_dish)}
-          />
-        </Field>
-
-        <label className="check-row">
-          <input
-            type="checkbox"
-            checked={form.consent_to_promotional_clips}
-            onChange={(event) => updateField("consent_to_promotional_clips", event.target.checked)}
-          />
-          <span>Growth Circuit can use application video clips in promo. Names and off-record details still require permission.</span>
-        </label>
 
         <button className="button matcha" type="submit" disabled={status === "submitting"}>
           {status === "submitting" ? <Loader2 size={17} aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}

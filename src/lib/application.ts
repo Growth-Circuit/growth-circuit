@@ -26,10 +26,6 @@ export const APPLICATION_TEXT_LIMITS = {
     min: 24,
     max: 2400,
   },
-  build_interest: {
-    min: 16,
-    max: 2400,
-  },
 } as const;
 
 const textFields: Array<keyof Omit<ApplicationPayload, "consent_to_promotional_clips">> = [
@@ -63,6 +59,8 @@ export function normalizeApplication(input: unknown): ApplicationPayload {
   }
 
   payload.consent_to_promotional_clips = Boolean(source.consent_to_promotional_clips);
+  payload.build_interest ||= "Not collected in the announcement form.";
+  payload.speciality_dish ||= "Not collected in the announcement form.";
   payload.profile_source ||= "self_reported";
   payload.auth_provider ||= "manual";
   payload.user_id ||= null;
@@ -81,16 +79,12 @@ export function validateApplication(payload: ApplicationPayload) {
   ) {
     fieldErrors.linkedin_url = "Use a LinkedIn profile URL.";
   }
-  if (!payload.current_title) fieldErrors.current_title = "Current title is required.";
-  if (!payload.current_company) fieldErrors.current_company = "Current company is required.";
+  if (!payload.current_company) fieldErrors.current_company = "Company is required.";
+  if (!payload.current_title) fieldErrors.current_title = "Title is required.";
   if (!payload.location) fieldErrors.location = "Location is required.";
   if (!payload.proud_build || payload.proud_build.length < APPLICATION_TEXT_LIMITS.proud_build.min) {
     fieldErrors.proud_build = `Share at least ${APPLICATION_TEXT_LIMITS.proud_build.min} characters about one concrete build.`;
   }
-  if (!payload.build_interest || payload.build_interest.length < APPLICATION_TEXT_LIMITS.build_interest.min) {
-    fieldErrors.build_interest = `Share at least ${APPLICATION_TEXT_LIMITS.build_interest.min} characters about one theme, tool, or problem.`;
-  }
-  if (!payload.speciality_dish) fieldErrors.speciality_dish = "The dish question is mandatory.";
 
   return fieldErrors;
 }

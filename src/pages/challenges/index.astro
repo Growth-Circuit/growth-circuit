@@ -1,34 +1,17 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { challenges, formatDate } from "@/data/forum";
+import AnnouncementHold from "@/components/AnnouncementHold.astro";
 ---
 
 <BaseLayout
-  title="BYOB Challenges"
+  title="Public Prompts Coming Later"
   description="Monthly Bring Your Own Build prompts for the Growth Circuit community."
   path="/challenges"
+  noindex
 >
-  <section class="shell page-title">
-    <p class="eyebrow">Monthly BYOB</p>
-    <h1>One prompt. Many builds. Better taste through comparison.</h1>
-    <p>Each month a theme setter frames a practical problem. Anyone can build in public. NYC members demo in the room.</p>
-  </section>
-
-  <section class="shell challenge-grid" style="padding-bottom:80px;">
-    {challenges.map((challenge) => (
-      <article class="challenge-card" id={challenge.slug}>
-        <div class="thread-topline">
-          <span class="pill">{challenge.month}</span>
-          {challenge.tags.map((tag) => <a class="tag" href={`/tags/${tag}`}>#{tag}</a>)}
-        </div>
-        <h2>{challenge.title}</h2>
-        <p>{challenge.prompt}</p>
-        <div class="thread-meta">
-          <span>Theme setter: {challenge.themeSetter}</span>
-          <time datetime={challenge.dueDate}>Due {formatDate(challenge.dueDate)}</time>
-          <span>{challenge.submissions} submissions</span>
-        </div>
-      </article>
-    ))}
-  </section>
+  <AnnouncementHold
+    eyebrow="Coming later"
+    title="Public build prompts are paused for the announcement."
+    description="For now, the prompt lives inside the supper club. We will turn the async challenge layer back on when the global community is ready."
+  />
 </BaseLayout>

@@ -1,36 +1,17 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { formatDate, getThreadsByType } from "@/data/forum";
-
-const builds = getThreadsByType("build");
+import AnnouncementHold from "@/components/AnnouncementHold.astro";
 ---
 
 <BaseLayout
-  title="Builds"
+  title="Builds Coming Later"
   description="BYOB demos and teardown posts from marketing engineers building agents, automations, dashboards, and launch systems."
   path="/builds"
+  noindex
 >
-  <section class="shell page-title">
-    <p class="eyebrow">Build log</p>
-    <h1>Things people shipped, broke, and would build differently.</h1>
-    <p>The build library is the public artifact trail around the private supper club.</p>
-  </section>
-
-  <section class="shell build-grid" style="padding-bottom:80px;">
-    {builds.map((build) => (
-      <article class="build-card">
-        <div class="thread-topline">
-          <span class="pill">{build.status}</span>
-          {build.tags.map((tag) => <a class="tag" href={`/tags/${tag}`}>#{tag}</a>)}
-        </div>
-        <h2><a href={`/builds/${build.slug}`}>{build.title}</a></h2>
-        <p>{build.summary}</p>
-        <div class="thread-meta">
-          <span>{build.author} · {build.company}</span>
-          <time datetime={build.createdAt}>{formatDate(build.createdAt)}</time>
-          <span>{build.score} votes</span>
-        </div>
-      </article>
-    ))}
-  </section>
+  <AnnouncementHold
+    eyebrow="Coming later"
+    title="The build library will open after the supper club starts."
+    description="The scaffolding is still here, but we are not publishing seeded build notes for the announcement. First we want real dinners, real demos, and real lessons."
+  />
 </BaseLayout>

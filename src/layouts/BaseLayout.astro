@@ -1,6 +1,5 @@
 ---
 import "@/styles/global.css";
-import AuthBar from "@/components/AuthBar";
 import { canonical, organizationJsonLd } from "@/lib/seo";
 
 type Props = {
@@ -15,7 +14,7 @@ type Props = {
 
 const {
   title = "Growth Circuit",
-  description = "A public forum and NYC supper club for marketing engineers. Bring Your Own Build.",
+  description = "A NYC supper club for marketing engineers who bring their own builds.",
   path = Astro.url.pathname,
   noindex = false,
   jsonLd = [],
@@ -55,14 +54,11 @@ const allJsonLd = [organizationJsonLd(), ...jsonLd];
               <span>Growth Circuit</span>
             </a>
             <nav class="nav-links" aria-label="Primary navigation">
-              <a href="/questions">Questions</a>
-              <a href="/builds">Builds</a>
-              <a href="/challenges">Challenges</a>
-              <a href="/submit">Submit</a>
               <a href="/nyc">NYC Supper Club</a>
+              <a href="/#global">Global Community</a>
             </nav>
             <div class="header-actions">
-              <AuthBar client:load />
+              <a class="button matcha" href="/nyc#apply">Apply</a>
             </div>
           </div>
         </header>

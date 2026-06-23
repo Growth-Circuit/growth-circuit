@@ -1,8 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import VoteButton from "@/components/VoteButton";
-import { formatDate, threads } from "@/data/forum";
-import { breadcrumbJsonLd, threadJsonLd } from "@/lib/seo";
+import AnnouncementHold from "@/components/AnnouncementHold.astro";
+import { threads } from "@/data/forum";
 
 export const prerender = true;
 
@@ -23,63 +22,14 @@ if (!thread) {
 ---
 
 <BaseLayout
-  title={thread.title}
-  description={thread.summary}
+  title="Question Archive"
+  description="Growth Circuit question pages are paused while the announcement focuses on the NYC supper club."
   path={`/questions/${thread.slug}`}
-  jsonLd={[
-    breadcrumbJsonLd([
-      { name: "Growth Circuit", path: "/" },
-      { name: "Questions", path: "/questions" },
-      { name: thread.title, path: `/questions/${thread.slug}` },
-    ]),
-    threadJsonLd(thread),
-  ]}
+  noindex
 >
-  <section class="shell thread-page">
-    <article class="article">
-      <header class="article-header">
-        <div class="thread-topline">
-          <span class="pill">{thread.status}</span>
-          {thread.tags.map((tag) => <a class="tag" href={`/tags/${tag}`}>#{tag}</a>)}
-        </div>
-        <h1>{thread.title}</h1>
-        <div class="thread-meta">
-          <span>{thread.author} · {thread.role} at {thread.company}</span>
-          <time datetime={thread.createdAt}>Asked {formatDate(thread.createdAt)}</time>
-          <span>{thread.views.toLocaleString()} views</span>
-        </div>
-      </header>
-      <div class="article-body">
-        <p>{thread.body}</p>
-        <div class="answer-list">
-          {thread.replyList.map((reply) => (
-            <article class={`answer ${reply.accepted ? "accepted" : ""}`}>
-              <div class="thread-topline">
-                <span class="pill">{reply.accepted ? "Accepted answer" : "Answer"}</span>
-                <span class="pill">{reply.score} votes</span>
-              </div>
-              <p>{reply.body}</p>
-              <div class="thread-meta">
-                <span>{reply.author} · {reply.role}</span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </article>
-
-    <aside class="side-stack">
-      <section class="side-panel">
-        <h2>Thread score</h2>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <VoteButton client:load score={thread.score} label={thread.title} />
-          <strong style="font-size:30px;">{thread.score}</strong>
-        </div>
-      </section>
-      <section class="side-panel">
-        <h2>Why this matters</h2>
-        <p>First-hand threads like this become the searchable edge of Growth Circuit.</p>
-      </section>
-    </aside>
-  </section>
+  <AnnouncementHold
+    eyebrow="Coming later"
+    title="The public question archive is hidden for launch."
+    description="This page still exists in the scaffold, but the announcement is focused on NYC supper club applications first."
+  />
 </BaseLayout>
