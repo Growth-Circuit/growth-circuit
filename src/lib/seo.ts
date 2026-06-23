@@ -12,7 +12,8 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: "Growth Circuit",
     url: siteUrl,
-    description: "A NYC supper club for marketing engineers who bring their own builds.",
+    description:
+      "An intimate, invite-only community for Marketing Engineers based in New York City or nearby.",
     foundingDate: "2026",
     slogan: "Bring Your Own Build",
     founder: [

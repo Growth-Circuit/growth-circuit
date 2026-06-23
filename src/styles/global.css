@@ -504,6 +504,38 @@ svg {
   line-height: 1.55;
 }
 
+.principle-list {
+  margin-top: 24px;
+}
+
+.principle-list ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.principle-list li {
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+.founder-note,
+.principle-list p:not(.eyebrow) {
+  margin-top: 18px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.founder-note a,
+.principle-list a {
+  color: var(--matcha);
+  font-weight: 760;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--matcha-rgb), 0.46);
+  text-underline-offset: 4px;
+}
+
 .announcement-hold {
   min-height: 58vh;
   padding-bottom: 90px;

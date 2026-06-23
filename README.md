@@ -1,11 +1,11 @@
 # Growth Circuit
 
-A lightweight public forum and NYC supper club application layer for Growth Circuit.
+A lightweight announcement site and application layer for Growth Circuit.
 
 The product shape is:
 
-- Public, SEO-friendly forum pages for marketing engineer questions, builds, tags, and BYOB challenges.
-- Open NYC supper club application flow with no login required.
+- Invite-only NYC community application flow with no login required.
+- Hidden scaffolding for future public forum pages, builds, tags, and BYOB challenges.
 - Optional email/password authentication through Supabase Auth for later forum posting.
 - Supabase-backed persistence when credentials are configured, with local preview mode when they are not.
 
@@ -25,7 +25,7 @@ The product shape is:
 - Wire the forum to Supabase for real thread posting, replies, voting, tags, and profiles.
 - Add moderation tools for reports, hidden posts, and trusted users.
 - Add Search Console, analytics, and production sitemap validation.
-- Replace seed forum content with real launch threads, builds, and BYOB challenges.
+- Open the global community layer with real launch threads, builds, and BYOB challenges.
 
 ## Stack
 
@@ -68,7 +68,7 @@ Without Supabase values, the application form runs in preview mode and does not 
 
 ```text
 http://localhost:4321/auth/callback
-https://growthcircuit.co/auth/callback
+https://growthcircuit.club/auth/callback
 ```
 
 Current title, company, location, specialty, LinkedIn URL, and build context are collected as self-reported application fields. LinkedIn OIDC can be added later, but it is not required for the current flow.
@@ -86,15 +86,10 @@ Required fields:
 - `current_company`
 - `location`
 - `proud_build`
-- `build_interest`
-- `speciality_dish`
 
 Optional fields:
 
-- `specialty`
-- `video_url`
 - `referral_source`
-- `consent_to_promotional_clips`
 
 ## Build
 

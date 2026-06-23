@@ -96,13 +96,13 @@ export default function ApplicationForm() {
       <div className="application-card-head">
         <div>
           <p className="eyebrow">Application</p>
-          <h2 id="apply-title">Apply for the NYC supper club</h2>
+          <h2 id="apply-title">Apply to join the NYC community</h2>
         </div>
-        <span className="pill">12 seats</span>
+        <span className="pill">Invite-only</span>
       </div>
 
       <div className="form-note">
-        We will use this only to review and follow up on your supper club application.
+        We will use this only to review and follow up on your Growth Circuit application.
       </div>
 
       {!isSupabaseConfigured && (
