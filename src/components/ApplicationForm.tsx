@@ -1,7 +1,13 @@
 import { CheckCircle2, Loader2, Send } from "lucide-react";
 import { useState } from "react";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import type { ApplicationPayload, ApplicationResult } from "@/lib/application";
+import {
+  APPLICATION_TEXT_LIMITS,
+  normalizeApplication,
+  validateApplication,
+  type ApplicationPayload,
+  type ApplicationResult,
+} from "@/lib/application";
 
 type FormState = ApplicationPayload;
 
@@ -33,37 +39,56 @@ export default function ApplicationForm() {
   function updateField(field: keyof FormState, value: string | boolean) {
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
+    setMessage("");
   }
 
   async function submitApplication(event: { preventDefault: () => void }) {
     event.preventDefault();
-    setStatus("submitting");
     setMessage("");
 
-    const response = await fetch("/api/applications", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(form),
-    });
+    const payload = normalizeApplication(form);
+    const localFieldErrors = validateApplication(payload);
 
-    const result = (await response.json()) as ApplicationResult;
-
-    if (!result.ok) {
+    if (Object.keys(localFieldErrors).length > 0) {
+      setForm(payload);
       setStatus("error");
-      setMessage(result.error);
-      setFieldErrors(result.fieldErrors || {});
+      setFieldErrors(localFieldErrors);
+      setMessage("Please fix the highlighted fields before submitting.");
       return;
     }
 
-    setStatus("success");
-    setFieldErrors({});
-    setMessage(
-      result.mode === "preview"
-        ? "Application preview captured. Add Supabase env vars to store submissions."
-        : "Application submitted. Lucy and Nick will review it soon.",
-    );
+    setForm(payload);
+    setStatus("submitting");
+
+    try {
+      const response = await fetch("/api/applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = (await response.json()) as ApplicationResult;
+
+      if (!result.ok) {
+        setStatus("error");
+        setMessage(result.error);
+        setFieldErrors(result.fieldErrors || {});
+        return;
+      }
+
+      setStatus("success");
+      setFieldErrors({});
+      setMessage(
+        result.mode === "preview"
+          ? "Application preview captured. Add Supabase env vars to store submissions."
+          : "Application submitted. Lucy and Nick will review it soon.",
+      );
+    } catch {
+      setStatus("error");
+      setMessage("Something interrupted the submission. Please try again.");
+    }
   }
 
   return (
@@ -94,6 +119,7 @@ export default function ApplicationForm() {
               value={form.full_name}
               onChange={(event) => updateField("full_name", event.target.value)}
               placeholder="Your name"
+              aria-invalid={Boolean(fieldErrors.full_name)}
             />
           </Field>
           <Field label="Email" error={fieldErrors.email}>
@@ -103,6 +129,7 @@ export default function ApplicationForm() {
               value={form.email}
               onChange={(event) => updateField("email", event.target.value)}
               placeholder="you@example.com"
+              aria-invalid={Boolean(fieldErrors.email)}
             />
           </Field>
         </div>
@@ -113,6 +140,7 @@ export default function ApplicationForm() {
             value={form.linkedin_url}
             onChange={(event) => updateField("linkedin_url", event.target.value)}
             placeholder="https://www.linkedin.com/in/..."
+            aria-invalid={Boolean(fieldErrors.linkedin_url)}
           />
         </Field>
 
@@ -123,6 +151,7 @@ export default function ApplicationForm() {
               value={form.current_title}
               onChange={(event) => updateField("current_title", event.target.value)}
               placeholder="Growth, lifecycle, analytics, engineering..."
+              aria-invalid={Boolean(fieldErrors.current_title)}
             />
           </Field>
           <Field label="Current company" error={fieldErrors.current_company}>
@@ -131,6 +160,7 @@ export default function ApplicationForm() {
               value={form.current_company}
               onChange={(event) => updateField("current_company", event.target.value)}
               placeholder="Company or independent"
+              aria-invalid={Boolean(fieldErrors.current_company)}
             />
           </Field>
         </div>
@@ -142,6 +172,7 @@ export default function ApplicationForm() {
               value={form.location}
               onChange={(event) => updateField("location", event.target.value)}
               placeholder="New York, NY"
+              aria-invalid={Boolean(fieldErrors.location)}
             />
           </Field>
           <Field label="Specialty">
@@ -158,8 +189,17 @@ export default function ApplicationForm() {
           <textarea
             name="proud_build"
             value={form.proud_build}
+            maxLength={APPLICATION_TEXT_LIMITS.proud_build.max}
             onChange={(event) => updateField("proud_build", event.target.value)}
             placeholder="Concrete beats polished. What did you make, and what changed because of it?"
+            aria-describedby="proud-build-count"
+            aria-invalid={Boolean(fieldErrors.proud_build)}
+          />
+          <CharacterCount
+            id="proud-build-count"
+            count={form.proud_build.length}
+            min={APPLICATION_TEXT_LIMITS.proud_build.min}
+            max={APPLICATION_TEXT_LIMITS.proud_build.max}
           />
         </Field>
 
@@ -167,8 +207,17 @@ export default function ApplicationForm() {
           <textarea
             name="build_interest"
             value={form.build_interest}
+            maxLength={APPLICATION_TEXT_LIMITS.build_interest.max}
             onChange={(event) => updateField("build_interest", event.target.value)}
             placeholder="Something you have explored, or something you want to explore with the room."
+            aria-describedby="build-interest-count"
+            aria-invalid={Boolean(fieldErrors.build_interest)}
+          />
+          <CharacterCount
+            id="build-interest-count"
+            count={form.build_interest.length}
+            min={APPLICATION_TEXT_LIMITS.build_interest.min}
+            max={APPLICATION_TEXT_LIMITS.build_interest.max}
           />
         </Field>
 
@@ -203,6 +252,7 @@ export default function ApplicationForm() {
             value={form.speciality_dish}
             onChange={(event) => updateField("speciality_dish", event.target.value)}
             placeholder="The most important field"
+            aria-invalid={Boolean(fieldErrors.speciality_dish)}
           />
         </Field>
 
@@ -228,6 +278,20 @@ export default function ApplicationForm() {
         )}
       </form>
     </section>
+  );
+}
+
+function CharacterCount({ id, count, min, max }: { id: string; count: number; min: number; max: number }) {
+  const remainingMinimum = Math.max(min - count, 0);
+  const isComplete = remainingMinimum === 0;
+
+  return (
+    <div className={`character-count ${isComplete ? "complete" : ""}`} id={id}>
+      <span>
+        {count.toLocaleString()} / {max.toLocaleString()} characters
+      </span>
+      <span>{isComplete ? "Minimum met" : `${remainingMinimum} more to meet the minimum`}</span>
+    </div>
   );
 }
 

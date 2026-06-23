@@ -21,6 +21,17 @@ export type ApplicationResult =
   | { ok: true; id?: string; mode: "preview" | "supabase" }
   | { ok: false; error: string; fieldErrors?: Partial<Record<keyof ApplicationPayload, string>> };
 
+export const APPLICATION_TEXT_LIMITS = {
+  proud_build: {
+    min: 24,
+    max: 2400,
+  },
+  build_interest: {
+    min: 16,
+    max: 2400,
+  },
+} as const;
+
 const textFields: Array<keyof Omit<ApplicationPayload, "consent_to_promotional_clips">> = [
   "full_name",
   "email",
@@ -73,11 +84,11 @@ export function validateApplication(payload: ApplicationPayload) {
   if (!payload.current_title) fieldErrors.current_title = "Current title is required.";
   if (!payload.current_company) fieldErrors.current_company = "Current company is required.";
   if (!payload.location) fieldErrors.location = "Location is required.";
-  if (!payload.proud_build || payload.proud_build.length < 24) {
-    fieldErrors.proud_build = "Share at least one concrete build.";
+  if (!payload.proud_build || payload.proud_build.length < APPLICATION_TEXT_LIMITS.proud_build.min) {
+    fieldErrors.proud_build = `Share at least ${APPLICATION_TEXT_LIMITS.proud_build.min} characters about one concrete build.`;
   }
-  if (!payload.build_interest || payload.build_interest.length < 16) {
-    fieldErrors.build_interest = "Share one theme, tool, or problem.";
+  if (!payload.build_interest || payload.build_interest.length < APPLICATION_TEXT_LIMITS.build_interest.min) {
+    fieldErrors.build_interest = `Share at least ${APPLICATION_TEXT_LIMITS.build_interest.min} characters about one theme, tool, or problem.`;
   }
   if (!payload.speciality_dish) fieldErrors.speciality_dish = "The dish question is mandatory.";
 
