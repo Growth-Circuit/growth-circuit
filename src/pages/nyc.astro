@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import AnnouncementFaq from "@/components/AnnouncementFaq.astro";
-import ApplicationForm from "@/components/ApplicationForm";
 ---
 
 <BaseLayout
@@ -19,7 +18,7 @@ import ApplicationForm from "@/components/ApplicationForm";
         everyone builds around it, then the group meets to demo, discuss, and learn from each other.
       </p>
       <div class="hero-actions">
-        <a class="button matcha" href="#apply">Apply to join</a>
+        <a class="button matcha" href="/apply">Apply to join</a>
         <a class="button" href="/#global">Global community next</a>
       </div>
       <div class="ritual-list" aria-label="Community structure">
@@ -43,7 +42,20 @@ import ApplicationForm from "@/components/ApplicationForm";
       </div>
     </div>
 
-    <ApplicationForm client:load />
+    <aside class="side-panel cohort-card">
+      <p class="eyebrow">First cohort</p>
+      <h2>Applications are open.</h2>
+      <p>
+        We are accepting 12-15 Marketing Engineers in or near New York for the first three-meeting
+        cycle.
+      </p>
+      <div class="ritual-list" aria-label="First cohort details">
+        <div><strong>Size</strong><span>12-15 members</span></div>
+        <div><strong>Commitment</strong><span>Three meetings</span></div>
+        <div><strong>Location</strong><span>NYC or nearby</span></div>
+      </div>
+      <a class="button matcha" href="/apply">Apply to join</a>
+    </aside>
   </section>
 
   <AnnouncementFaq />

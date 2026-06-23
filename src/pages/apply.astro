@@ -1,0 +1,32 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ApplicationForm from "@/components/ApplicationForm";
+---
+
+<BaseLayout
+  title="Apply"
+  description="Apply to join Growth Circuit's first cohort-based NYC build club for Marketing Engineers."
+  path="/apply"
+>
+  <section class="shell apply-page">
+    <div class="apply-copy">
+      <p class="eyebrow">First cohort application</p>
+      <h1>Tell us what you build.</h1>
+      <p class="lead">
+        Growth Circuit is hand-picking 12-15 Marketing Engineers in or near New York for the first
+        three-meeting build club cohort.
+      </p>
+      <div class="ritual-list" aria-label="Application context">
+        <div><strong>Format</strong><span>One theme, everyone builds, then we meet</span></div>
+        <div><strong>Commitment</strong><span>Three meetings for the first cohort</span></div>
+        <div><strong>Selection</strong><span>Craft, range, curiosity, and energy</span></div>
+      </div>
+      <p class="apply-note">
+        Not in New York? The global community is still coming next. This application is only for
+        the NYC cohort.
+      </p>
+    </div>
+
+    <ApplicationForm client:load />
+  </section>
+</BaseLayout>

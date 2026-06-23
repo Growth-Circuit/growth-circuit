@@ -22,7 +22,7 @@ export default function AuthCallback() {
       }
 
       setMessage("Signed in. Sending you back.");
-      window.setTimeout(() => window.location.replace("/nyc#apply"), 500);
+      window.setTimeout(() => window.location.replace("/apply"), 500);
     }
 
     finishSignIn();

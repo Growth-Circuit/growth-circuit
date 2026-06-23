@@ -1332,6 +1332,31 @@ h1 {
   align-self: start;
 }
 
+.application-teaser {
+  display: grid;
+  gap: 14px;
+}
+
+.application-teaser h2,
+.cohort-card h2 {
+  margin-bottom: 0;
+  font-size: 26px;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.application-teaser p:not(.eyebrow),
+.cohort-card p:not(.eyebrow) {
+  margin-bottom: 0;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+
+.application-teaser .button,
+.cohort-card .button {
+  width: fit-content;
+}
+
 .application-card-head {
   display: flex;
   align-items: start;
@@ -1421,6 +1446,17 @@ h1 {
   max-width: 760px;
 }
 
+.cohort-card {
+  align-self: start;
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.cohort-card .ritual-list {
+  margin-top: 0;
+}
+
 .ritual-list {
   display: grid;
   gap: 1px;
@@ -1435,6 +1471,37 @@ h1 {
   gap: 18px;
   background: rgba(247, 248, 243, 0.055);
   padding: 14px 16px;
+}
+
+.apply-page {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(340px, 0.58fr);
+  gap: 28px;
+  align-items: start;
+  padding: 50px 0 86px;
+}
+
+.apply-copy {
+  position: sticky;
+  top: 104px;
+  min-width: 0;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 34px;
+}
+
+.apply-copy h1 {
+  max-width: 760px;
+}
+
+.apply-copy .ritual-list {
+  margin-top: 26px;
+}
+
+.apply-note {
+  max-width: 680px;
+  margin: 22px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
 }
 
 .footer {
@@ -1521,6 +1588,14 @@ h1 {
 
   .submit-composer .composer-flow {
     grid-template-columns: 1fr;
+  }
+
+  .apply-page {
+    grid-template-columns: 1fr;
+  }
+
+  .apply-copy {
+    position: static;
   }
 
   .draft-preview {

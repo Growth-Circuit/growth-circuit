@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import AnnouncementFaq from "@/components/AnnouncementFaq.astro";
-import ApplicationForm from "@/components/ApplicationForm";
 ---
 
 <BaseLayout
@@ -25,7 +24,7 @@ import ApplicationForm from "@/components/ApplicationForm";
           <a href="#global">Global community</a>
         </nav>
         <div class="header-actions">
-          <a class="button matcha" href="#apply">Apply for NYC</a>
+          <a class="button matcha" href="/apply">Apply for NYC</a>
         </div>
       </div>
     </header>
@@ -42,7 +41,7 @@ import ApplicationForm from "@/components/ApplicationForm";
           around it, then the group meets to demo, discuss, and learn from each other.
         </p>
         <div class="hero-actions">
-          <a class="button matcha" href="#apply">Apply for NYC</a>
+          <a class="button matcha" href="/apply">Apply for NYC</a>
           <a class="button button--ghost-light" href="#global">Not in NYC?</a>
         </div>
       </div>
@@ -92,7 +91,15 @@ import ApplicationForm from "@/components/ApplicationForm";
     </div>
 
     <aside class="side-stack">
-      <ApplicationForm client:load />
+      <section class="side-panel application-teaser">
+        <p class="eyebrow">Applications</p>
+        <h2>First cohort: 12-15 members.</h2>
+        <p>
+          Tell us who you are, what you have built, and how you found Growth Circuit. We will use
+          it only to review and follow up.
+        </p>
+        <a class="button matcha" href="/apply">Apply to join</a>
+      </section>
       <section class="side-panel" id="global">
         <p class="eyebrow">Global next</p>
         <h2>Not in New York?</h2>

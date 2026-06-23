@@ -15,7 +15,7 @@ The product shape is:
 - Supabase project has been created and `supabase/schema.sql` has been run.
 - Local `.env` contains the Supabase project URL and publishable key.
 - `.env.example` is kept as a safe placeholder file and should not contain real keys.
-- `/nyc` applications are open to anyone and write to `public.applications`.
+- `/apply` applications are open to anyone and write to `public.applications`.
 - `/auth` exists for future email/password account flows, but applications do not require login.
 
 ## Still To Do
