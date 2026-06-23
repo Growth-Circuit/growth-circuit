@@ -20,10 +20,7 @@ The product shape is:
 
 ## Still To Do
 
-- Deploy to Cloudflare and set production environment variables.
-- Add the production domain and Supabase redirect URLs once the domain is final.
 - Build an admin review view for Lucy and Nick: list, search, notes, status, accept, waitlist, decline.
-- Add spam protection to applications with Cloudflare Turnstile or rate limiting.
 - Send a notification email or Slack message when a new application is submitted.
 - Wire the forum to Supabase for real thread posting, replies, voting, tags, and profiles.
 - Add moderation tools for reports, hidden posts, and trusted users.
