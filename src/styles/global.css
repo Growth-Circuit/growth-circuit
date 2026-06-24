@@ -385,19 +385,20 @@ svg {
 
 .ink-ledger {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr;
   border-top: 1px solid rgba(247, 248, 243, 0.14);
   border-bottom: 1px solid rgba(247, 248, 243, 0.14);
 }
 
 .ink-stat {
-  min-height: 118px;
-  border-right: 1px solid rgba(247, 248, 243, 0.14);
+  min-height: auto;
+  border-bottom: 1px solid rgba(247, 248, 243, 0.14);
+  border-right: 0;
   padding: 24px 28px 26px;
 }
 
 .ink-stat:last-child {
-  border-right: 0;
+  border-bottom: 0;
 }
 
 .ink-stat strong {
@@ -482,7 +483,7 @@ svg {
 }
 
 .announcement-grid {
-  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 0.62fr);
+  grid-template-columns: 1fr;
   padding-top: 30px;
 }
 
@@ -564,7 +565,7 @@ svg {
 
 .faq-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 14px;
 }
 
@@ -706,7 +707,7 @@ h1 {
 
 .current-challenge-band {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.34fr);
+  grid-template-columns: 1fr;
   gap: 1px;
   margin-bottom: 38px;
   border: 1px solid var(--line);
@@ -758,7 +759,8 @@ h1 {
   gap: 1px;
   min-height: 100%;
   margin: 0;
-  border-left: 1px solid rgba(247, 248, 243, 0.14);
+  border-top: 1px solid rgba(247, 248, 243, 0.14);
+  border-left: 0;
   background: rgba(247, 248, 243, 0.14);
 }
 
@@ -789,7 +791,7 @@ h1 {
 
 .page-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: 1fr;
   gap: 28px;
   align-items: start;
   padding: 18px 0 70px;
@@ -986,7 +988,7 @@ h1 {
 
 .auth-page {
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(320px, 0.55fr);
+  grid-template-columns: 1fr;
   gap: 28px;
   align-items: start;
   padding: 54px 0 80px;
@@ -1046,7 +1048,7 @@ h1 {
 
 .thread-page {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: 1fr;
   gap: 28px;
   padding: 42px 0 80px;
 }
@@ -1101,7 +1103,7 @@ h1 {
 .build-grid,
 .challenge-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 14px;
 }
 
@@ -1175,7 +1177,7 @@ h1 {
 
 .submit-page {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: 1fr;
   gap: 28px;
   align-items: start;
   padding: 42px 0 80px;
@@ -1195,7 +1197,7 @@ h1 {
 }
 
 .submit-composer .composer-flow {
-  grid-template-columns: minmax(0, 0.72fr) minmax(280px, 0.42fr);
+  grid-template-columns: 1fr;
   align-items: start;
 }
 
@@ -1213,8 +1215,7 @@ h1 {
 }
 
 .draft-preview {
-  position: sticky;
-  top: 96px;
+  position: static;
   min-height: 260px;
   border: 1px solid var(--line);
   background: rgba(247, 248, 243, 0.055);
@@ -1294,7 +1295,7 @@ h1 {
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
@@ -1432,7 +1433,7 @@ h1 {
 
 .nyc-hero {
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(300px, 0.75fr);
+  grid-template-columns: 1fr;
   gap: 28px;
   padding: 50px 0 80px;
 }
@@ -1475,15 +1476,14 @@ h1 {
 
 .apply-page {
   display: grid;
-  grid-template-columns: minmax(0, 0.72fr) minmax(340px, 0.58fr);
+  grid-template-columns: 1fr;
   gap: 28px;
   align-items: start;
   padding: 50px 0 86px;
 }
 
 .apply-copy {
-  position: sticky;
-  top: 104px;
+  position: static;
   min-width: 0;
   border-bottom: 1px solid var(--line);
   padding-bottom: 34px;
@@ -1551,15 +1551,7 @@ h1 {
   }
 
   .ink-ledger {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .ink-stat:nth-child(2) {
-    border-right: 0;
-  }
-
-  .ink-stat:nth-child(-n + 2) {
-    border-bottom: 1px solid rgba(247, 248, 243, 0.14);
+    grid-template-columns: 1fr;
   }
 
   .ink-ticker {
