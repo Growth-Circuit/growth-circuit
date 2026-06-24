@@ -385,20 +385,20 @@ svg {
 
 .ink-ledger {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(4, 1fr);
   border-top: 1px solid rgba(247, 248, 243, 0.14);
   border-bottom: 1px solid rgba(247, 248, 243, 0.14);
 }
 
 .ink-stat {
-  min-height: auto;
-  border-bottom: 1px solid rgba(247, 248, 243, 0.14);
-  border-right: 0;
+  min-height: 118px;
+  border-right: 1px solid rgba(247, 248, 243, 0.14);
+  border-bottom: 0;
   padding: 24px 28px 26px;
 }
 
 .ink-stat:last-child {
-  border-bottom: 0;
+  border-right: 0;
 }
 
 .ink-stat strong {
@@ -1551,7 +1551,15 @@ h1 {
   }
 
   .ink-ledger {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ink-stat:nth-child(2) {
+    border-right: 0;
+  }
+
+  .ink-stat:nth-child(-n + 2) {
+    border-bottom: 1px solid rgba(247, 248, 243, 0.14);
   }
 
   .ink-ticker {
