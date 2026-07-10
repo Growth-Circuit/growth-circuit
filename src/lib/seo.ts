@@ -12,7 +12,7 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: "Growth Circuit",
     url: siteUrl,
-    description: "A cohort-based build club for Marketing Engineers in New York City or nearby.",
+    description: "A close-knit community for Marketing Engineers based in New York City.",
     foundingDate: "2026",
     slogan: "Bring Your Own Build",
     founder: [

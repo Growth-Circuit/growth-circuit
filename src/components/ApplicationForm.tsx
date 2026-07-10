@@ -98,11 +98,12 @@ export default function ApplicationForm() {
           <p className="eyebrow">Application</p>
           <h2 id="apply-title">Apply to join the first cohort</h2>
         </div>
-        <span className="pill">12-15 members</span>
+        <span className="pill">8 people</span>
       </div>
 
       <div className="form-note">
-        We will use this only to review and follow up on your Growth Circuit application.
+        Tell us who you are, what you have built, and how you found Growth Circuit. We will use
+        this only to review and follow up.
       </div>
 
       {!isSupabaseConfigured && (
