@@ -1,5 +1,5 @@
-import { CheckCircle2, Loader2, Send } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, CheckCircle2, Loader2, Send } from "lucide-react";
+import { useEffect, useState } from "react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   APPLICATION_TEXT_LIMITS,
@@ -10,14 +10,15 @@ import {
 } from "@/lib/application";
 
 type FormState = ApplicationPayload;
+type ApplicationPath = "nyc" | "global";
 
 const blankForm: FormState = {
   full_name: "",
   email: "",
   linkedin_url: "",
-  current_title: "",
-  current_company: "",
-  location: "",
+  current_title: "Inferred from LinkedIn profile.",
+  current_company: "Inferred from LinkedIn profile.",
+  location: "New York City",
   specialty: "",
   proud_build: "",
   build_interest: "Not collected in the announcement form.",
@@ -31,10 +32,25 @@ const blankForm: FormState = {
 };
 
 export default function ApplicationForm() {
+  const [path, setPath] = useState<ApplicationPath | null>(null);
   const [form, setForm] = useState<FormState>(blankForm);
+  const [waitlist, setWaitlist] = useState({ full_name: "", email: "" });
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ApplicationPayload, string>>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("path") === "global") {
+      setPath("global");
+    }
+  }, []);
+
+  function choosePath(nextPath: ApplicationPath) {
+    setPath(nextPath);
+    setStatus("idle");
+    setMessage("");
+    setFieldErrors({});
+  }
 
   function updateField(field: keyof FormState, value: string | boolean) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -63,12 +79,9 @@ export default function ApplicationForm() {
     try {
       const response = await fetch("/api/applications", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const result = (await response.json()) as ApplicationResult;
 
       if (!result.ok) {
@@ -83,7 +96,45 @@ export default function ApplicationForm() {
       setMessage(
         result.mode === "preview"
           ? "Application preview captured. Add Supabase env vars to store submissions."
-          : "Application submitted. Lucy and Nick will review it soon.",
+          : "Application received. Lucy and Nick read every application themselves. You’ll hear from us soon.",
+      );
+    } catch {
+      setStatus("error");
+      setMessage("Something interrupted the submission. Please try again.");
+    }
+  }
+
+  async function submitWaitlist(event: { preventDefault: () => void }) {
+    event.preventDefault();
+    setMessage("");
+
+    if (!waitlist.full_name.trim() || !waitlist.email.includes("@")) {
+      setStatus("error");
+      setMessage("Add your name and a valid email to join the waitlist.");
+      return;
+    }
+
+    setStatus("submitting");
+
+    try {
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(waitlist),
+      });
+      const result = (await response.json()) as { ok: boolean; error?: string; mode?: string };
+
+      if (!result.ok) {
+        setStatus("error");
+        setMessage(result.error || "We could not add you to the waitlist. Please try again.");
+        return;
+      }
+
+      setStatus("success");
+      setMessage(
+        result.mode === "preview"
+          ? "Waitlist preview captured. Add Supabase env vars to store submissions."
+          : "You’re on the list. We’ll be in touch when a global cohort gets close to launching near you.",
       );
     } catch {
       setStatus("error");
@@ -95,132 +146,160 @@ export default function ApplicationForm() {
     <section className="composer application-card" id="apply" aria-labelledby="apply-title">
       <div className="application-card-head">
         <div>
-          <p className="eyebrow">Application</p>
-          <h2 id="apply-title">Apply to join the first cohort</h2>
+          <p className="eyebrow">Your path</p>
+          <h2 id="apply-title">
+            {path === "nyc" ? "Apply for New York" : path === "global" ? "Join the global waitlist" : "Do you live in New York City?"}
+          </h2>
         </div>
-        <span className="pill">8 people</span>
+        {path === "nyc" && <span className="pill">8 spots</span>}
       </div>
 
-      <div className="form-note">
-        Tell us who you are, what you have built, and how you found Growth Circuit. We will use
-        this only to review and follow up.
-      </div>
-
-      {!isSupabaseConfigured && (
-        <div className="form-note">
-          Preview mode: submissions validate locally and call the API, but are not persisted until Supabase env vars are set.
+      {path === null && (
+        <div className="path-choice" aria-label="Choose your application path">
+          <button className="path-card" type="button" onClick={() => choosePath("nyc")}>
+            <span>Yes</span>
+            <strong>New York, in person</strong>
+            <small>Apply for the first cohort, starting November 2026.</small>
+          </button>
+          <button className="path-card path-card--global" type="button" onClick={() => choosePath("global")}>
+            <span>No</span>
+            <strong>Somewhere else</strong>
+            <small>Join the global waitlist with your name and email.</small>
+          </button>
         </div>
       )}
 
-      <form onSubmit={submitApplication}>
-        <div className="form-grid">
-          <Field label="Name" error={fieldErrors.full_name}>
-            <input
-              name="full_name"
-              value={form.full_name}
-              onChange={(event) => updateField("full_name", event.target.value)}
-              placeholder="Your name"
-              aria-invalid={Boolean(fieldErrors.full_name)}
-            />
-          </Field>
-          <Field label="Email" error={fieldErrors.email}>
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={(event) => updateField("email", event.target.value)}
-              placeholder="you@example.com"
-              aria-invalid={Boolean(fieldErrors.email)}
-            />
-          </Field>
-        </div>
+      {path === "global" && (
+        <>
+          <p className="form-intro">
+            Leave your name and email. We’ll reach out when a cohort opens in your area. No noise until then.
+          </p>
+          <form onSubmit={submitWaitlist}>
+            <Field label="Name">
+              <input
+                name="full_name"
+                value={waitlist.full_name}
+                onChange={(event) => setWaitlist((current) => ({ ...current, full_name: event.target.value }))}
+                placeholder="Your name"
+              />
+            </Field>
+            <Field label="Email">
+              <input
+                name="email"
+                type="email"
+                value={waitlist.email}
+                onChange={(event) => setWaitlist((current) => ({ ...current, email: event.target.value }))}
+                placeholder="you@example.com"
+              />
+            </Field>
+            <button className="button matcha" type="submit" disabled={status === "submitting"}>
+              {status === "submitting" ? <Loader2 size={17} aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}
+              Join the global waitlist
+            </button>
+          </form>
+        </>
+      )}
 
-        <Field label="LinkedIn profile" error={fieldErrors.linkedin_url}>
-          <input
-            name="linkedin_url"
-            value={form.linkedin_url}
-            onChange={(event) => updateField("linkedin_url", event.target.value)}
-            placeholder="https://www.linkedin.com/in/..."
-            aria-invalid={Boolean(fieldErrors.linkedin_url)}
-          />
-        </Field>
+      {path === "nyc" && (
+        <>
+          <p className="form-intro">
+            Your LinkedIn covers the basics. We want to know what you’ve built. One concrete example
+            is worth more than a career summary.
+          </p>
 
-        <div className="form-grid">
-          <Field label="Company" error={fieldErrors.current_company}>
-            <input
-              name="current_company"
-              value={form.current_company}
-              onChange={(event) => updateField("current_company", event.target.value)}
-              placeholder="Company or independent"
-              aria-invalid={Boolean(fieldErrors.current_company)}
-            />
-          </Field>
-          <Field label="Title" error={fieldErrors.current_title}>
-            <input
-              name="current_title"
-              value={form.current_title}
-              onChange={(event) => updateField("current_title", event.target.value)}
-              placeholder="Growth, lifecycle, analytics, engineering..."
-              aria-invalid={Boolean(fieldErrors.current_title)}
-            />
-          </Field>
-        </div>
+          {!isSupabaseConfigured && (
+            <div className="form-note">
+              Preview mode: submissions validate here but are not stored until Supabase is connected.
+            </div>
+          )}
 
-        <Field label="Location" error={fieldErrors.location}>
-          <input
-            name="location"
-            value={form.location}
-            onChange={(event) => updateField("location", event.target.value)}
-            placeholder="New York, NY"
-            aria-invalid={Boolean(fieldErrors.location)}
-          />
-        </Field>
+          <form onSubmit={submitApplication}>
+            <div className="form-grid">
+              <Field label="Name" error={fieldErrors.full_name}>
+                <input
+                  name="full_name"
+                  value={form.full_name}
+                  onChange={(event) => updateField("full_name", event.target.value)}
+                  placeholder="Your name"
+                  aria-invalid={Boolean(fieldErrors.full_name)}
+                />
+              </Field>
+              <Field label="Email" error={fieldErrors.email}>
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(event) => updateField("email", event.target.value)}
+                  placeholder="you@example.com"
+                  aria-invalid={Boolean(fieldErrors.email)}
+                />
+              </Field>
+            </div>
 
-        <Field label="Something you've built" error={fieldErrors.proud_build}>
-          <textarea
-            name="proud_build"
-            value={form.proud_build}
-            maxLength={APPLICATION_TEXT_LIMITS.proud_build.max}
-            onChange={(event) => updateField("proud_build", event.target.value)}
-            placeholder="Concrete beats polished. What did you make, and what changed because of it?"
-            aria-describedby="proud-build-count"
-            aria-invalid={Boolean(fieldErrors.proud_build)}
-          />
-          <CharacterCount
-            id="proud-build-count"
-            count={form.proud_build.length}
-            min={APPLICATION_TEXT_LIMITS.proud_build.min}
-            max={APPLICATION_TEXT_LIMITS.proud_build.max}
-          />
-        </Field>
+            <Field label="LinkedIn profile" error={fieldErrors.linkedin_url}>
+              <input
+                name="linkedin_url"
+                value={form.linkedin_url}
+                onChange={(event) => updateField("linkedin_url", event.target.value)}
+                placeholder="https://www.linkedin.com/in/..."
+                aria-invalid={Boolean(fieldErrors.linkedin_url)}
+              />
+            </Field>
 
-        <Field label="How did you hear about us?">
-          <select
-            name="referral_source"
-            value={form.referral_source}
-            onChange={(event) => updateField("referral_source", event.target.value)}
-          >
-            <option value="">Choose one</option>
-            <option value="lucy-linkedin">Lucy Hoyle's LinkedIn</option>
-            <option value="nick-linkedin">Nick Lafferty's LinkedIn</option>
-            <option value="friend">A friend recommended me</option>
-            <option value="linkedin">LinkedIn</option>
-            <option value="other">Other</option>
-          </select>
-        </Field>
+            <Field label="Show us what you’ve built" error={fieldErrors.proud_build}>
+              <textarea
+                name="proud_build"
+                value={form.proud_build}
+                maxLength={APPLICATION_TEXT_LIMITS.proud_build.max}
+                onChange={(event) => updateField("proud_build", event.target.value)}
+                placeholder="Paste a video demo, live link, portfolio, or tell us about the work you’re most proud of."
+                aria-describedby="proud-build-count"
+                aria-invalid={Boolean(fieldErrors.proud_build)}
+              />
+              <CharacterCount
+                id="proud-build-count"
+                count={form.proud_build.length}
+                min={APPLICATION_TEXT_LIMITS.proud_build.min}
+                max={APPLICATION_TEXT_LIMITS.proud_build.max}
+              />
+            </Field>
 
-        <button className="button matcha" type="submit" disabled={status === "submitting"}>
-          {status === "submitting" ? <Loader2 size={17} aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}
-          Submit application
+            <Field label="How did you hear about us?">
+              <select
+                name="referral_source"
+                value={form.referral_source}
+                onChange={(event) => updateField("referral_source", event.target.value)}
+              >
+                <option value="">Choose one</option>
+                <option value="lucy-linkedin">Lucy Hoyle’s LinkedIn</option>
+                <option value="nick-linkedin">Nick Lafferty’s LinkedIn</option>
+                <option value="friend">A friend recommended me</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="other">Other</option>
+              </select>
+            </Field>
+
+            <button className="button matcha" type="submit" disabled={status === "submitting"}>
+              {status === "submitting" ? <Loader2 size={17} aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}
+              Submit application
+            </button>
+          </form>
+        </>
+      )}
+
+      {path !== null && status !== "success" && (
+        <button className="path-back" type="button" onClick={() => choosePath(path === "nyc" ? "global" : "nyc")}>
+          <ArrowLeft size={15} aria-hidden="true" />
+          {path === "nyc" ? "I’m outside New York" : "I live in New York"}
         </button>
+      )}
 
-        {message && (
-          <div className={`status-message ${status}`} role="status">
-            {status === "success" && <CheckCircle2 size={18} aria-hidden="true" />}
-            {message}
-          </div>
-        )}
-      </form>
+      {message && (
+        <div className={`status-message ${status}`} role="status">
+          {status === "success" && <CheckCircle2 size={18} aria-hidden="true" />}
+          {message}
+        </div>
+      )}
     </section>
   );
 }
@@ -231,10 +310,8 @@ function CharacterCount({ id, count, min, max }: { id: string; count: number; mi
 
   return (
     <div className={`character-count ${isComplete ? "complete" : ""}`} id={id}>
-      <span>
-        {count.toLocaleString()} / {max.toLocaleString()} characters
-      </span>
-      <span>{isComplete ? "Minimum met" : `${remainingMinimum} more to meet the minimum`}</span>
+      <span>{count.toLocaleString()} / {max.toLocaleString()} characters</span>
+      <span>{isComplete ? "Ready to share" : `${remainingMinimum} more to get started`}</span>
     </div>
   );
 }

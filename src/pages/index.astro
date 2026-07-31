@@ -7,7 +7,7 @@ import AnnouncementFaq from "@/components/AnnouncementFaq.astro";
   title="Growth Circuit"
   description="A close-knit community for Marketing Engineers based in New York City."
   hideHeader
-  bodyClass="home-ink-page"
+  bodyClass="sky-page home-sky-page"
 >
   <div class="ink-hero">
     <div class="ink-hero__grid" aria-hidden="true"></div>
@@ -19,10 +19,6 @@ import AnnouncementFaq from "@/components/AnnouncementFaq.astro";
           <span class="brand-mark brand-mark--light">GC</span>
           <span class="brand-word">Growth Circuit</span>
         </a>
-        <nav class="ink-links" aria-label="Primary navigation">
-          <a href="/nyc">NYC community</a>
-          <a href="#global">Global community</a>
-        </nav>
         <div class="header-actions">
           <a class="button matcha" href="/apply">Apply now</a>
         </div>
@@ -30,88 +26,89 @@ import AnnouncementFaq from "@/components/AnnouncementFaq.astro";
     </header>
 
     <section class="shell ink-section">
+      <div class="sky-orbit sky-orbit--one" aria-hidden="true"></div>
+      <div class="sky-orbit sky-orbit--two" aria-hidden="true"></div>
       <div class="ink-intro">
-        <p class="eyebrow eyebrow--live">NYC Marketing Engineer community</p>
+        <p class="eyebrow eyebrow--live">New York, November 2026</p>
         <h1 class="ink-title">
-          Don't build alone. Connect with people who <span>actually understand what you do.</span>
+          Build with people who <span>get what you do.</span>
         </h1>
         <p class="ink-lead">
-          Growth Circuit is a close-knit community for Marketing Engineers based in New York City.
-          Think book club, but for building.
+          Growth Circuit is a close-knit community for marketing engineers who want to share their work, sharpen the
+          craft, and make ambitious things together.
         </p>
         <div class="hero-actions">
-          <a class="button matcha" href="/apply">Apply now</a>
+          <a class="button matcha" href="/apply">Apply for New York</a>
+          <a class="text-link" href="/apply?path=global">Join the global waitlist <span>↗</span></a>
         </div>
       </div>
 
       <div class="ink-ledger" aria-label="Community overview">
-        <div class="ink-stat"><strong>8</strong><span>people per cohort</span></div>
-        <div class="ink-stat"><strong>NYC</strong><span>first cohort</span></div>
-        <div class="ink-stat"><strong>4</strong><span>themes</span></div>
-        <div class="ink-stat ink-stat--accent"><strong>Sept-Dec</strong><span>2026</span></div>
+        <div class="ink-stat"><strong>8</strong><span>openings</span></div>
+        <div class="ink-stat"><strong>10</strong><span>people in the room</span></div>
+        <div class="ink-stat"><strong>NYC</strong><span>in person</span></div>
+        <div class="ink-stat ink-stat--accent"><strong>Nov</strong><span>starting 2026</span></div>
       </div>
 
-      <a class="ink-ticker" href="#global">
-        <span class="ink-ticker__tag">Outside NYC?</span>
-        <span class="ink-ticker__rule" aria-hidden="true"></span>
-        <span class="ink-ticker__title">We are testing the format in New York, then opening a global community for everyone else.</span>
-        <span class="ink-ticker__cta">Read note -></span>
-      </a>
+      <div class="sky-whisper" aria-hidden="true">Build in good company</div>
     </section>
   </div>
 
-  <section class="shell page-grid home-forum-grid announcement-grid">
-    <div class="side-panel announcement-panel">
+  <section class="shell flow-section">
+    <div class="flow-copy">
       <p class="eyebrow">How it works</p>
-      <h2>One theme per month. Bring your own build. Iterate together.</h2>
-      <p>
-        Everyone gets a chance to shape the room, build in public, and learn from people solving
-        similar problems from different angles.
-      </p>
-      <div class="ritual-list" aria-label="Community structure">
-        <div><strong>Plan</strong><span>Everyone has a chance to set the monthly theme, whether it is a problem, tool, or question for the group to explore.</span></div>
-        <div><strong>Build</strong><span>Bring your ideas and MVPs, plus snacks, to our monthly meetups.</span></div>
-        <div><strong>Meet</strong><span>Get together for demos, workshops, and good food.</span></div>
+      <h2>
+        <span>One theme per month.</span>
+        <span>Bring your own build.</span>
+        <span>Iterate together.</span>
+      </h2>
+    </div>
+    <div class="format-details" aria-label="Growth Circuit format">
+      <div>
+        <strong>Plan</strong>
+        <span>Every month we'll vote on the theme, whether it’s a problem, tool, or question for the group to explore.</span>
       </div>
-      <div class="principle-list" aria-label="Format principles">
-        <p class="eyebrow">Guiding principles</p>
-        <p>
-          The most interesting work in marketing right now is happening in isolation. We wanted to
-          create a space for builders to find their people.
-        </p>
-        <ul>
-          <li>No lectures or panels.</li>
-          <li>Everyone contributes: ideas, food, vibes.</li>
-          <li>There is no such thing as a stupid question.</li>
-          <li>Rotating hosts. This is your community as much as ours!</li>
-        </ul>
+      <div>
+        <strong>Build</strong>
+        <span>Bring your ideas, MVPs, and half-baked projects.</span>
       </div>
-      <div class="founder-note">
-        Founded by <a href="https://www.linkedin.com/in/lucy-hoyle-883381138" target="_blank" rel="noopener noreferrer">Lucy Hoyle</a> (Carta)
-        and <a href="https://www.linkedin.com/in/nicklafferty/" target="_blank" rel="noopener noreferrer">Nick Lafferty</a> (Profound).
+      <div>
+        <strong>Meet</strong>
+        <span>Get together for demos, good times, good food.</span>
       </div>
     </div>
+  </section>
 
-    <aside class="side-stack">
-      <section class="side-panel application-teaser">
-        <p class="eyebrow">Applications</p>
-        <h2>First cohort: 8 people, 4 themes, Sept-Dec 2026.</h2>
-        <p>
-          We are selective because quality beats quantity. If you identify as a marketing
-          engineer, this community was made for you.
-        </p>
-        <a class="button matcha" href="/apply">Apply now</a>
-      </section>
-      <section class="side-panel" id="global">
-        <p class="eyebrow">Global next</p>
-        <h2>What about people outside New York?</h2>
-        <p>
-          Our end goal is to build a global community for marketing engineers who want to swap
-          ideas, notes, and demos, both in person and online. Our first cohort will be focused in
-          NYC so we can test out the format and iterate before scaling.
-        </p>
-      </section>
-    </aside>
+  <section class="show-us" aria-labelledby="show-us-title">
+    <div class="shell show-us__inner">
+      <p class="eyebrow">Applications open</p>
+      <h2 id="show-us-title">Show us what you’ve built.</h2>
+      <p class="show-us__lead">
+        One concrete example of your work. A video demo, a live link, a portfolio,
+        a GitHub repo, or the build you’re most proud of.
+      </p>
+      <a class="button matcha" href="/apply">Start your application</a>
+    </div>
+  </section>
+
+  <section class="shell principles-section">
+    <div class="principles-copy">
+      <p class="eyebrow">Kept small on purpose</p>
+      <h2>Vibe Check</h2>
+    </div>
+    <div class="principles-list">
+      <p>No lectures or panels.</p>
+      <p>Everyone contributes: ideas, food, and vibes.</p>
+      <p>No such thing as a stupid question.</p>
+      <p>Rotating hosts. This is your community too.</p>
+    </div>
+    <p class="home-founder-note">
+      Founded by
+      <a href="https://www.linkedin.com/in/lucy-hoyle-883381138" target="_blank" rel="noopener noreferrer">Lucy Hoyle</a>
+      at Carta and
+      <a href="https://www.linkedin.com/in/nicklafferty/" target="_blank" rel="noopener noreferrer">Nick Lafferty</a>
+      at Profound.
+    </p>
   </section>
 
   <AnnouncementFaq />

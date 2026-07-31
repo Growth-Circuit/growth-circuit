@@ -23,7 +23,7 @@ export type ApplicationResult =
 
 export const APPLICATION_TEXT_LIMITS = {
   proud_build: {
-    min: 24,
+    min: 8,
     max: 2400,
   },
 } as const;
@@ -79,11 +79,8 @@ export function validateApplication(payload: ApplicationPayload) {
   ) {
     fieldErrors.linkedin_url = "Use a LinkedIn profile URL.";
   }
-  if (!payload.current_company) fieldErrors.current_company = "Company is required.";
-  if (!payload.current_title) fieldErrors.current_title = "Title is required.";
-  if (!payload.location) fieldErrors.location = "Location is required.";
   if (!payload.proud_build || payload.proud_build.length < APPLICATION_TEXT_LIMITS.proud_build.min) {
-    fieldErrors.proud_build = `Share at least ${APPLICATION_TEXT_LIMITS.proud_build.min} characters about one concrete build.`;
+    fieldErrors.proud_build = "Share a link or a few words about one concrete build.";
   }
 
   return fieldErrors;

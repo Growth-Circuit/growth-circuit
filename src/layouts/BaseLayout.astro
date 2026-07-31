@@ -25,6 +25,7 @@ const {
 const fullTitle = title === "Growth Circuit" ? title : `${title} | Growth Circuit`;
 const canonicalUrl = canonical(path);
 const allJsonLd = [organizationJsonLd(), ...jsonLd];
+const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
 ---
 
 <!doctype html>
@@ -32,7 +33,7 @@ const allJsonLd = [organizationJsonLd(), ...jsonLd];
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#101418" />
+    <meta name="theme-color" content={themeColor} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>{fullTitle}</title>
@@ -56,10 +57,6 @@ const allJsonLd = [organizationJsonLd(), ...jsonLd];
               <span class="brand-mark">GC</span>
               <span>Growth Circuit</span>
             </a>
-            <nav class="nav-links" aria-label="Primary navigation">
-              <a href="/nyc">NYC Community</a>
-              <a href="/#global">Global Community</a>
-            </nav>
             <div class="header-actions">
               <a class="button matcha" href="/apply">Apply</a>
             </div>

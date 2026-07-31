@@ -116,6 +116,13 @@ create table public.applications (
   created_at timestamptz not null default now()
 );
 
+create table public.global_waitlist (
+  id uuid primary key default gen_random_uuid(),
+  full_name text not null,
+  email text unique not null,
+  created_at timestamptz not null default now()
+);
+
 create table public.reports (
   id uuid primary key default gen_random_uuid(),
   reporter_id uuid references public.profiles(id) on delete set null,
@@ -139,6 +146,7 @@ alter table public.votes enable row level security;
 alter table public.challenges enable row level security;
 alter table public.build_submissions enable row level security;
 alter table public.applications enable row level security;
+alter table public.global_waitlist enable row level security;
 alter table public.reports enable row level security;
 
 create policy "Profiles are public" on public.profiles for select using (true);
@@ -176,6 +184,8 @@ create policy "Build submissions are public" on public.build_submissions
   for select using (true);
 
 create policy "Anyone can apply" on public.applications
+  for insert with check (true);
+create policy "Anyone can join global waitlist" on public.global_waitlist
   for insert with check (true);
 
 create policy "Authenticated users create reports" on public.reports
