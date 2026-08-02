@@ -1826,10 +1826,15 @@ h1 {
   z-index: 1;
 }
 
+.home-sky-page .ink-nav,
+.home-sky-page .ink-section {
+  width: min(1480px, calc(100% - 64px));
+}
+
 .home-sky-page .ink-intro {
   position: relative;
   z-index: 2;
-  max-width: 910px;
+  max-width: none;
   padding-top: clamp(78px, 10vw, 130px);
 }
 
@@ -1843,15 +1848,16 @@ h1 {
 }
 
 .home-sky-page .ink-title {
-  max-width: 880px;
+  max-width: 1480px;
   color: var(--sky-ink);
-  font-size: clamp(64px, 8vw, 112px);
+  font-size: clamp(64px, 7vw, 112px);
   font-weight: 780;
   line-height: 0.9;
   letter-spacing: -0.065em;
 }
 
 .home-sky-page .ink-title span {
+  display: block;
   color: var(--sky-green);
   text-decoration: none;
 }
@@ -1860,6 +1866,10 @@ h1 {
   max-width: 610px;
   color: rgba(23, 49, 58, 0.76);
   font-size: 20px;
+}
+
+.home-sky-page .ink-lead__closing {
+  display: block;
 }
 
 .home-sky-page .hero-actions {
@@ -2402,6 +2412,11 @@ h1 {
 }
 
 @media (max-width: 920px) {
+  .home-sky-page .ink-nav,
+  .home-sky-page .ink-section {
+    width: min(1180px, calc(100% - 32px));
+  }
+
   .home-sky-page .ink-hero {
     min-height: 760px;
   }
@@ -2462,6 +2477,10 @@ h1 {
 
   .home-sky-page .ink-title {
     font-size: 54px;
+  }
+
+  .home-sky-page .ink-lead__closing {
+    display: inline;
   }
 
   .home-sky-page .hero-actions {
