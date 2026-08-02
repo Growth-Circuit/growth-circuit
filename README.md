@@ -86,9 +86,6 @@ Required fields:
 - `current_company`
 - `location`
 - `proud_build`
-
-Optional fields:
-
 - `referral_source`
 
 ## Build

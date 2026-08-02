@@ -26,6 +26,10 @@ export const APPLICATION_TEXT_LIMITS = {
     min: 8,
     max: 2400,
   },
+  referral_source: {
+    min: 5,
+    max: 240,
+  },
 } as const;
 
 const textFields: Array<keyof Omit<ApplicationPayload, "consent_to_promotional_clips">> = [
@@ -58,6 +62,8 @@ export function normalizeApplication(input: unknown): ApplicationPayload {
     payload[field] = clean(source[field]) as never;
   }
 
+  payload.referral_source = payload.referral_source.slice(0, APPLICATION_TEXT_LIMITS.referral_source.max);
+
   payload.consent_to_promotional_clips = Boolean(source.consent_to_promotional_clips);
   payload.build_interest ||= "Not collected in the announcement form.";
   payload.speciality_dish ||= "Not collected in the announcement form.";
@@ -81,6 +87,9 @@ export function validateApplication(payload: ApplicationPayload) {
   }
   if (!payload.proud_build || payload.proud_build.length < APPLICATION_TEXT_LIMITS.proud_build.min) {
     fieldErrors.proud_build = "Share a link or a few words about one concrete build.";
+  }
+  if (!payload.referral_source || payload.referral_source.length < APPLICATION_TEXT_LIMITS.referral_source.min) {
+    fieldErrors.referral_source = "Write at least 5 characters.";
   }
 
   return fieldErrors;

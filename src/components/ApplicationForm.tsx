@@ -151,7 +151,7 @@ export default function ApplicationForm() {
             {path === "nyc" ? "Apply for New York" : path === "global" ? "Join the global waitlist" : "Do you live in New York City?"}
           </h2>
         </div>
-        {path === "nyc" && <span className="pill">8 spots</span>}
+        {path === "nyc" && <span className="pill">8 spaces</span>}
       </div>
 
       {path === null && (
@@ -159,7 +159,7 @@ export default function ApplicationForm() {
           <button className="path-card" type="button" onClick={() => choosePath("nyc")}>
             <span>Yes</span>
             <strong>New York, in person</strong>
-            <small>Apply for the first cohort, starting November 2026.</small>
+            <small>Apply for the first cohort, starting September 2026.</small>
           </button>
           <button className="path-card path-card--global" type="button" onClick={() => choosePath("global")}>
             <span>No</span>
@@ -203,8 +203,8 @@ export default function ApplicationForm() {
       {path === "nyc" && (
         <>
           <p className="form-intro">
-            Your LinkedIn covers the basics. We want to know what you’ve built. One concrete example
-            is worth more than a career summary.
+            Your LinkedIn covers the basics. Show off the build you’re most proud of. Upload a video demo,
+            a live link, or a GitHub repo.
           </p>
 
           {!isSupabaseConfigured && (
@@ -246,13 +246,13 @@ export default function ApplicationForm() {
               />
             </Field>
 
-            <Field label="Show us what you’ve built" error={fieldErrors.proud_build}>
+            <Field label="Show off the build you’re most proud of" error={fieldErrors.proud_build}>
               <textarea
                 name="proud_build"
                 value={form.proud_build}
                 maxLength={APPLICATION_TEXT_LIMITS.proud_build.max}
                 onChange={(event) => updateField("proud_build", event.target.value)}
-                placeholder="Paste a video demo, live link, portfolio, or tell us about the work you’re most proud of."
+                placeholder="Upload a video demo, a live link, or a GitHub repo."
                 aria-describedby="proud-build-count"
                 aria-invalid={Boolean(fieldErrors.proud_build)}
               />
@@ -264,19 +264,17 @@ export default function ApplicationForm() {
               />
             </Field>
 
-            <Field label="How did you hear about us?">
-              <select
+            <Field label="How did you hear about us?" error={fieldErrors.referral_source}>
+              <input
                 name="referral_source"
                 value={form.referral_source}
+                required
+                minLength={APPLICATION_TEXT_LIMITS.referral_source.min}
+                maxLength={APPLICATION_TEXT_LIMITS.referral_source.max}
                 onChange={(event) => updateField("referral_source", event.target.value)}
-              >
-                <option value="">Choose one</option>
-                <option value="lucy-linkedin">Lucy Hoyle’s LinkedIn</option>
-                <option value="nick-linkedin">Nick Lafferty’s LinkedIn</option>
-                <option value="friend">A friend recommended me</option>
-                <option value="linkedin">LinkedIn</option>
-                <option value="other">Other</option>
-              </select>
+                placeholder="Tell us where you found Growth Circuit"
+                aria-invalid={Boolean(fieldErrors.referral_source)}
+              />
             </Field>
 
             <button className="button matcha" type="submit" disabled={status === "submitting"}>
