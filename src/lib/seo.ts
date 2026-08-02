@@ -24,7 +24,7 @@ export function organizationJsonLd() {
       {
         "@type": "Person",
         name: "Lucy Hoyle",
-        sameAs: "https://www.linkedin.com/in/lucy-hoyle-883381138",
+        sameAs: "https://www.linkedin.com/in/lucyjanehoyle",
       },
     ],
   };
