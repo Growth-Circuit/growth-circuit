@@ -1,22 +1,21 @@
 import { env as cloudflareEnv } from "cloudflare:workers";
+import type { SubmissionMetadata } from "@/lib/submission";
 
 type NotionRuntimeEnv = {
   NOTION_API_TOKEN?: string;
   NOTION_DATABASE_ID?: string;
 };
 
-export type NotionSubmission = {
-  fullName: string;
+export type NotionSubmission = SubmissionMetadata & {
   email: string;
-  applicationType: "New York application" | "Global waitlist";
   linkedInProfile?: string;
   proudBuild?: string;
   referralSource?: string;
-  location?: string;
 };
 
 type NotionPageResult = {
   id?: string;
+  url?: string;
 };
 
 const NOTION_API_VERSION = "2022-06-28";

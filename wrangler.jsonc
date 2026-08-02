@@ -12,6 +12,7 @@
   ],
   "vars": {
     "PUBLIC_SITE_URL": "https://growthcircuit.club",
+    "BUZZ_WEBHOOK_URL": "https://growthcircuit.communities.buzz.xyz/hooks/a0208f7a-99e1-4de6-82a2-80d238a241d8",
     "NOTION_DATABASE_ID": "3b0b74c7ad9180aaa030e4214f064382",
     "PUBLIC_SUPABASE_URL": "https://twkvclxsynnbktppeozg.supabase.co",
     "PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_HtrWzzR4HB4Xu0rlSnLaXQ_mpKm0zun"

@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
-import { createNotionSubmission, isServerNotionConfigured } from "@/lib/notion-server";
+import { scheduleBuzzSubmissionNotification } from "@/lib/buzz-server";
+import { createNotionSubmission, isServerNotionConfigured, type NotionSubmission } from "@/lib/notion-server";
 
 export const prerender = false;
 
@@ -31,11 +32,17 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const page = await createNotionSubmission({
+    const submission: NotionSubmission = {
       fullName,
       email,
       applicationType: "Global waitlist",
       location: "Outside New York",
+    };
+    const page = await createNotionSubmission(submission);
+
+    scheduleBuzzSubmissionNotification({
+      ...submission,
+      notionUrl: page.url,
     });
 
     return json({ ok: true, id: page.id, mode: "notion" }, 201);
