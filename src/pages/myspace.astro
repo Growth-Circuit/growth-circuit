@@ -1,0 +1,250 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import "@/styles/myspace.css";
+
+const members = [
+  { name: "Lucy Hoyle", role: "Technical GTM", className: "friend-photo--lucy", initials: "LH" },
+  { name: "Nick Lafferty", role: "Head of Growth", className: "friend-photo--nick", initials: "NL" },
+  { name: "Maya Chen", role: "Growth Analytics", className: "friend-photo--maya", initials: "MC" },
+  { name: "Sam Rivera", role: "Marketing Engineer", className: "friend-photo--sam", initials: "SR" },
+  { name: "Priya Raman", role: "Demand Gen", className: "friend-photo--priya", initials: "PR" },
+  { name: "Jordan Ellis", role: "Performance", className: "friend-photo--jordan", initials: "JE" },
+  { name: "Eli Park", role: "Lifecycle + Paid", className: "friend-photo--eli", initials: "EP" },
+  { name: "Nora Singh", role: "Growth Systems", className: "friend-photo--nora", initials: "NS" },
+  { name: "Ari Gold", role: "RevOps Engineer", className: "friend-photo--ari", initials: "AG" },
+  { name: "You?", role: "Join the circuit", className: "friend-photo--you", initials: "+1" },
+];
+
+const activity = [
+  {
+    author: "lucy_h",
+    date: "Jul 28, 2026 8:42 PM",
+    message: "Added the July challenge notes and seven source-of-truth builds.",
+    className: "comment-avatar--pink",
+    initials: "LH",
+  },
+  {
+    author: "sam_builds",
+    date: "Jul 27, 2026 11:03 PM",
+    message: "Shared a landing page QA agent with the group. Feedback welcome.",
+    className: "comment-avatar--green",
+    initials: "SR",
+  },
+  {
+    author: "maya_c",
+    date: "Jul 25, 2026 3:16 PM",
+    message: "Posted a question about tracking AI search referrals.",
+    className: "comment-avatar--blue",
+    initials: "MC",
+  },
+];
+---
+
+<BaseLayout
+  title="Growth Circuit's Profile"
+  description="Growth Circuit, a close-knit community for marketing engineers in New York City."
+  hideHeader
+  noindex
+  bodyClass="myspace-page"
+>
+  <div class="myspace-site">
+    <header class="ms-header">
+      <div class="ms-header__top">
+        <a class="ms-logo" href="/myspace" aria-label="Growthspace home">
+          <span>growth</span><strong>space</strong><sup>TM</sup>
+        </a>
+        <p>A place for builders</p>
+        <form class="ms-search" action="/questions" method="get">
+          <label for="site-search">Search:</label>
+          <input id="site-search" name="q" type="search" />
+          <button type="submit">Search</button>
+        </form>
+      </div>
+      <nav class="ms-nav" aria-label="Main navigation">
+        <a href="/myspace">Wiki Home</a>
+        <a href="#members">Members</a>
+        <a href="/builds">Builds</a>
+        <a href="/questions">Questions</a>
+        <a href="/challenges">Challenges</a>
+        <a href="#schedule">Calendar</a>
+        <a href="/submit">Post</a>
+      </nav>
+    </header>
+
+    <div class="ms-ad">
+      <span>★ NEXT MEETUP ★</span>
+      November 2026 in New York
+      <a href="#schedule">VIEW THE DETAILS</a>
+    </div>
+
+    <main class="ms-profile">
+      <section class="ms-left" aria-label="Profile details">
+        <div class="profile-card">
+          <h1>Growth Circuit</h1>
+          <div class="profile-card__identity">
+            <div class="profile-photo" role="img" aria-label="Growth Circuit profile picture">
+              <span class="profile-photo__stars" aria-hidden="true">✦ ✧ ✦</span>
+              <strong>GC</strong>
+              <small>est. NYC</small>
+            </div>
+            <div class="profile-basics">
+              <p>"build with people who get what you do &lt;3"</p>
+              <p>Marketing engineering community</p>
+              <p>New York + online</p>
+              <p class="online-now">Online Now!</p>
+            </div>
+          </div>
+          <p class="profile-login">Last updated: 7/30/2026</p>
+        </div>
+
+        <div class="contact-box">
+          <h2>Community Quick Links</h2>
+          <div class="contact-grid">
+            <a href="/submit"><span aria-hidden="true">✎</span> Post an update</a>
+            <a href="/questions"><span aria-hidden="true">💬</span> Ask the group</a>
+            <a href="/builds"><span aria-hidden="true">↗</span> Browse builds</a>
+            <a href="/challenges"><span aria-hidden="true">★</span> Current challenge</a>
+          </div>
+        </div>
+
+        <section class="ms-module ms-module--orange wiki-nav">
+          <h2>Wiki Navigation</h2>
+          <nav aria-label="Wiki sections">
+            <a href="#start-here">Start here</a>
+            <a href="#challenge">Current challenge</a>
+            <a href="#schedule">Meetup schedule</a>
+            <a href="#knowledge">Knowledge base</a>
+            <a href="#members">Member directory</a>
+            <a href="#activity">Recent activity</a>
+          </nav>
+        </section>
+
+        <section class="ms-module ms-module--left profile-details">
+          <h2>Community Details</h2>
+          <dl>
+            <div>
+              <dt>Format:</dt>
+              <dd>Monthly build club</dd>
+            </div>
+            <div>
+              <dt>Members:</dt>
+              <dd>10 people</dd>
+            </div>
+            <div>
+              <dt>Location:</dt>
+              <dd>New York City</dd>
+            </div>
+            <div><dt>Here for:</dt><dd>Building, learning, sharing</dd></div>
+          </dl>
+        </section>
+
+        <section class="ms-module ms-module--left">
+          <h2>Community URL</h2>
+          <div class="url-box">growthcircuit.community/myspace</div>
+        </section>
+      </section>
+
+      <section class="ms-right" aria-label="Profile content">
+        <div class="marquee-box" id="start-here">
+          <span aria-hidden="true">✦</span>
+          <strong>GROWTH CIRCUIT COMMUNITY WIKI</strong>
+          <span aria-hidden="true">✦</span>
+        </div>
+
+        <section class="wiki-welcome">
+          <h2>Welcome back, builder!</h2>
+          <p>
+            This is the home base for Growth Circuit. Find the current theme, meeting notes, community builds, useful
+            resources, and everyone in the group.
+          </p>
+          <div class="wiki-actions">
+            <a class="classic-button" href="/submit">Post an update</a>
+            <a href="/questions">Ask a question</a>
+          </div>
+        </section>
+
+        <section class="wiki-panel challenge-panel" id="challenge">
+          <h2>Current Challenge</h2>
+          <div class="challenge-card">
+            <div>
+              <span class="status-pill">July 2026</span>
+              <h3>Build a source of truth for AI search visibility</h3>
+              <p>Monitor where your brand appears, what changed, and which actions are worth taking.</p>
+            </div>
+            <div class="challenge-meta">
+              <p><strong>7</strong> submissions</p>
+              <p>Theme set by Lucy</p>
+              <a href="/challenges">Open challenge →</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="wiki-panel" id="schedule">
+          <h2>Upcoming Schedule</h2>
+          <div class="schedule-list">
+            <div><time>Aug 03</time><p><strong>Challenge kickoff</strong><span>Vote on the next build theme</span></p><b>Online</b></div>
+            <div><time>Aug 16</time><p><strong>Build check-in</strong><span>Share progress and unblock each other</span></p><b>Slack</b></div>
+            <div><time>Nov 12</time><p><strong>NYC demo night</strong><span>Projects, good food, and show-and-tell</span></p><b>NYC</b></div>
+          </div>
+        </section>
+
+        <section class="wiki-panel knowledge" id="knowledge">
+          <h2>Knowledge Base</h2>
+          <div class="knowledge-grid">
+            <a href="/builds"><strong>Build Library</strong><span>Demos, repos, and works in progress</span><em>12 pages</em></a>
+            <a href="/questions"><strong>Questions + Answers</strong><span>Practical help from the group</span><em>24 threads</em></a>
+            <a href="/challenges"><strong>Challenge Archive</strong><span>Prompts, notes, and submissions</span><em>2 themes</em></a>
+            <a href="/submit"><strong>Templates + Playbooks</strong><span>Reusable ways of working</span><em>8 docs</em></a>
+          </div>
+        </section>
+
+        <section class="friends" id="members">
+          <h2>Growth Circuit's Top 10</h2>
+          <p class="friend-count">Everyone is in the Top 10. No ranking, no drama.</p>
+          <div class="friend-grid">
+            {members.map((friend) => (
+              <a class="friend" href={friend.name === "You?" ? "/apply" : "#activity"}>
+                <strong>{friend.name}</strong>
+                <span class:list={["friend-photo", friend.className]}>{friend.initials}</span>
+                <small>{friend.role}</small>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section class="comments" id="activity">
+          <h2>Recent Community Activity</h2>
+          <div class="comment-toolbar">
+            <span>Latest updates from the circuit</span>
+            <a class="classic-button classic-button--small" href="/submit">Post Update</a>
+          </div>
+          <div class="comment-list">
+            {activity.map((comment) => (
+              <article class="comment">
+                <div class="comment-user">
+                  <a href="#activity">{comment.author}</a>
+                  <span class:list={["comment-avatar", comment.className]}>{comment.initials}</span>
+                </div>
+                <div class="comment-body">
+                  <time>{comment.date}</time>
+                  <p>{comment.message}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="ms-footer">
+      <p>
+        <a href="/myspace">Wiki Home</a> |
+        <a href="#members">Members</a> |
+        <a href="/builds">Builds</a> |
+        <a href="/questions">Questions</a>
+      </p>
+      <p>©2004–2026 Growth Circuit. Made for the people who make the internet.</p>
+      <p class="best-viewed">Best viewed at 1024 × 768 with 16-bit color</p>
+    </footer>
+  </div>
+</BaseLayout>
