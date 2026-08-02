@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { normalizeApplication, validateApplication, type ApplicationResult } from "@/lib/application";
-import { createServerSupabaseClient, isServerSupabaseConfigured } from "@/lib/supabase-server";
+import { createNotionSubmission, isServerNotionConfigured } from "@/lib/notion-server";
 
 export const prerender = false;
 
@@ -29,42 +29,23 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, error: "Please fix the highlighted fields.", fieldErrors }, 422);
   }
 
-  if (!isServerSupabaseConfigured()) {
-    return json({ ok: true, mode: "preview" }, 200);
+  if (!isServerNotionConfigured()) {
+    return json({ ok: false, error: "Applications are temporarily unavailable. Please try again shortly." }, 503);
   }
 
-  const supabase = createServerSupabaseClient();
-
-  if (!supabase) {
-    return json({ ok: false, error: "Supabase is not configured." }, 500);
-  }
-
-  const { data, error } = await supabase
-    .from("applications")
-    .insert({
-      user_id: payload.user_id || null,
-      full_name: payload.full_name,
+  try {
+    const page = await createNotionSubmission({
+      fullName: payload.full_name,
       email: payload.email,
-      linkedin_url: payload.linkedin_url,
-      auth_provider: payload.auth_provider,
-      profile_source: payload.profile_source,
-      current_title: payload.current_title,
-      current_company: payload.current_company,
-      location: payload.location,
-      specialty: payload.specialty,
-      proud_build: payload.proud_build,
-      build_interest: payload.build_interest,
-      referral_source: payload.referral_source,
-      video_url: payload.video_url,
-      speciality_dish: payload.speciality_dish,
-      consent_to_promotional_clips: payload.consent_to_promotional_clips,
-    })
-    .select("id")
-    .single();
+      applicationType: "New York application",
+      linkedInProfile: payload.linkedin_url,
+      proudBuild: payload.proud_build,
+      referralSource: payload.referral_source,
+      location: "New York City",
+    });
 
-  if (error) {
-    return json({ ok: false, error: error.message }, 500);
+    return json({ ok: true, id: page.id, mode: "notion" }, 201);
+  } catch {
+    return json({ ok: false, error: "We could not save your application. Please try again." }, 502);
   }
-
-  return json({ ok: true, id: data?.id, mode: "supabase" }, 201);
 };
