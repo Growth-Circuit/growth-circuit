@@ -39,8 +39,10 @@ export default function ApplicationForm() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("path") === "global") {
-      setPath("global");
+    const requestedPath = new URLSearchParams(window.location.search).get("path");
+
+    if (requestedPath === "nyc" || requestedPath === "global") {
+      setPath(requestedPath);
     }
   }, []);
 
@@ -126,7 +128,7 @@ export default function ApplicationForm() {
       }
 
       setStatus("success");
-      setMessage("You’re on the list. We’ll be in touch when a global cohort gets close to launching near you.");
+      setMessage("You’re on the list. We’ll be in touch when we launch a global cohort.");
     } catch {
       setStatus("error");
       setMessage("Something interrupted the submission. Please try again.");
