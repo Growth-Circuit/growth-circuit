@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { normalizeApplication, validateApplication, type ApplicationResult } from "@/lib/application";
-import { createNotionSubmission, isServerNotionConfigured } from "@/lib/notion-server";
+import { scheduleBuzzSubmissionNotification } from "@/lib/buzz-server";
+import { createNotionSubmission, isServerNotionConfigured, type NotionSubmission } from "@/lib/notion-server";
 
 export const prerender = false;
 
@@ -34,7 +35,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const page = await createNotionSubmission({
+    const submission: NotionSubmission = {
       fullName: payload.full_name,
       email: payload.email,
       applicationType: "New York application",
@@ -42,6 +43,12 @@ export const POST: APIRoute = async ({ request }) => {
       proudBuild: payload.proud_build,
       referralSource: payload.referral_source,
       location: "New York City",
+    };
+    const page = await createNotionSubmission(submission);
+
+    scheduleBuzzSubmissionNotification({
+      ...submission,
+      notionUrl: page.url,
     });
 
     return json({ ok: true, id: page.id, mode: "notion" }, 201);
