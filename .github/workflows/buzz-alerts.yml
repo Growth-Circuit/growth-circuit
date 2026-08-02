@@ -1,0 +1,141 @@
+name: Buzz alerts
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - closed
+  workflow_run:
+    workflows:
+      - PR build
+      - Deploy production
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  notify-pr:
+    name: Notify Buzz about PR
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Send PR update
+        env:
+          BUZZ_WEBHOOK_SECRET: ${{ secrets.BUZZ_WEBHOOK_SECRET }}
+          BUZZ_WEBHOOK_URL: ${{ vars.BUZZ_WEBHOOK_URL }}
+          PR_ACTION: ${{ github.event.action }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          case "$PR_ACTION" in
+            opened)
+              icon="🔔"
+              title="PR #${PR_NUMBER} opened"
+              ;;
+            reopened)
+              icon="🔄"
+              title="PR #${PR_NUMBER} reopened"
+              ;;
+            ready_for_review)
+              icon="👀"
+              title="PR #${PR_NUMBER} ready for review"
+              ;;
+            closed)
+              if [ "$PR_MERGED" = "true" ]; then
+                icon="✅"
+                title="PR #${PR_NUMBER} merged"
+              else
+                icon="⏹️"
+                title="PR #${PR_NUMBER} closed"
+              fi
+              ;;
+          esac
+
+          if [ "$PR_DRAFT" = "true" ]; then
+            review_state="Draft"
+          else
+            review_state="Ready for review"
+          fi
+
+          payload=$(jq -n \
+            --arg icon "$icon" \
+            --arg title "$title" \
+            --arg summary "${PR_TITLE} by ${PR_AUTHOR} · ${review_state}" \
+            --arg url "$PR_URL" \
+            '{icon: $icon, title: $title, summary: $summary, url: $url}')
+
+          curl --fail --silent --show-error \
+            --retry 3 \
+            --header "Content-Type: application/json" \
+            --header "X-Webhook-Secret: ${BUZZ_WEBHOOK_SECRET}" \
+            --data "$payload" \
+            "$BUZZ_WEBHOOK_URL"
+
+  notify-workflow:
+    name: Notify Buzz about workflow
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Send workflow update
+        env:
+          BUZZ_WEBHOOK_SECRET: ${{ secrets.BUZZ_WEBHOOK_SECRET }}
+          BUZZ_WEBHOOK_URL: ${{ vars.BUZZ_WEBHOOK_URL }}
+          RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_EVENT: ${{ github.event.workflow_run.event }}
+          RUN_NAME: ${{ github.event.workflow_run.name }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          short_sha=${RUN_SHA:0:7}
+
+          if [ "$RUN_NAME" = "Deploy production" ]; then
+            if [ "$RUN_CONCLUSION" = "success" ]; then
+              icon="🚀"
+              title="Production deployed"
+              summary="growthcircuit.club is live from ${short_sha}"
+            else
+              icon="🚨"
+              title="Production deploy ${RUN_CONCLUSION}"
+              summary="Deploy from ${short_sha} on ${RUN_BRANCH} needs attention"
+            fi
+          else
+            if [ "$RUN_CONCLUSION" = "success" ]; then
+              icon="✅"
+              title="PR build passed"
+            else
+              icon="❌"
+              title="PR build ${RUN_CONCLUSION}"
+            fi
+            summary="${RUN_BRANCH} at ${short_sha} · triggered by ${RUN_EVENT}"
+          fi
+
+          payload=$(jq -n \
+            --arg icon "$icon" \
+            --arg title "$title" \
+            --arg summary "$summary" \
+            --arg url "$RUN_URL" \
+            '{icon: $icon, title: $title, summary: $summary, url: $url}')
+
+          curl --fail --silent --show-error \
+            --retry 3 \
+            --header "Content-Type: application/json" \
+            --header "X-Webhook-Secret: ${BUZZ_WEBHOOK_SECRET}" \
+            --data "$payload" \
+            "$BUZZ_WEBHOOK_URL"
