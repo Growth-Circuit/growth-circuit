@@ -92,7 +92,7 @@ export default function ApplicationForm() {
 
       setStatus("success");
       setFieldErrors({});
-      setMessage("Application received. Lucy and Nick read every application themselves. You’ll hear from us soon.");
+      setMessage("Submission received! We'll be in touch soon");
     } catch {
       setStatus("error");
       setMessage("Something interrupted the submission. Please try again.");
