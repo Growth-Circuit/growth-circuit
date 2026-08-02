@@ -10,6 +10,8 @@ interface ImportMetaEnv {
   readonly PUBLIC_SUPABASE_URL?: string;
   readonly PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
   readonly SUPABASE_SERVICE_ROLE_KEY?: string;
+  readonly NOTION_API_TOKEN?: string;
+  readonly NOTION_DATABASE_ID?: string;
   readonly TURNSTILE_SECRET_KEY?: string;
 }
 

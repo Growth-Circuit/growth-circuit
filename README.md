@@ -7,7 +7,8 @@ The product shape is:
 - Invite-only NYC build club application flow with no login required.
 - Hidden scaffolding for future public forum pages, builds, tags, and BYOB challenges.
 - Optional email/password authentication through Supabase Auth for later forum posting.
-- Supabase-backed persistence when credentials are configured, with local preview mode when they are not.
+- Notion-backed application and waitlist persistence.
+- Optional Supabase authentication for later community features.
 
 ## Current Status
 
@@ -15,7 +16,7 @@ The product shape is:
 - Supabase project has been created and `supabase/schema.sql` has been run.
 - Local `.env` contains the Supabase project URL and publishable key.
 - `.env.example` is kept as a safe placeholder file and should not contain real keys.
-- `/apply` applications are open to anyone and write to `public.applications`.
+- `/apply` applications and global waitlist entries are open to anyone and write to the Growth Circuit Applications database in Notion.
 - `/auth` exists for future email/password account flows, but applications do not require login.
 
 ## Still To Do
@@ -53,10 +54,21 @@ PUBLIC_SITE_URL="http://localhost:4321"
 PUBLIC_SUPABASE_URL=""
 PUBLIC_SUPABASE_PUBLISHABLE_KEY=""
 SUPABASE_SERVICE_ROLE_KEY=""
+NOTION_API_TOKEN=""
+NOTION_DATABASE_ID="3b0b74c7ad9180aaa030e4214f064382"
 TURNSTILE_SECRET_KEY=""
 ```
 
-Without Supabase values, the application form runs in preview mode and does not persist submissions. Keep real values in `.env`, not `.env.example`.
+The application APIs require `NOTION_API_TOKEN` and `NOTION_DATABASE_ID`. Keep the token in `.env` locally and as a Cloudflare secret in production. Supabase values remain optional for the parked authentication features.
+
+## Notion Setup
+
+1. Create a Notion internal integration with permission to insert content.
+2. Connect the Growth Circuit Applications database to that integration.
+3. Store the integration token as `NOTION_API_TOKEN`.
+4. Set `NOTION_DATABASE_ID` to the full-page database ID.
+
+The database properties used by the site are `Name`, `Application status`, `Email`, `Application type`, `LinkedIn profile`, `Proud build`, `Referral source`, `Location`, and `Submitted at`.
 
 ## Supabase Setup
 
@@ -87,6 +99,8 @@ Required fields:
 - `location`
 - `proud_build`
 - `referral_source`
+
+`POST /api/waitlist` stores global waitlist entries in the same Notion database with `Application type` set to `Global waitlist`.
 
 ## Build
 

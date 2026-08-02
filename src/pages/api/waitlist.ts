@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
-import { createServerSupabaseClient, isServerSupabaseConfigured } from "@/lib/supabase-server";
+import { createNotionSubmission, isServerNotionConfigured } from "@/lib/notion-server";
 
 export const prerender = false;
 
-function json(body: { ok: boolean; error?: string; mode?: "preview" | "supabase" }, status = 200) {
+function json(body: { ok: boolean; error?: string; id?: string; mode?: "notion" }, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "Content-Type": "application/json; charset=utf-8" },
@@ -26,25 +26,20 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, error: "Add your name and a valid email to join the waitlist." }, 422);
   }
 
-  if (!isServerSupabaseConfigured()) {
-    return json({ ok: true, mode: "preview" });
+  if (!isServerNotionConfigured()) {
+    return json({ ok: false, error: "The waitlist is temporarily unavailable. Please try again shortly." }, 503);
   }
 
-  const supabase = createServerSupabaseClient();
-  if (!supabase) {
-    return json({ ok: false, error: "Supabase is not configured." }, 500);
+  try {
+    const page = await createNotionSubmission({
+      fullName,
+      email,
+      applicationType: "Global waitlist",
+      location: "Outside New York",
+    });
+
+    return json({ ok: true, id: page.id, mode: "notion" }, 201);
+  } catch {
+    return json({ ok: false, error: "We could not add you to the waitlist. Please try again." }, 502);
   }
-
-  const { error } = await supabase
-    .from("global_waitlist")
-    .insert({ full_name: fullName, email });
-
-  if (error) {
-    if (error.code === "23505") {
-      return json({ ok: true, mode: "supabase" }, 200);
-    }
-    return json({ ok: false, error: error.message }, 500);
-  }
-
-  return json({ ok: true, mode: "supabase" }, 201);
 };

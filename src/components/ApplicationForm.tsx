@@ -1,6 +1,5 @@
 import { ArrowLeft, CheckCircle2, Loader2, Send } from "lucide-react";
 import { useEffect, useState } from "react";
-import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   APPLICATION_TEXT_LIMITS,
   normalizeApplication,
@@ -93,11 +92,7 @@ export default function ApplicationForm() {
 
       setStatus("success");
       setFieldErrors({});
-      setMessage(
-        result.mode === "preview"
-          ? "Application preview captured. Add Supabase env vars to store submissions."
-          : "Application received. Lucy and Nick read every application themselves. You’ll hear from us soon.",
-      );
+      setMessage("Application received. Lucy and Nick read every application themselves. You’ll hear from us soon.");
     } catch {
       setStatus("error");
       setMessage("Something interrupted the submission. Please try again.");
@@ -131,11 +126,7 @@ export default function ApplicationForm() {
       }
 
       setStatus("success");
-      setMessage(
-        result.mode === "preview"
-          ? "Waitlist preview captured. Add Supabase env vars to store submissions."
-          : "You’re on the list. We’ll be in touch when a global cohort gets close to launching near you.",
-      );
+      setMessage("You’re on the list. We’ll be in touch when a global cohort gets close to launching near you.");
     } catch {
       setStatus("error");
       setMessage("Something interrupted the submission. Please try again.");
@@ -206,12 +197,6 @@ export default function ApplicationForm() {
             Your LinkedIn covers the basics. Show off the build you’re most proud of. Upload a video demo,
             a live link, or a GitHub repo.
           </p>
-
-          {!isSupabaseConfigured && (
-            <div className="form-note">
-              Preview mode: submissions validate here but are not stored until Supabase is connected.
-            </div>
-          )}
 
           <form onSubmit={submitApplication}>
             <div className="form-grid">

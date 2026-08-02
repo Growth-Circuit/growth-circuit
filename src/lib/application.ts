@@ -18,7 +18,7 @@ export type ApplicationPayload = {
 };
 
 export type ApplicationResult =
-  | { ok: true; id?: string; mode: "preview" | "supabase" }
+  | { ok: true; id?: string; mode: "notion" }
   | { ok: false; error: string; fieldErrors?: Partial<Record<keyof ApplicationPayload, string>> };
 
 export const APPLICATION_TEXT_LIMITS = {
