@@ -1,9 +1,5 @@
 import { env as cloudflareEnv } from "cloudflare:workers";
 import type { SubmissionMetadata } from "@/lib/submission";
-export {
-  formatBuzzDisplayName,
-  formatBuzzSubmissionMessage,
-} from "@/lib/buzz-message";
 import { formatBuzzDisplayName } from "@/lib/buzz-message";
 
 type BuzzWebhookEnv = {
