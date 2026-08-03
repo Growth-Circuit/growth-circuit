@@ -57,9 +57,11 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
               <span class="brand-mark">GC</span>
               <span>Growth Circuit</span>
             </a>
-            <div class="header-actions">
-              <a class="button matcha" href="/apply">Apply</a>
-            </div>
+            {path !== "/apply" && (
+              <div class="header-actions">
+                <a class="button matcha" href="/apply">Apply</a>
+              </div>
+            )}
           </div>
         </header>
       )
