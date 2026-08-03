@@ -18,6 +18,11 @@ type NotionPageResult = {
   url: string;
 };
 
+type NotionCreatePageResponse = {
+  id?: string;
+  url?: string;
+};
+
 const NOTION_API_VERSION = "2022-06-28";
 const buildToken = import.meta.env.NOTION_API_TOKEN;
 const buildDatabaseId = import.meta.env.NOTION_DATABASE_ID;
@@ -100,11 +105,14 @@ export async function createNotionSubmission(
     throw new Error("NOTION_SUBMISSION_FAILED");
   }
 
-  const page = (await response.json()) as Partial<NotionPageResult>;
-  if (!page.id || !page.url) {
-    console.error("[notion] submission response did not include a page id and url");
+  const page = (await response.json()) as NotionCreatePageResponse;
+  if (!page.id) {
+    console.error("[notion] submission response did not include a page id");
     throw new Error("NOTION_SUBMISSION_INVALID_RESPONSE");
   }
 
-  return page as NotionPageResult;
+  return {
+    id: page.id,
+    url: page.url || `https://www.notion.so/${page.id.replaceAll("-", "")}`,
+  } satisfies NotionPageResult;
 }
