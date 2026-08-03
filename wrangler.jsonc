@@ -1,5 +1,6 @@
 {
   "name": "growth-circuit",
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-06-21",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
@@ -17,7 +18,41 @@
     "PUBLIC_SUPABASE_URL": "https://twkvclxsynnbktppeozg.supabase.co",
     "PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_HtrWzzR4HB4Xu0rlSnLaXQ_mpKm0zun"
   },
+  "kv_namespaces": [
+    {
+      "binding": "BUZZ_DELIVERY_LEDGER",
+      "id": "943b37dfb7f74a71833818ff95844aab"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "BUZZ_SUBMISSION_ALERTS",
+        "queue": "growth-circuit-submission-alerts"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "growth-circuit-submission-alerts",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 10,
+        "max_concurrency": 1,
+        "dead_letter_queue": "growth-circuit-submission-alerts-dlq"
+      },
+      {
+        "queue": "growth-circuit-submission-alerts-dlq",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 3,
+        "max_concurrency": 1
+      }
+    ]
+  },
   "observability": {
-    "enabled": true
+    "enabled": true,
+    "logs": {
+      "head_sampling_rate": 1
+    }
   }
 }

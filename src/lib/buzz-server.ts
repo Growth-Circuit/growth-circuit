@@ -1,24 +1,33 @@
 import { env as cloudflareEnv } from "cloudflare:workers";
 import type { SubmissionMetadata } from "@/lib/submission";
 
-type BuzzRuntimeEnv = {
+type BuzzWebhookEnv = {
   BUZZ_WEBHOOK_URL?: string;
   BUZZ_WEBHOOK_SECRET?: string;
 };
 
-type BuzzSubmissionNotification = SubmissionMetadata & {
-  notionUrl?: string;
+type BuzzQueueEnv = {
+  BUZZ_SUBMISSION_ALERTS: Queue<BuzzSubmissionNotification>;
 };
+
+export type BuzzSubmissionNotification = SubmissionMetadata & {
+  notionPageId: string;
+  notionUrl: string;
+};
+
+export type BuzzDeliveryResult =
+  | { delivered: true; status: number }
+  | { delivered: false; reason: "not_configured" | "request_failed" | "rejected"; status?: number };
 
 const buildWebhookUrl = import.meta.env.BUZZ_WEBHOOK_URL;
 const buildWebhookSecret = import.meta.env.BUZZ_WEBHOOK_SECRET;
-const runtimeEnv = cloudflareEnv as BuzzRuntimeEnv;
+const runtimeEnv = cloudflareEnv as BuzzWebhookEnv & BuzzQueueEnv;
 
-function getWebhookUrl(env: BuzzRuntimeEnv = runtimeEnv) {
+function getWebhookUrl(env: BuzzWebhookEnv = runtimeEnv) {
   return env.BUZZ_WEBHOOK_URL || buildWebhookUrl;
 }
 
-function getWebhookSecret(env: BuzzRuntimeEnv = runtimeEnv) {
+function getWebhookSecret(env: BuzzWebhookEnv = runtimeEnv) {
   return env.BUZZ_WEBHOOK_SECRET || buildWebhookSecret;
 }
 
@@ -34,48 +43,49 @@ function formatDisplayName(value: string) {
 
 export async function notifyBuzzOfSubmission(
   submission: BuzzSubmissionNotification,
-  env: BuzzRuntimeEnv = runtimeEnv,
-) {
+  env: BuzzWebhookEnv = runtimeEnv,
+): Promise<BuzzDeliveryResult> {
   const webhookUrl = getWebhookUrl(env);
   const webhookSecret = getWebhookSecret(env);
 
   if (!webhookUrl || !webhookSecret) {
-    console.error("[buzz] submission notification is not configured");
-    return false;
+    return { delivered: false, reason: "not_configured" };
   }
 
   const requestBody = JSON.stringify({
     name: formatDisplayName(submission.fullName),
     summary: [submission.applicationType, submission.location].filter(Boolean).join(" · "),
-    url: submission.notionUrl || "https://app.notion.com/p/3b0b74c7ad9180b189edc6b2536ae483",
+    url: submission.notionUrl,
   });
 
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
-    try {
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        signal: AbortSignal.timeout(5000),
-        headers: {
-          "Content-Type": "application/json",
-          "X-Webhook-Secret": webhookSecret,
-        },
-        body: requestBody,
-      });
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      signal: AbortSignal.timeout(5000),
+      headers: {
+        "Content-Type": "application/json",
+        "X-Webhook-Secret": webhookSecret,
+      },
+      body: requestBody,
+    });
 
-      if (response.ok) {
-        return true;
-      }
-
-      const retryable = response.status === 408 || response.status === 429 || response.status >= 500;
-      console.error(`[buzz] submission notification failed with ${response.status} on attempt ${attempt}`);
-
-      if (!retryable) {
-        return false;
-      }
-    } catch {
-      console.error(`[buzz] submission notification request failed on attempt ${attempt}`);
+    if (response.ok) {
+      return { delivered: true, status: response.status };
     }
-  }
 
-  return false;
+    return { delivered: false, reason: "rejected", status: response.status };
+  } catch {
+    return { delivered: false, reason: "request_failed" };
+  }
+}
+
+export async function enqueueBuzzSubmissionNotification(
+  submission: BuzzSubmissionNotification,
+  env: BuzzQueueEnv = runtimeEnv,
+) {
+  await env.BUZZ_SUBMISSION_ALERTS.send(submission, { contentType: "json" });
+  console.log(JSON.stringify({
+    event: "buzz_submission_alert_queued",
+    notionPageId: submission.notionPageId,
+  }));
 }

@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "latest",
+    "@cloudflare/workers-types": "4.20260702.1",
     "typescript": "latest"
   }
 }
