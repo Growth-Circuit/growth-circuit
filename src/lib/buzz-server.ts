@@ -1,4 +1,4 @@
-import { env as cloudflareEnv, waitUntil } from "cloudflare:workers";
+import { env as cloudflareEnv } from "cloudflare:workers";
 import type { SubmissionMetadata } from "@/lib/submission";
 
 type BuzzRuntimeEnv = {
@@ -41,37 +41,41 @@ export async function notifyBuzzOfSubmission(
 
   if (!webhookUrl || !webhookSecret) {
     console.error("[buzz] submission notification is not configured");
-    return;
+    return false;
   }
 
-  try {
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      signal: AbortSignal.timeout(5000),
-      headers: {
-        "Content-Type": "application/json",
-        "X-Webhook-Secret": webhookSecret,
-      },
-      body: JSON.stringify({
-        name: formatDisplayName(submission.fullName),
-        summary: [submission.applicationType, submission.location].filter(Boolean).join(" · "),
-        url: submission.notionUrl || "https://app.notion.com/p/3b0b74c7ad9180b189edc6b2536ae483",
-      }),
-    });
+  const requestBody = JSON.stringify({
+    name: formatDisplayName(submission.fullName),
+    summary: [submission.applicationType, submission.location].filter(Boolean).join(" · "),
+    url: submission.notionUrl || "https://app.notion.com/p/3b0b74c7ad9180b189edc6b2536ae483",
+  });
 
-    if (!response.ok) {
-      console.error(`[buzz] submission notification failed with ${response.status}`);
-      return;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        signal: AbortSignal.timeout(5000),
+        headers: {
+          "Content-Type": "application/json",
+          "X-Webhook-Secret": webhookSecret,
+        },
+        body: requestBody,
+      });
+
+      if (response.ok) {
+        return true;
+      }
+
+      const retryable = response.status === 408 || response.status === 429 || response.status >= 500;
+      console.error(`[buzz] submission notification failed with ${response.status} on attempt ${attempt}`);
+
+      if (!retryable) {
+        return false;
+      }
+    } catch {
+      console.error(`[buzz] submission notification request failed on attempt ${attempt}`);
     }
-  } catch {
-    console.error("[buzz] submission notification request failed");
   }
-}
 
-export function scheduleBuzzSubmissionNotification(submission: BuzzSubmissionNotification) {
-  try {
-    waitUntil(notifyBuzzOfSubmission(submission));
-  } catch {
-    console.error("[buzz] submission notification could not be scheduled");
-  }
+  return false;
 }

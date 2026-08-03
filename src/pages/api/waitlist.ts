@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { scheduleBuzzSubmissionNotification } from "@/lib/buzz-server";
+import { notifyBuzzOfSubmission } from "@/lib/buzz-server";
 import { createNotionSubmission, isServerNotionConfigured, type NotionSubmission } from "@/lib/notion-server";
 
 export const prerender = false;
@@ -40,7 +40,7 @@ export const POST: APIRoute = async ({ request }) => {
     };
     const page = await createNotionSubmission(submission);
 
-    scheduleBuzzSubmissionNotification({
+    await notifyBuzzOfSubmission({
       ...submission,
       notionUrl: page.url,
     });
