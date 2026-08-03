@@ -20,6 +20,18 @@ permissions:
   contents: read
   pull-requests: read
 
+concurrency:
+  group: buzz-alerts-${{ github.event.pull_request.number || github.event.workflow_run.head_sha || github.run_id }}
+  cancel-in-progress: false
+
+env:
+  BUZZ_CHANNEL_ID: ${{ vars.BUZZ_CHANNEL_ID }}
+  BUZZ_CI_PRIVATE_KEY: ${{ secrets.BUZZ_CI_PRIVATE_KEY }}
+  BUZZ_CI_PUBLIC_KEY: ${{ vars.BUZZ_CI_PUBLIC_KEY }}
+  BUZZ_RELAY_URL: ${{ vars.BUZZ_RELAY_URL }}
+  NAK_VERSION: v0.20.2
+  NAK_SHA256: 424db88043d26d9c2f1cbd2d9bc06582c39526f91f8e5523590439d4257da087
+
 jobs:
   notify-pr:
     name: Notify Buzz about PR
@@ -27,93 +39,101 @@ jobs:
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
 
     steps:
-      - name: Send PR update
+      - uses: actions/checkout@v4
+
+      - name: Install pinned Nostr client
+        run: |
+          curl --fail --silent --show-error --location --retry 3 \
+            "https://github.com/fiatjaf/nak/releases/download/${NAK_VERSION}/nak-${NAK_VERSION}-linux-amd64" \
+            --output "${RUNNER_TEMP}/nak"
+          echo "${NAK_SHA256}  ${RUNNER_TEMP}/nak" | sha256sum --check
+          chmod +x "${RUNNER_TEMP}/nak"
+
+      - name: Post threaded PR update
         env:
-          BUZZ_WEBHOOK_SECRET: ${{ secrets.BUZZ_WEBHOOK_SECRET }}
-          BUZZ_WEBHOOK_URL: ${{ vars.BUZZ_WEBHOOK_URL }}
+          NAK_BIN: ${{ runner.temp }}/nak
           PR_ACTION: ${{ github.event.action }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_DRAFT: ${{ github.event.pull_request.draft }}
           PR_MERGED: ${{ github.event.pull_request.merged }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_UPDATED_AT: ${{ github.event.pull_request.updated_at }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
           case "$PR_ACTION" in
             opened)
-              icon="🔔"
-              title="PR #${PR_NUMBER} opened"
+              message=''
               ;;
             reopened)
-              icon="🔄"
-              title="PR #${PR_NUMBER} reopened"
+              message="🔄 **Reopened**\n${PR_AUTHOR} reopened this pull request."
               ;;
             ready_for_review)
-              icon="👀"
-              title="PR #${PR_NUMBER} ready for review"
+              message="👀 **Ready for review**\nThis pull request moved out of draft."
               ;;
             closed)
               if [ "$PR_MERGED" = "true" ]; then
-                icon="✅"
-                title="PR #${PR_NUMBER} merged"
+                message="✅ **Merged**\n[View the merged pull request](${PR_URL})"
               else
-                icon="⏹️"
-                title="PR #${PR_NUMBER} closed"
+                message="⏹️ **Closed**\n[View the closed pull request](${PR_URL})"
               fi
               ;;
           esac
 
           if [ "$PR_DRAFT" = "true" ]; then
-            review_state="Draft"
-          else
-            review_state="Ready for review"
+            PR_TITLE="${PR_TITLE} (draft)"
           fi
 
-          payload=$(jq -n \
-            --arg icon "$icon" \
-            --arg title "$title" \
-            --arg summary "${PR_TITLE} by ${PR_AUTHOR} · ${review_state}" \
-            --arg url "$PR_URL" \
-            '{icon: $icon, title: $title, summary: $summary, url: $url}')
-
-          curl --fail --silent --show-error \
-            --retry 3 \
-            --header "Content-Type: application/json" \
-            --header "X-Webhook-Secret: ${BUZZ_WEBHOOK_SECRET}" \
-            --data "$payload" \
-            "$BUZZ_WEBHOOK_URL"
+          BUZZ_MESSAGE=$(printf '%b' "$message") \
+          BUZZ_UPDATE_KEY="buzz-pr-update:${GITHUB_REPOSITORY}#${PR_NUMBER}:${PR_ACTION}:${PR_UPDATED_AT}" \
+            .github/scripts/buzz-pr-alert.sh notify-pr
 
   notify-workflow:
     name: Notify Buzz about workflow
     if: github.event_name == 'workflow_run'
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
 
     steps:
-      - name: Send workflow update
+      - uses: actions/checkout@v4
+
+      - name: Install pinned Nostr client
+        run: |
+          curl --fail --silent --show-error --location --retry 3 \
+            "https://github.com/fiatjaf/nak/releases/download/${NAK_VERSION}/nak-${NAK_VERSION}-linux-amd64" \
+            --output "${RUNNER_TEMP}/nak"
+          echo "${NAK_SHA256}  ${RUNNER_TEMP}/nak" | sha256sum --check
+          chmod +x "${RUNNER_TEMP}/nak"
+
+      - name: Post threaded workflow update
         env:
-          BUZZ_WEBHOOK_SECRET: ${{ secrets.BUZZ_WEBHOOK_SECRET }}
-          BUZZ_WEBHOOK_URL: ${{ vars.BUZZ_WEBHOOK_URL }}
           GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-          RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          NAK_BIN: ${{ runner.temp }}/nak
           RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
-          RUN_EVENT: ${{ github.event.workflow_run.event }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
           RUN_NAME: ${{ github.event.workflow_run.name }}
           RUN_SHA: ${{ github.event.workflow_run.head_sha }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
         run: |
-          short_sha=${RUN_SHA:0:7}
           commit_data=$(curl --fail --silent --show-error \
             --retry 3 \
             --header "Accept: application/vnd.github+json" \
             --header "Authorization: Bearer ${GH_TOKEN}" \
             --header "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${REPOSITORY}/commits/${RUN_SHA}") || commit_data='{}'
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${RUN_SHA}") || commit_data='{}'
 
+          pull_data=$(curl --fail --silent --show-error \
+            --retry 3 \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${RUN_SHA}/pulls") || pull_data='[]'
+
+          pull=$(jq -c '[.[] | select(.base.ref == "main")] | sort_by(.number) | last // empty' <<< "$pull_data")
+          short_sha=${RUN_SHA:0:7}
           commit_title=$(jq -r '(.commit.message // "Commit") | split("\n")[0]' <<< "$commit_data")
           commit_author=$(jq -r '.author.login // .commit.author.name // "unknown author"' <<< "$commit_data")
           changed_files=$(jq -r '(.files // []) | length' <<< "$commit_data")
@@ -126,58 +146,55 @@ jobs:
             | if ($files | length) > 3 then . + ", …" else . end
           ' <<< "$commit_data")
 
-          pull_data=$(curl --fail --silent --show-error \
-            --retry 3 \
-            --header "Accept: application/vnd.github+json" \
-            --header "Authorization: Bearer ${GH_TOKEN}" \
-            --header "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${REPOSITORY}/commits/${RUN_SHA}/pulls") || pull_data='[]'
-          pull_number=$(jq -r 'first.number // empty' <<< "$pull_data")
-          pull_title=$(jq -r 'first.title // empty' <<< "$pull_data")
-
-          if [ -n "$pull_number" ]; then
-            build_label="PR #${pull_number}: ${pull_title}"
-          else
-            build_label="${commit_title} by ${commit_author}"
-          fi
-
           if [ -n "$file_list" ]; then
-            build_details="${changed_files} files (+${additions}/-${deletions}): ${file_list}"
+            details="${changed_files} files (+${additions}/-${deletions}): ${file_list}"
           else
-            build_details="commit ${short_sha}"
+            details="commit ${short_sha}"
           fi
 
-          if [ "$RUN_NAME" = "Deploy production" ]; then
-            if [ "$RUN_CONCLUSION" = "success" ]; then
-              icon="🚀"
-              title="Production deployed"
-              summary="${build_label} · ${build_details} · ${short_sha}"
+          if [ -n "$pull" ]; then
+            PR_NUMBER=$(jq -r '.number' <<< "$pull")
+            PR_TITLE=$(jq -r '.title' <<< "$pull")
+            PR_AUTHOR=$(jq -r '.user.login' <<< "$pull")
+            PR_URL=$(jq -r '.html_url' <<< "$pull")
+            export PR_NUMBER PR_TITLE PR_AUTHOR PR_URL
+
+            if [ "$RUN_NAME" = "PR build" ]; then
+              if [ "$RUN_CONCLUSION" = "success" ]; then
+                icon='✅'
+                heading='Build passed'
+                BUZZ_REACTION='✅'
+              else
+                icon='❌'
+                heading="Build ${RUN_CONCLUSION}"
+                BUZZ_REACTION='❌'
+              fi
+            elif [ "$RUN_CONCLUSION" = "success" ]; then
+              icon='🚀'
+              heading='Production deployed'
+              BUZZ_REACTION=''
             else
-              icon="🚨"
-              title="Production deploy ${RUN_CONCLUSION}"
-              summary="${build_label} · ${build_details} · ${short_sha} needs attention"
+              icon='🚨'
+              heading="Production deploy ${RUN_CONCLUSION}"
+              BUZZ_REACTION=''
             fi
+            export BUZZ_REACTION
+
+            BUZZ_MESSAGE=$(printf '%s **%s**\n%s · `%s`\n[Open workflow run](%s)' \
+              "$icon" "$heading" "$details" "$short_sha" "$RUN_URL") \
+            BUZZ_UPDATE_KEY="buzz-pr-update:${GITHUB_REPOSITORY}#${PR_NUMBER}:workflow:${RUN_ID}" \
+              .github/scripts/buzz-pr-alert.sh notify-pr
+          elif [ "$RUN_NAME" = "Deploy production" ]; then
+            if [ "$RUN_CONCLUSION" = "success" ]; then
+              heading='🚀 **Production deployed**'
+            else
+              heading="🚨 **Production deploy ${RUN_CONCLUSION}**"
+            fi
+
+            BUZZ_MESSAGE=$(printf '%s\n%s by %s · `%s`\n[Open workflow run](%s)' \
+              "$heading" "$commit_title" "$commit_author" "$short_sha" "$RUN_URL") \
+            BUZZ_UPDATE_KEY="buzz-deploy:${GITHUB_REPOSITORY}:${RUN_ID}" \
+              .github/scripts/buzz-pr-alert.sh notify-standalone
           else
-            if [ "$RUN_CONCLUSION" = "success" ]; then
-              icon="✅"
-              title="PR build passed"
-            else
-              icon="❌"
-              title="PR build ${RUN_CONCLUSION}"
-            fi
-            summary="${build_label} · ${build_details} · ${RUN_BRANCH} at ${short_sha}"
+            echo "No pull request matched ${RUN_SHA}; skipping the PR build alert."
           fi
-
-          payload=$(jq -n \
-            --arg icon "$icon" \
-            --arg title "$title" \
-            --arg summary "$summary" \
-            --arg url "$RUN_URL" \
-            '{icon: $icon, title: $title, summary: $summary, url: $url}')
-
-          curl --fail --silent --show-error \
-            --retry 3 \
-            --header "Content-Type: application/json" \
-            --header "X-Webhook-Secret: ${BUZZ_WEBHOOK_SECRET}" \
-            --data "$payload" \
-            "$BUZZ_WEBHOOK_URL"
