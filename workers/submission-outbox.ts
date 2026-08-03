@@ -1,21 +1,24 @@
-import { env as cloudflareEnv } from "cloudflare:workers";
-import {
-  formatBuzzSubmissionMessage,
-  type BuzzSubmissionNotification,
-} from "@/lib/buzz-server";
+import { formatBuzzSubmissionMessage } from "../src/lib/buzz-message";
 
 type OutboxEnv = {
   BUZZ_DELIVERY_LEDGER: KVNamespace;
   BUZZ_OUTBOX_SECRET?: string;
 };
 
+type Submission = {
+  notionPageId: string;
+  notionUrl: string;
+  fullName: string;
+  applicationType: string;
+  location?: string;
+};
+
 type FailureRecord = {
-  submission?: BuzzSubmissionNotification;
+  submission?: Submission;
 };
 
 const DELIVERY_TTL_SECONDS = 60 * 60 * 24 * 90;
 const LEASE_TTL_SECONDS = 3 * 60;
-const runtimeEnv = cloudflareEnv as unknown as OutboxEnv;
 
 function deliveredKey(notionPageId: string) {
   return `delivered:${notionPageId}`;
@@ -26,19 +29,16 @@ function failureKey(notionPageId: string) {
 }
 
 function isAuthorized(request: Request, env: OutboxEnv) {
-  if (!env.BUZZ_OUTBOX_SECRET) {
-    return false;
-  }
-
-  return request.headers.get("Authorization") === `Bearer ${env.BUZZ_OUTBOX_SECRET}`;
+  return Boolean(env.BUZZ_OUTBOX_SECRET)
+    && request.headers.get("Authorization") === `Bearer ${env.BUZZ_OUTBOX_SECRET}`;
 }
 
-function isSubmission(value: unknown): value is BuzzSubmissionNotification {
+function isSubmission(value: unknown): value is Submission {
   if (!value || typeof value !== "object") {
     return false;
   }
 
-  const submission = value as Partial<BuzzSubmissionNotification>;
+  const submission = value as Partial<Submission>;
   return typeof submission.notionPageId === "string"
     && submission.notionPageId.length > 0
     && typeof submission.notionUrl === "string"
@@ -53,11 +53,7 @@ async function messageDigest(message: string) {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-export async function pullSubmissionAlert(request: Request, env: OutboxEnv = runtimeEnv) {
-  if (!isAuthorized(request, env)) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
+async function pullSubmissionAlert(env: OutboxEnv) {
   const failures = await env.BUZZ_DELIVERY_LEDGER.list({ prefix: "failure:" });
   for (const key of failures.keys) {
     const failure = await env.BUZZ_DELIVERY_LEDGER.get<FailureRecord>(key.name, "json");
@@ -89,11 +85,7 @@ export async function pullSubmissionAlert(request: Request, env: OutboxEnv = run
   return new Response(null, { status: 204 });
 }
 
-export async function acknowledgeSubmissionAlert(request: Request, env: OutboxEnv = runtimeEnv) {
-  if (!isAuthorized(request, env)) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
+async function acknowledgeSubmissionAlert(request: Request, env: OutboxEnv) {
   const message = await request.text();
   if (!message || message.length > 10_000) {
     return new Response("Invalid acknowledgement", { status: 400 });
@@ -115,3 +107,23 @@ export async function acknowledgeSubmissionAlert(request: Request, env: OutboxEn
 
   return new Response(null, { status: 204 });
 }
+
+export default {
+  async fetch(request: Request, env: OutboxEnv) {
+    if (request.method !== "POST" || !isAuthorized(request, env)) {
+      return new Response(request.method === "POST" ? "Unauthorized" : "Not found", {
+        status: request.method === "POST" ? 401 : 404,
+      });
+    }
+
+    const pathname = new URL(request.url).pathname;
+    if (pathname === "/pull") {
+      return pullSubmissionAlert(env);
+    }
+    if (pathname === "/ack") {
+      return acknowledgeSubmissionAlert(request, env);
+    }
+
+    return new Response("Not found", { status: 404 });
+  },
+} satisfies ExportedHandler<OutboxEnv>;

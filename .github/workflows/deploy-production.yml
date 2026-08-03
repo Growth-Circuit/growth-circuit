@@ -44,6 +44,14 @@ jobs:
           command: deploy --keep-vars
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Deploy submission alert outbox
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config wrangler.outbox.jsonc --keep-vars
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Verify production
         run: |
           curl \
