@@ -1493,6 +1493,10 @@ h1 {
   max-width: 760px;
 }
 
+.apply-title-tail {
+  white-space: nowrap;
+}
+
 .apply-copy .ritual-list {
   margin-top: 26px;
 }
