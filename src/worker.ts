@@ -90,6 +90,16 @@ async function consumeSubmissionAlert(message: Message<unknown>, env: Env) {
         reason: result.reason,
         status: result.status,
       }));
+      if (result.status === 525 || result.status === 526) {
+        console.log(JSON.stringify({
+          event: "buzz_submission_alert_deferred_to_outbox",
+          messageId: message.id,
+          notionPageId: submission.notionPageId,
+          status: result.status,
+        }));
+        message.ack();
+        return;
+      }
       message.retry({ delaySeconds: retryDelaySeconds(message.attempts) });
       return;
     }
