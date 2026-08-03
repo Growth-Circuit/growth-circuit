@@ -14,8 +14,8 @@ export type NotionSubmission = SubmissionMetadata & {
 };
 
 type NotionPageResult = {
-  id?: string;
-  url?: string;
+  id: string;
+  url: string;
 };
 
 const NOTION_API_VERSION = "2022-06-28";
@@ -100,5 +100,11 @@ export async function createNotionSubmission(
     throw new Error("NOTION_SUBMISSION_FAILED");
   }
 
-  return (await response.json()) as NotionPageResult;
+  const page = (await response.json()) as Partial<NotionPageResult>;
+  if (!page.id || !page.url) {
+    console.error("[notion] submission response did not include a page id and url");
+    throw new Error("NOTION_SUBMISSION_INVALID_RESPONSE");
+  }
+
+  return page as NotionPageResult;
 }
