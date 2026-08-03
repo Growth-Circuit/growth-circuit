@@ -25,15 +25,41 @@ publish_event() {
     --force-pre-auth \
     --sec "$BUZZ_CI_PRIVATE_KEY" \
     "$@" \
-    "$BUZZ_RELAY_URL" >/dev/null
+    "$BUZZ_RELAY_URL"
 }
 
 event_id_for_d_tag() {
   local d_tag=$1
   local events
 
-  events=$(query_events -k 9 -a "$BUZZ_CI_PUBLIC_KEY" -d "$d_tag" -l 1)
-  jq -rs 'sort_by(.created_at) | last | .id // empty' <<< "$events"
+  # Kind 30078 is parameterized replaceable, so Buzz can apply the #d filter
+  # before the limit. Its content points to the channel message event.
+  events=$(query_events -k 30078 -a "$BUZZ_CI_PUBLIC_KEY" -d "$d_tag" -l 1)
+  jq -rs -r '
+    sort_by(.created_at)
+    | last
+    | .content // empty
+    | select(test("^[0-9a-f]{64}$"))
+  ' <<< "$events"
+}
+
+publish_tracked_message() {
+  local d_tag=$1
+  shift
+
+  local event
+  local event_id
+
+  event=$(publish_event "$@")
+  event_id=$(jq -er '.id | select(test("^[0-9a-f]{64}$"))' <<< "$event")
+
+  publish_event \
+    -k 30078 \
+    -c "$event_id" \
+    -h "$BUZZ_CHANNEL_ID" \
+    -d "$d_tag" >/dev/null
+
+  printf '%s\n' "$event_id"
 }
 
 ensure_root() {
@@ -55,23 +81,13 @@ ensure_root() {
   printf -v content '🔔 **PR #%s: %s**\n%s opened this pull request.\n[Open in GitHub](%s)' \
     "$PR_NUMBER" "$PR_TITLE" "$PR_AUTHOR" "$PR_URL"
 
-  publish_event \
+  root_id=$(publish_tracked_message "$root_key" \
     -k 9 \
     -c "$content" \
     -h "$BUZZ_CHANNEL_ID" \
-    -d "$root_key"
+    -d "$root_key")
 
-  for _ in 1 2 3 4 5; do
-    root_id=$(event_id_for_d_tag "$root_key")
-    if [ -n "$root_id" ]; then
-      printf '%s\n' "$root_id"
-      return
-    fi
-    sleep 1
-  done
-
-  echo "Published the PR root but could not read it back from Buzz" >&2
-  return 1
+  printf '%s\n' "$root_id"
 }
 
 post_reply_once() {
@@ -83,12 +99,12 @@ post_reply_once() {
     return
   fi
 
-  publish_event \
+  publish_tracked_message "$update_key" \
     -k 9 \
     -c "$message" \
     -h "$BUZZ_CHANNEL_ID" \
     -d "$update_key" \
-    -t "e=${root_id};;reply"
+    -t "e=${root_id};;reply" >/dev/null
 }
 
 set_terminal_reaction() {
@@ -111,10 +127,10 @@ set_terminal_reaction() {
   jq -rs -r '.[] | select(.content == "✅" or .content == "❌") | .id' <<< "$events" |
     while IFS= read -r reaction_id; do
       [ -n "$reaction_id" ] || continue
-      publish_event -k 5 -c '' -e "$reaction_id"
+      publish_event -k 5 -c '' -e "$reaction_id" >/dev/null
     done
 
-  publish_event -k 7 -c "$desired_emoji" -e "$root_id"
+  publish_event -k 7 -c "$desired_emoji" -e "$root_id" >/dev/null
 }
 
 post_standalone_once() {
@@ -125,11 +141,11 @@ post_standalone_once() {
     return
   fi
 
-  publish_event \
+  publish_tracked_message "$BUZZ_UPDATE_KEY" \
     -k 9 \
     -c "$BUZZ_MESSAGE" \
     -h "$BUZZ_CHANNEL_ID" \
-    -d "$BUZZ_UPDATE_KEY"
+    -d "$BUZZ_UPDATE_KEY" >/dev/null
 }
 
 case "${1:-notify-pr}" in

@@ -31,5 +31,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Test Buzz PR alert lifecycle
+        run: .github/scripts/test-buzz-pr-alert.sh
+
       - name: Build
         run: npm run build
