@@ -24,6 +24,8 @@ const {
 
 const fullTitle = title === "Growth Circuit" ? title : `${title} | Growth Circuit`;
 const canonicalUrl = canonical(path);
+const socialImageUrl = canonical("/growth-circuit-og.png");
+const socialImageAlt = "Growth Circuit: Build with people who get what you do.";
 const allJsonLd = [organizationJsonLd(), ...jsonLd];
 const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
 ---
@@ -45,7 +47,17 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content="Growth Circuit" />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:secure_url" content={socialImageUrl} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={socialImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <meta name="twitter:image:alt" content={socialImageAlt} />
     {allJsonLd.map((entry) => <script is:inline type="application/ld+json" set:html={JSON.stringify(entry)} />)}
   </head>
   <body class={bodyClass}>
