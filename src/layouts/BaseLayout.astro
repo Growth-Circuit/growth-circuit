@@ -37,6 +37,7 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content={themeColor} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/growth-circuit-favicon-256.png" type="image/png" sizes="200x200" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
@@ -66,7 +67,7 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
         <header class="site-header">
           <div class="shell nav">
             <a class="brand" href="/" aria-label="Growth Circuit home">
-              <span class="brand-mark">GC</span>
+              <img class="brand-logo" src="/growth-circuit-logo.svg" alt="" width="44" height="44" />
               <span>Growth Circuit</span>
             </a>
             {path !== "/apply" && (

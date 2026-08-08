@@ -106,16 +106,11 @@ svg {
   letter-spacing: 0;
 }
 
-.brand-mark {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border: 1px solid rgba(247, 248, 243, 0.22);
-  background: var(--porcelain);
-  color: var(--ink);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 15px;
+.brand-logo {
+  display: block;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
 }
 
 .nav-links {
@@ -266,12 +261,6 @@ svg {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-}
-
-.brand-mark--light {
-  border-color: rgba(247, 248, 243, 0.22);
-  background: var(--porcelain);
-  color: var(--ink);
 }
 
 .brand-word {
@@ -1734,13 +1723,9 @@ h1 {
   background: rgba(247, 252, 253, 0.82);
 }
 
-.sky-page .brand-mark,
-.sky-page .brand-mark--light {
-  border: 0;
-  border-radius: 50% 44% 52% 46%;
-  background: var(--sky-ink);
-  color: var(--sky-bright);
+.sky-page .brand-logo {
   box-shadow: 0 6px 20px rgba(23, 49, 58, 0.16);
+  border-radius: 50%;
 }
 
 .sky-page .nav-links a,
