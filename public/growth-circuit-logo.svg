@@ -1,19 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="800" height="800">
-
-<defs>
-  <path id="arctop" d="M 25 100 A 75 75 0 0 1 175 100"></path>
-  <path id="arcbot" d="M 19 100 A 81 81 0 0 0 181 100"></path>
-</defs>
 <circle cx="100" cy="100" r="97" fill="#16232b"></circle>
-<text font-size="15" letter-spacing="4" fill="#dceef5" text-anchor="middle"><textPath href="#arctop" startOffset="51.6%">GROWTH CIRCUIT</textPath></text>
-<text font-size="15" letter-spacing="4" fill="#dceef5" text-anchor="middle"><textPath href="#arcbot" startOffset="51.4%">COMMUNITY</textPath></text>
-<circle cx="25" cy="100" r="3.5" fill="#dceef5"></circle>
-<circle cx="175" cy="100" r="3.5" fill="#dceef5"></circle>
-<circle cx="100" cy="100" r="52" fill="none" stroke="#dceef5" stroke-width="5" pathLength="360" stroke-dasharray="305 55" stroke-linecap="round"></circle>
-<path d="M 152 100 h -16" stroke="#dceef5" stroke-width="5" stroke-linecap="round"></path>
-<circle cx="129.8" cy="57.4" r="4.5" fill="#dceef5"></circle>
-<circle cx="100" cy="100" r="33" fill="none" stroke="#dceef5" stroke-width="5" pathLength="360" stroke-dasharray="290 70" stroke-linecap="round" transform="rotate(35 100 100)"></circle>
-<circle cx="127.0" cy="81.1" r="4.5" fill="#dceef5"></circle>
-<circle cx="127.0" cy="118.9" r="4.5" fill="#dceef5"></circle>
-<circle cx="100" cy="100" r="11" fill="#dceef5"></circle>
+<circle cx="100" cy="100" r="62" fill="none" stroke="#dceef5" stroke-width="6" pathLength="360" stroke-dasharray="305 55" stroke-linecap="round"></circle>
+<path d="M 162 100 h -19" stroke="#dceef5" stroke-width="6" stroke-linecap="round"></path>
+<circle cx="135.6" cy="49.2" r="5" fill="#dceef5"></circle>
+<circle cx="100" cy="100" r="39" fill="none" stroke="#dceef5" stroke-width="6" pathLength="360" stroke-dasharray="290 70" stroke-linecap="round" transform="rotate(35 100 100)"></circle>
+<circle cx="131.9" cy="77.6" r="5" fill="#dceef5"></circle>
+<circle cx="131.9" cy="122.4" r="5" fill="#dceef5"></circle>
+<circle cx="100" cy="100" r="13" fill="#dceef5"></circle>
 </svg>
