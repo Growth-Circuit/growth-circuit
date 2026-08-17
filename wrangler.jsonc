@@ -10,6 +10,12 @@
   "images": {
     "binding": "IMAGES"
   },
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "allowed_sender_addresses": ["auth@growthcircuit.club"]
+    }
+  ],
   // Encrypted server binding required at deploy time: SUPABASE_SERVICE_ROLE_KEY
   "routes": [
     { "pattern": "growthcircuit.club", "custom_domain": true },

@@ -63,10 +63,10 @@ function applySecurityHeaders(response: Response, requestUrl: URL, noStore: bool
     "frame-ancestors 'none'",
     "form-action 'self'",
     "object-src 'none'",
-    "script-src 'self' 'unsafe-inline'",
+    "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
-    `connect-src 'self' ${requestUrl.origin} https://*.supabase.co`,
+    `connect-src 'self' ${requestUrl.origin} https://*.supabase.co https://cloudflareinsights.com`,
   ].join("; "));
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");

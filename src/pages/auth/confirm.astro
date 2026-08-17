@@ -4,6 +4,8 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getSafeNextPath } from "@/lib/community-auth";
 
 const code = Astro.url.searchParams.get("code") || "";
+const tokenHash = Astro.url.searchParams.get("token_hash") || "";
+const type = Astro.url.searchParams.get("type") || "";
 const nextPath = getSafeNextPath(Astro.url.searchParams.get("next"));
 ---
 
@@ -19,6 +21,6 @@ const nextPath = getSafeNextPath(Astro.url.searchParams.get("next"));
       <h1>Confirm when you are ready.</h1>
       <p class="lead">This page has not signed you in yet. Choose confirm to use the email link.</p>
     </div>
-    <AuthCallback client:load code={code} csrfToken={Astro.locals.csrfToken} nextPath={nextPath} />
+    <AuthCallback client:load code={code} tokenHash={tokenHash} type={type} csrfToken={Astro.locals.csrfToken} nextPath={nextPath} />
   </section>
 </BaseLayout>

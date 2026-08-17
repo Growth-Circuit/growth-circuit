@@ -4,6 +4,7 @@ import {
   type BuzzDeliveryResult,
   type BuzzSubmissionNotification,
 } from "@/lib/buzz-server";
+import { handleSupabaseAuthEmailHook } from "@/lib/auth-email-hook";
 
 const DELIVERY_TTL_SECONDS = 60 * 60 * 24 * 90;
 const DEAD_LETTER_QUEUE = "growth-circuit-submission-alerts-dlq";
@@ -143,6 +144,9 @@ async function consumeDeadLetter(message: Message<unknown>, env: Env) {
 
 export default {
   async fetch(request, env, ctx) {
+    if (new URL(request.url).pathname === "/api/supabase/auth-email-hook") {
+      return handleSupabaseAuthEmailHook(request, env);
+    }
     return handle(request, env, ctx);
   },
 

@@ -185,16 +185,16 @@ select extensions.throws_ok(
 );
 reset role;
 
-update public.community_launch_state set writes_enabled = true, private_reads_enabled = true where id;
-
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000006', true);
 select extensions.lives_ok(
   $$insert into public.community_profiles (id, first_name, last_name)
     values ('10000000-0000-0000-0000-000000000006', 'Fresh', 'Profile')$$,
-  'a verified user can create their own profile after launch'
+  'a verified user can finish their profile while community posting remains dark'
 );
 reset role;
+
+update public.community_launch_state set writes_enabled = true, private_reads_enabled = true where id;
 
 set local role anon;
 select extensions.is((select count(*)::integer from public.community_posts), 1, 'anonymous sees the public post after launch');
