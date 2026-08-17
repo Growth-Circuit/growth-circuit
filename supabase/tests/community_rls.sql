@@ -192,6 +192,10 @@ select extensions.lives_ok(
     values ('10000000-0000-0000-0000-000000000006', 'Fresh', 'Profile')$$,
   'a verified user can finish their profile while community posting remains dark'
 );
+select extensions.lives_ok(
+  $$update public.community_profiles set first_name = 'Updated' where id = auth.uid()$$,
+  'a verified user can safely retry profile setup while community posting remains dark'
+);
 reset role;
 
 update public.community_launch_state set writes_enabled = true, private_reads_enabled = true where id;
