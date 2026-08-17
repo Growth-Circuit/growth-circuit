@@ -36,6 +36,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const submission: NotionSubmission = {
+      submittedAt: new Date().toISOString(),
       fullName: payload.full_name,
       email: payload.email,
       applicationType: "New York application",
@@ -43,6 +44,8 @@ export const POST: APIRoute = async ({ request }) => {
       proudBuild: payload.proud_build,
       referralSource: payload.referral_source,
       location: "New York City",
+      communicationPreferences: payload.communication_preferences,
+      consentSource: payload.communication_preferences.length > 0 ? "New York application form v2" : undefined,
     };
     const page = await createNotionSubmission(submission);
 

@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { enqueueBuzzSubmissionNotification } from "@/lib/buzz-server";
 import { createNotionSubmission, isServerNotionConfigured, type NotionSubmission } from "@/lib/notion-server";
+import { normalizeCommunicationPreferences, validateCommunicationPreferences } from "@/lib/application";
 
 export const prerender = false;
 
@@ -22,9 +23,15 @@ export const POST: APIRoute = async ({ request }) => {
 
   const fullName = typeof body.full_name === "string" ? body.full_name.trim().slice(0, 200) : "";
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase().slice(0, 320) : "";
+  const communicationPreferences = normalizeCommunicationPreferences(body.communication_preferences);
 
   if (!fullName || !email.includes("@")) {
     return json({ ok: false, error: "Add your name and a valid email to join the waitlist." }, 422);
+  }
+
+  const preferenceError = validateCommunicationPreferences(communicationPreferences, "global");
+  if (preferenceError) {
+    return json({ ok: false, error: preferenceError }, 422);
   }
 
   if (!isServerNotionConfigured()) {
@@ -33,10 +40,13 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const submission: NotionSubmission = {
+      submittedAt: new Date().toISOString(),
       fullName,
       email,
       applicationType: "Global waitlist",
       location: "Outside New York",
+      communicationPreferences,
+      consentSource: "Global waitlist form v2",
     };
     const page = await createNotionSubmission(submission);
 
