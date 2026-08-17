@@ -7,6 +7,8 @@ import {
   validateCommunicationPreferences,
 } from "@/lib/application";
 import { normalizeEmailKey } from "@/lib/crm";
+import { getSubmissionId } from "@/lib/submission-id";
+import { enqueueCrmSync } from "@/lib/crm-sync";
 
 export const prerender = false;
 
@@ -59,6 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const submission: NotionSubmission = {
+      submissionId: getSubmissionId(request),
       submittedAt: new Date().toISOString(),
       fullName,
       email,
@@ -70,11 +73,14 @@ export const POST: APIRoute = async ({ request }) => {
     };
     const page = await createNotionSubmission(submission);
 
-    await enqueueBuzzSubmissionNotification({
-      ...submission,
-      notionPageId: page.id,
-      notionUrl: page.url,
-    });
+    await Promise.all([
+      enqueueCrmSync(page.personId),
+      enqueueBuzzSubmissionNotification({
+        ...submission,
+        notionPageId: page.id,
+        notionUrl: page.url,
+      }),
+    ]);
 
     return json({ ok: true, id: page.id, mode: "notion" }, 201);
   } catch {

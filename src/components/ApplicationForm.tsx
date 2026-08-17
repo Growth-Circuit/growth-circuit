@@ -1,5 +1,5 @@
 import { ArrowLeft, CheckCircle2, Loader2, Send } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   APPLICATION_TEXT_LIMITS,
   normalizeApplication,
@@ -45,6 +45,8 @@ export default function ApplicationForm() {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ApplicationPayload, string>>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const applicationSubmissionId = useRef<string | null>(null);
+  const waitlistSubmissionId = useRef<string | null>(null);
 
   useEffect(() => {
     const requestedPath = new URLSearchParams(window.location.search).get("path");
@@ -104,9 +106,13 @@ export default function ApplicationForm() {
     setStatus("submitting");
 
     try {
+      applicationSubmissionId.current ||= crypto.randomUUID();
       const response = await fetch("/api/applications", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": applicationSubmissionId.current,
+        },
         body: JSON.stringify(payload),
       });
       const result = (await response.json()) as ApplicationResult;
@@ -118,6 +124,7 @@ export default function ApplicationForm() {
         return;
       }
 
+      applicationSubmissionId.current = null;
       setStatus("success");
       setFieldErrors({});
       setMessage("Submission received! We'll be in touch soon");
@@ -150,9 +157,13 @@ export default function ApplicationForm() {
     setStatus("submitting");
 
     try {
+      waitlistSubmissionId.current ||= crypto.randomUUID();
       const response = await fetch("/api/waitlist", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": waitlistSubmissionId.current,
+        },
         body: JSON.stringify(waitlist),
       });
       const result = (await response.json()) as { ok: boolean; error?: string; mode?: string };
@@ -163,6 +174,7 @@ export default function ApplicationForm() {
         return;
       }
 
+      waitlistSubmissionId.current = null;
       setStatus("success");
       setMessage("You’re on the list. We’ll be in touch when we launch a global cohort.");
     } catch {

@@ -2283,10 +2283,37 @@ h1 {
 }
 
 .preference-option input {
+  display: grid;
+  flex: 0 0 auto;
+  place-content: center;
   width: 18px;
   height: 18px;
   margin: 2px 0 0;
-  accent-color: var(--matcha);
+  appearance: none;
+  border: 2px solid var(--sky-ink);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sky-ink);
+  cursor: pointer;
+}
+
+.preference-option input::before {
+  width: 9px;
+  height: 9px;
+  border-radius: 1px;
+  background: currentColor;
+  content: "";
+  transform: scale(0);
+  transition: transform 100ms ease-in-out;
+}
+
+.preference-option input:checked::before {
+  transform: scale(1);
+}
+
+.preference-option input:focus-visible {
+  outline: 3px solid var(--sunset);
+  outline-offset: 3px;
 }
 
 .path-choice {

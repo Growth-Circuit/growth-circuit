@@ -6,16 +6,23 @@ import {
   isPersonMarket,
   normalizeEmailKey,
   notionRichText,
+  type CrmConsentStatus,
+  type CrmPerson,
+  type CrmSyncStatus,
 } from "@/lib/crm";
-import type { SubmissionMetadata } from "@/lib/submission";
+import type { CommunicationPreference, SubmissionMetadata } from "@/lib/submission";
 
-type NotionRuntimeEnv = {
+export type NotionRuntimeEnv = {
   NOTION_API_TOKEN?: string;
   NOTION_APPLICATIONS_DATA_SOURCE_ID?: string;
   NOTION_PEOPLE_DATA_SOURCE_ID?: string;
+  CRM_PERSON_LOCK?: {
+    getByName(name: string): { fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> };
+  };
 };
 
 export type NotionSubmission = SubmissionMetadata & {
+  submissionId: string;
   email: string;
   linkedInProfile?: string;
   proudBuild?: string;
@@ -27,9 +34,21 @@ type NotionPageResult = {
   url: string;
 };
 
+export type NotionSubmissionResult = NotionPageResult & {
+  personId: string;
+  duplicate: boolean;
+};
+
 type NotionProperty = {
   select?: { name?: string } | null;
   multi_select?: Array<{ name?: string }>;
+  relation?: Array<{ id?: string }>;
+  title?: Array<{ plain_text?: string }>;
+  rich_text?: Array<{ plain_text?: string }>;
+  email?: string | null;
+  url?: string | null;
+  date?: { start?: string } | null;
+  unique_id?: { prefix?: string | null; number?: number } | null;
 };
 
 type NotionPage = {
@@ -40,6 +59,8 @@ type NotionPage = {
 
 type NotionQueryResponse = {
   results?: NotionPage[];
+  has_more?: boolean;
+  next_cursor?: string | null;
 };
 
 const NOTION_API_VERSION = "2026-03-11";
@@ -112,12 +133,208 @@ function getMultiSelectNames(page: NotionPage, property: string) {
     .filter(isCommunicationPreference);
 }
 
+function getPlainText(page: NotionPage, property: string, type: "title" | "rich_text") {
+  return (page.properties?.[property]?.[type] || [])
+    .map((item) => item.plain_text || "")
+    .join("");
+}
+
+function getCrmId(page: NotionPage) {
+  const uniqueId = page.properties?.["CRM ID"]?.unique_id;
+  if (typeof uniqueId?.number !== "number") return page.id ? `notion-${page.id}` : "";
+  return [uniqueId.prefix, uniqueId.number].filter((value) => value !== null && value !== undefined && value !== "").join("-");
+}
+
+const CONSENT_STATUSES = ["Not asked", "Granted", "Declined", "Withdrawn"] as const;
+const SYNC_STATUSES = ["Not eligible", "Pending", "Synced", "Error"] as const;
+
+function isConsentStatus(value: unknown): value is CrmConsentStatus {
+  return typeof value === "string" && CONSENT_STATUSES.some((status) => status === value);
+}
+
+function isSyncStatus(value: unknown): value is CrmSyncStatus {
+  return typeof value === "string" && SYNC_STATUSES.some((status) => status === value);
+}
+
+function parseCrmPerson(page: NotionPage): CrmPerson {
+  if (!page.id) throw new Error("NOTION_INVALID_PERSON");
+  const lifecycle = getSelectName(page, "Lifecycle");
+  const market = getSelectName(page, "Market");
+  const consentStatus = getSelectName(page, "Consent status");
+  const syncStatus = getSelectName(page, "Sync status");
+
+  return {
+    id: page.id,
+    crmId: getCrmId(page),
+    fullName: getPlainText(page, "Name", "title"),
+    email: page.properties?.Email?.email || "",
+    lifecycle: isPersonLifecycle(lifecycle) ? lifecycle : undefined,
+    market: isPersonMarket(market) ? market : undefined,
+    city: getPlainText(page, "City", "rich_text"),
+    region: getPlainText(page, "Region", "rich_text"),
+    linkedInProfile: page.properties?.["LinkedIn profile"]?.url || undefined,
+    referralSource: getPlainText(page, "Referral source", "rich_text"),
+    communicationPreferences: getMultiSelectNames(page, "Communication preferences"),
+    consentStatus: isConsentStatus(consentStatus) ? consentStatus : undefined,
+    consentSource: getPlainText(page, "Consent source", "rich_text"),
+    consentAt: page.properties?.["Consent at"]?.date?.start,
+    loopsId: getPlainText(page, "Loops ID", "rich_text") || undefined,
+    syncStatus: isSyncStatus(syncStatus) ? syncStatus : undefined,
+    lastReconciledAt: page.properties?.["Last reconciled at"]?.date?.start,
+  };
+}
+
 export function isServerNotionConfigured(env: NotionRuntimeEnv = runtimeEnv) {
   return Boolean(
     getNotionToken(env)
     && getApplicationsDataSourceId(env)
     && getPeopleDataSourceId(env),
   );
+}
+
+export async function getNotionPersonForSync(
+  personId: string,
+  env: NotionRuntimeEnv = runtimeEnv,
+) {
+  const token = getNotionToken(env);
+  if (!token) throw new Error("NOTION_NOT_CONFIGURED");
+  const page = await notionRequest<NotionPage>(
+    `https://api.notion.com/v1/pages/${personId}`,
+    token,
+    { method: "GET" },
+  );
+  return parseCrmPerson(page);
+}
+
+export async function updateNotionPersonSyncState(
+  personId: string,
+  update: { loopsId?: string; status: CrmSyncStatus },
+  env: NotionRuntimeEnv = runtimeEnv,
+) {
+  const token = getNotionToken(env);
+  if (!token) throw new Error("NOTION_NOT_CONFIGURED");
+  const properties: Record<string, unknown> = {
+    "Sync status": { select: { name: update.status } },
+  };
+  if (update.loopsId) {
+    properties["Loops ID"] = { rich_text: notionRichText(update.loopsId) };
+  }
+  await notionRequest<NotionPage>(
+    `https://api.notion.com/v1/pages/${personId}`,
+    token,
+    { method: "PATCH", body: JSON.stringify({ properties }) },
+  );
+}
+
+export async function updateNotionPersonConsent(
+  personId: string,
+  update: {
+    status: CrmConsentStatus;
+    preferences: readonly CommunicationPreference[];
+    syncStatus: CrmSyncStatus;
+  },
+  env: NotionRuntimeEnv = runtimeEnv,
+) {
+  const token = getNotionToken(env);
+  if (!token) throw new Error("NOTION_NOT_CONFIGURED");
+  await notionRequest<NotionPage>(
+    `https://api.notion.com/v1/pages/${personId}`,
+    token,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        properties: {
+          "Communication preferences": {
+            multi_select: update.preferences.map((name) => ({ name })),
+          },
+          "Consent status": { select: { name: update.status } },
+          "Sync status": { select: { name: update.syncStatus } },
+        },
+      }),
+    },
+  );
+}
+
+export async function updateNotionPersonReconciledAt(
+  personId: string,
+  reconciledAt: string,
+  env: NotionRuntimeEnv = runtimeEnv,
+) {
+  const token = getNotionToken(env);
+  if (!token) throw new Error("NOTION_NOT_CONFIGURED");
+  await notionRequest<NotionPage>(
+    `https://api.notion.com/v1/pages/${personId}`,
+    token,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        properties: {
+          "Last reconciled at": { date: { start: reconciledAt } },
+        },
+      }),
+    },
+  );
+}
+
+export async function listNotionPeopleForSync(
+  options: {
+    syncStatuses?: readonly CrmSyncStatus[];
+    consentStatus?: CrmConsentStatus;
+    limit?: number;
+    oldestReconciledFirst?: boolean;
+  } = {},
+  env: NotionRuntimeEnv = runtimeEnv,
+) {
+  const token = getNotionToken(env);
+  const peopleDataSourceId = getPeopleDataSourceId(env);
+  if (!token || !peopleDataSourceId) throw new Error("NOTION_NOT_CONFIGURED");
+
+  const filters: Array<Record<string, unknown>> = [];
+  if (options.syncStatuses?.length === 1) {
+    filters.push({
+      property: "Sync status",
+      select: { equals: options.syncStatuses[0] },
+    });
+  } else if (options.syncStatuses && options.syncStatuses.length > 1) {
+    filters.push({
+      or: options.syncStatuses.map((status) => ({
+        property: "Sync status",
+        select: { equals: status },
+      })),
+    });
+  }
+  if (options.consentStatus) {
+    filters.push({
+      property: "Consent status",
+      select: { equals: options.consentStatus },
+    });
+  }
+
+  const limit = Math.min(Math.max(options.limit || 100, 1), 500);
+  const people: CrmPerson[] = [];
+  let cursor: string | undefined;
+
+  do {
+    const body: Record<string, unknown> = {
+      page_size: Math.min(100, limit - people.length),
+    };
+    if (filters.length === 1) body.filter = filters[0];
+    if (filters.length > 1) body.filter = { and: filters };
+    if (options.oldestReconciledFirst) {
+      body.sorts = [{ property: "Last reconciled at", direction: "ascending" }];
+    }
+    if (cursor) body.start_cursor = cursor;
+
+    const response = await notionRequest<NotionQueryResponse>(
+      `https://api.notion.com/v1/data_sources/${peopleDataSourceId}/query`,
+      token,
+      { method: "POST", body: JSON.stringify(body) },
+    );
+    people.push(...(response.results || []).map(parseCrmPerson));
+    cursor = response.has_more && response.next_cursor ? response.next_cursor : undefined;
+  } while (cursor && people.length < limit);
+
+  return people.slice(0, limit);
 }
 
 async function findPersonByEmail(email: string, token: string, peopleDataSourceId: string) {
@@ -140,6 +357,35 @@ async function findPersonByEmail(email: string, token: string, peopleDataSourceI
   if (matches.length > 1) {
     console.error("[notion] multiple People records share one email key");
     throw new Error("NOTION_DUPLICATE_PERSON");
+  }
+
+  return matches[0];
+}
+
+async function findApplicationBySubmissionId(
+  submissionId: string,
+  token: string,
+  applicationsDataSourceId: string,
+) {
+  const response = await notionRequest<NotionQueryResponse>(
+    `https://api.notion.com/v1/data_sources/${applicationsDataSourceId}/query`,
+    token,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        filter: {
+          property: "Submission ID",
+          rich_text: { equals: submissionId },
+        },
+        page_size: 2,
+      }),
+    },
+  );
+  const matches = response.results || [];
+
+  if (matches.length > 1) {
+    console.error("[notion] multiple Applications share one submission id");
+    throw new Error("NOTION_DUPLICATE_SUBMISSION");
   }
 
   return matches[0];
@@ -196,6 +442,7 @@ async function createApplication(
     "Application status": { status: { name: "Waiting" } },
     "Application type": { select: { name: submission.applicationType } },
     "Submitted at": { date: { start: submission.submittedAt } },
+    "Submission ID": { rich_text: notionRichText(submission.submissionId) },
     Person: { relation: [{ id: personId }] },
   };
 
@@ -226,7 +473,7 @@ async function createApplication(
   return requirePage(page);
 }
 
-export async function createNotionSubmission(
+export async function createNotionSubmissionUnlocked(
   submission: NotionSubmission,
   env: NotionRuntimeEnv = runtimeEnv,
 ) {
@@ -238,6 +485,57 @@ export async function createNotionSubmission(
     throw new Error("NOTION_NOT_CONFIGURED");
   }
 
+  const existingApplication = await findApplicationBySubmissionId(
+    submission.submissionId,
+    token,
+    applicationsDataSourceId,
+  );
+  if (existingApplication?.id) {
+    const existingEmail = normalizeEmailKey(existingApplication.properties?.Email?.email || "");
+    if (existingEmail !== normalizeEmailKey(submission.email)) {
+      console.error("[notion] submission id was reused for a different email");
+      throw new Error("NOTION_SUBMISSION_ID_CONFLICT");
+    }
+    const personId = existingApplication.properties?.Person?.relation?.[0]?.id;
+    if (!personId) {
+      console.error("[notion] idempotent Application did not include a Person relation");
+      throw new Error("NOTION_INVALID_APPLICATION_RELATION");
+    }
+    return {
+      ...requirePage(existingApplication),
+      personId,
+      duplicate: true,
+    } satisfies NotionSubmissionResult;
+  }
+
   const person = await upsertPerson(submission, token, peopleDataSourceId);
-  return createApplication(submission, person.id, token, applicationsDataSourceId);
+  const application = await createApplication(submission, person.id, token, applicationsDataSourceId);
+  return {
+    ...application,
+    personId: person.id,
+    duplicate: false,
+  } satisfies NotionSubmissionResult;
+}
+
+export async function createNotionSubmission(
+  submission: NotionSubmission,
+  env: NotionRuntimeEnv = runtimeEnv,
+) {
+  if (!env.CRM_PERSON_LOCK) {
+    return createNotionSubmissionUnlocked(submission, env);
+  }
+
+  const response = await env.CRM_PERSON_LOCK
+    .getByName(normalizeEmailKey(submission.email))
+    .fetch("https://crm.internal/submissions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(submission),
+    });
+
+  if (!response.ok) {
+    throw new Error("CRM_PERSON_LOCK_FAILED");
+  }
+
+  return (await response.json()) as NotionSubmissionResult;
 }
