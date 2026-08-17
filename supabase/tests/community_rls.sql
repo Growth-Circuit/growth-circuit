@@ -96,11 +96,13 @@ insert into auth.users (id, aud, role, email, email_confirmed_at, raw_app_meta_d
 values
   ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'admin@example.test', now(), '{}', '{}'),
   ('10000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated', 'member@example.test', now(), '{}', '{}'),
-  ('10000000-0000-0000-0000-000000000003', 'authenticated', 'authenticated', 'contributor@example.test', now(), '{}', '{}');
+  ('10000000-0000-0000-0000-000000000003', 'authenticated', 'authenticated', 'contributor@example.test', now(), '{}', '{}'),
+  ('10000000-0000-0000-0000-000000000004', 'authenticated', 'authenticated', 'newcomer@example.test', now(), '{}', '{}');
 insert into public.community_profiles (id, first_name, last_name) values
   ('10000000-0000-0000-0000-000000000001', 'Ada', 'Admin'),
   ('10000000-0000-0000-0000-000000000002', 'Mina', 'Member'),
-  ('10000000-0000-0000-0000-000000000003', 'Connie', 'Contributor');
+  ('10000000-0000-0000-0000-000000000003', 'Connie', 'Contributor'),
+  ('10000000-0000-0000-0000-000000000004', 'Nora', 'Newcomer');
 insert into public.community_admins (user_id) values ('10000000-0000-0000-0000-000000000001');
 insert into public.community_memberships (user_id, status, granted_at, updated_by)
 values ('10000000-0000-0000-0000-000000000002', 'active', now(), '10000000-0000-0000-0000-000000000001');
@@ -118,6 +120,15 @@ insert into public.community_images (
 set local role anon;
 select extensions.is((select count(*)::integer from public.community_posts), 1, 'anonymous sees only the public post');
 select extensions.is((select count(*)::integer from public.community_images), 1, 'anonymous sees only public image records');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000004', true);
+select extensions.is(
+  (select count(*)::integer from public.community_profiles where id = auth.uid()),
+  1,
+  'an authenticated newcomer can read their own profile before posting or joining'
+);
 reset role;
 
 set local role authenticated;

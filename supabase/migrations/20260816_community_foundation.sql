@@ -491,7 +491,7 @@ drop policy if exists community_moderation_audits_read_admin on public.community
 drop policy if exists community_launch_audits_read_admin on public.community_launch_audits;
 
 create policy community_profiles_read on public.community_profiles for select using (
-  id = auth.uid() or public.community_is_admin() or exists (
+  community_profiles.id = auth.uid() or public.community_is_admin() or exists (
     select 1 from public.community_posts p where p.author_id = community_profiles.id and p.audience = 'public'
       and p.publication_state = 'published' and p.moderation_state = 'visible'
   ) or (public.community_launch_allows(false, true) and public.community_is_active_member())
