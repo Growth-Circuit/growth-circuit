@@ -21,9 +21,16 @@
     { "pattern": "growthcircuit.club", "custom_domain": true },
     { "pattern": "www.growthcircuit.club", "custom_domain": true }
   ],
+  "triggers": {
+    "crons": ["17 * * * *"]
+  },
   "vars": {
     "PUBLIC_SITE_URL": "https://growthcircuit.club",
     "BUZZ_WEBHOOK_URL": "https://growth-circuit-buzz-relay.vercel.app/api/notify",
+    "CRM_SYNC_ENABLED": "false",
+    "LOOPS_COHORT_OPENINGS_LIST_ID": "cmsxf6xb520ym0izgfvm41c01",
+    "LOOPS_COMMUNITY_UPDATES_LIST_ID": "cmsxf7r8g00hv0j0732pqc8lk",
+    "LOOPS_EVENTS_LIST_ID": "cmsxf83ve226k0jzk6f3ha4j0",
     "NOTION_APPLICATIONS_DATA_SOURCE_ID": "3b0b74c7ad91803fa41c000b268d883c",
     "NOTION_PEOPLE_DATA_SOURCE_ID": "51924dca353a4281a4624e48d02157fe",
     "PUBLIC_SUPABASE_URL": "https://twkvclxsynnbktppeozg.supabase.co",
@@ -35,11 +42,29 @@
       "id": "943b37dfb7f74a71833818ff95844aab"
     }
   ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CRM_PERSON_LOCK",
+        "class_name": "CrmPersonLock"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["CrmPersonLock"]
+    }
+  ],
   "queues": {
     "producers": [
       {
         "binding": "BUZZ_SUBMISSION_ALERTS",
         "queue": "growth-circuit-submission-alerts"
+      },
+      {
+        "binding": "CRM_SYNC_QUEUE",
+        "queue": "growth-circuit-crm-sync"
       }
     ],
     "consumers": [
@@ -53,6 +78,21 @@
       },
       {
         "queue": "growth-circuit-submission-alerts-dlq",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 3,
+        "max_concurrency": 1
+      },
+      {
+        "queue": "growth-circuit-crm-sync",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 10,
+        "max_concurrency": 2,
+        "dead_letter_queue": "growth-circuit-crm-sync-dlq"
+      },
+      {
+        "queue": "growth-circuit-crm-sync-dlq",
         "max_batch_size": 1,
         "max_batch_timeout": 1,
         "max_retries": 3,

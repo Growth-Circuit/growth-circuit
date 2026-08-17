@@ -5,9 +5,19 @@ import {
   type BuzzSubmissionNotification,
 } from "@/lib/buzz-server";
 import { handleSupabaseAuthEmailHook } from "@/lib/auth-email-hook";
+import {
+  isCrmSyncEnabled,
+  isCrmSyncMessage,
+  reconcileCrmPeople,
+  syncCrmPerson,
+} from "@/lib/crm-sync";
+
+export { CrmPersonLock } from "@/lib/crm-person-lock";
 
 const DELIVERY_TTL_SECONDS = 60 * 60 * 24 * 90;
 const DEAD_LETTER_QUEUE = "growth-circuit-submission-alerts-dlq";
+const CRM_SYNC_QUEUE = "growth-circuit-crm-sync";
+const CRM_SYNC_DEAD_LETTER_QUEUE = "growth-circuit-crm-sync-dlq";
 
 function deliveredKey(notionPageId: string) {
   return `delivered:${notionPageId}`;
@@ -142,6 +152,43 @@ async function consumeDeadLetter(message: Message<unknown>, env: Env) {
   message.ack();
 }
 
+export async function consumeCrmSync(message: Message<unknown>, env: Env) {
+  if (!isCrmSyncMessage(message.body)) {
+    console.error(JSON.stringify({ event: "crm_sync_invalid", messageId: message.id }));
+    message.ack();
+    return;
+  }
+
+  if (!isCrmSyncEnabled(env)) {
+    console.log(JSON.stringify({
+      event: "crm_sync_skipped",
+      messageId: message.id,
+      personId: message.body.personId,
+      reason: "disabled",
+    }));
+    message.ack();
+    return;
+  }
+
+  try {
+    const result = await syncCrmPerson(message.body.personId, env);
+    console.log(JSON.stringify({
+      event: result.synced ? "crm_sync_completed" : "crm_sync_skipped",
+      messageId: message.id,
+      personId: message.body.personId,
+    }));
+    message.ack();
+  } catch {
+    console.error(JSON.stringify({
+      event: "crm_sync_failed",
+      attempts: message.attempts,
+      messageId: message.id,
+      personId: message.body.personId,
+    }));
+    message.retry({ delaySeconds: retryDelaySeconds(message.attempts) });
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (new URL(request.url).pathname === "/api/supabase/auth-email-hook") {
@@ -152,11 +199,30 @@ export default {
 
   async queue(batch, env) {
     for (const message of batch.messages) {
-      if (batch.queue === DEAD_LETTER_QUEUE) {
+      if (batch.queue === CRM_SYNC_DEAD_LETTER_QUEUE) {
+        console.error(JSON.stringify({
+          event: "crm_sync_dead_lettered",
+          messageId: message.id,
+          personId: isCrmSyncMessage(message.body) ? message.body.personId : undefined,
+        }));
+        message.ack();
+      } else if (batch.queue === CRM_SYNC_QUEUE) {
+        await consumeCrmSync(message, env);
+      } else if (batch.queue === DEAD_LETTER_QUEUE) {
         await consumeDeadLetter(message, env);
       } else {
         await consumeSubmissionAlert(message, env);
       }
     }
+  },
+
+  async scheduled(_controller, env, ctx) {
+    if (!isCrmSyncEnabled(env)) {
+      console.log(JSON.stringify({ event: "crm_reconciliation_skipped", reason: "disabled" }));
+      return;
+    }
+    ctx.waitUntil(reconcileCrmPeople(env).then((result) => {
+      console.log(JSON.stringify({ event: "crm_reconciliation_completed", ...result }));
+    }));
   },
 } satisfies ExportedHandler<Env>;

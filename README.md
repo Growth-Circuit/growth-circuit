@@ -57,10 +57,15 @@ SUPABASE_SERVICE_ROLE_KEY=""
 NOTION_API_TOKEN=""
 NOTION_APPLICATIONS_DATA_SOURCE_ID="3b0b74c7ad91803fa41c000b268d883c"
 NOTION_PEOPLE_DATA_SOURCE_ID="51924dca353a4281a4624e48d02157fe"
+LOOPS_API_KEY=""
+LOOPS_COHORT_OPENINGS_LIST_ID="cmsxf6xb520ym0izgfvm41c01"
+LOOPS_COMMUNITY_UPDATES_LIST_ID="cmsxf7r8g00hv0j0732pqc8lk"
+LOOPS_EVENTS_LIST_ID="cmsxf83ve226k0jzk6f3ha4j0"
+CRM_SYNC_ENABLED="false"
 TURNSTILE_SECRET_KEY=""
 ```
 
-The application APIs require `NOTION_API_TOKEN`, `NOTION_APPLICATIONS_DATA_SOURCE_ID`, and `NOTION_PEOPLE_DATA_SOURCE_ID`. Keep the token in `.env` locally and as a Cloudflare secret in production. Supabase values remain optional for the parked authentication features.
+The application APIs require `NOTION_API_TOKEN`, `NOTION_APPLICATIONS_DATA_SOURCE_ID`, and `NOTION_PEOPLE_DATA_SOURCE_ID`. Keep the token in `.env` locally and as a Cloudflare secret in production. Loops syncing also requires `LOOPS_API_KEY` plus the three mailing-list IDs. Keep `CRM_SYNC_ENABLED=false` until the `Loops dry run` view in Notion has been reviewed. Supabase values remain optional for the parked authentication features.
 
 ## Notion Setup
 
@@ -69,7 +74,15 @@ The application APIs require `NOTION_API_TOKEN`, `NOTION_APPLICATIONS_DATA_SOURC
 3. Store the integration token as `NOTION_API_TOKEN`.
 4. Set `NOTION_APPLICATIONS_DATA_SOURCE_ID` and `NOTION_PEOPLE_DATA_SOURCE_ID` to their data-source IDs.
 
-The Applications properties used by the site are `Name`, `Application status`, `Email`, `Application type`, `LinkedIn profile`, `Proud build`, `Referral source`, `Location`, `Submitted at`, and `Person`. The People properties are documented in the CRM implementation plan in Notion.
+The Applications properties used by the site are `Name`, `Application status`, `Email`, `Application type`, `LinkedIn profile`, `Proud build`, `Referral source`, `Location`, `Submitted at`, `Submission ID`, and `Person`. The People properties are documented in the CRM implementation plan in Notion.
+
+People writes are serialized by normalized email through the `CRM_PERSON_LOCK` Durable Object. Application retries reuse `Submission ID`, so a timeout after a successful Notion write does not create another Application. Public forms may add consent only when creating a new Person. Existing consent changes must come from an email-verified or authenticated workflow.
+
+## Loops CRM Sync
+
+The CRM sync queue sends only People with `Consent status = Granted` and at least one communication preference. Loops contact properties mirror the stable CRM ID, Notion page ID, lifecycle, market, location, LinkedIn, referral, and consent metadata. Mailing-list membership maps directly to `Cohort openings`, `Community updates`, and `Events`.
+
+The hourly reconciliation job retries `Pending` and `Error` records. It also reads Loops subscription and mailing-list removals back into Notion, marking a fully unsubscribed contact `Withdrawn`. Use the `Loops sync errors` Notion view for operations and the `Loops dry run` view before enabling the sync flag.
 
 ## Supabase Setup
 

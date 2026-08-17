@@ -15,6 +15,28 @@ export const PERSON_MARKETS = ["New York City", "Global"] as const;
 
 export type PersonLifecycle = (typeof PERSON_LIFECYCLES)[number];
 export type PersonMarket = (typeof PERSON_MARKETS)[number];
+export type CrmConsentStatus = "Not asked" | "Granted" | "Declined" | "Withdrawn";
+export type CrmSyncStatus = "Not eligible" | "Pending" | "Synced" | "Error";
+
+export type CrmPerson = {
+  id: string;
+  crmId: string;
+  fullName: string;
+  email: string;
+  lifecycle?: PersonLifecycle;
+  market?: PersonMarket;
+  city?: string;
+  region?: string;
+  linkedInProfile?: string;
+  referralSource?: string;
+  communicationPreferences: readonly CommunicationPreference[];
+  consentStatus?: CrmConsentStatus;
+  consentSource?: string;
+  consentAt?: string;
+  loopsId?: string;
+  syncStatus?: CrmSyncStatus;
+  lastReconciledAt?: string;
+};
 
 type PersonPropertiesInput = {
   fullName: string;
@@ -74,11 +96,10 @@ export function mergeCommunicationPreferences(
 }
 
 export function buildPersonProperties(input: PersonPropertiesInput) {
-  const preferences = mergeCommunicationPreferences(
-    input.currentPreferences,
-    input.communicationPreferences,
-  );
-  const isNewConsent = input.communicationPreferences.length > 0;
+  const preferences = input.isNew
+    ? mergeCommunicationPreferences([], input.communicationPreferences)
+    : (input.currentPreferences || []);
+  const isNewConsent = input.isNew && input.communicationPreferences.length > 0;
   const isNewYork = input.applicationType === "New York application";
   const properties: Record<string, unknown> = {
     Name: { title: notionRichText(input.fullName) },
