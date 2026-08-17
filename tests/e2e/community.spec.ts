@@ -46,3 +46,48 @@ test("cookie-auth mutations reject cross-site and missing CSRF requests", async 
   });
   expect(missingToken.status()).toBe(404);
 });
+
+test("member media IDs never disclose content to an anonymous request", async ({ request }) => {
+  const response = await request.get(`${authBaseUrl}/api/community/media/30000000-0000-0000-0000-000000000002`);
+
+  expect(response.status()).toBe(404);
+  expect(response.headers()["cache-control"]).toContain("no-store");
+  expect(await response.text()).toBe("Not found");
+});
+
+test("the community route is either safely dark or renders the shared feed shell", async ({ page }) => {
+  const response = await page.goto(`${authBaseUrl}/community`);
+  if (response?.status() === 404) {
+    expect(response.headers()["cache-control"]).toContain("no-store");
+    await expect(page.locator("body")).not.toContainText("Members-only");
+    return;
+  }
+
+  expect(response?.ok()).toBe(true);
+  await expect(page.getByRole("heading", { level: 1, name: "The Circuit" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Public" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "Members" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /share a post/i })).toBeVisible();
+  await expect(page.getByText("ONLINE NOW")).toBeVisible();
+});
+
+test("community navigation and legacy entrypoints preserve one canonical experience", async ({ request }) => {
+  for (const path of ["/submit", "/questions", "/builds", "/challenges"]) {
+    const response = await request.get(`${authBaseUrl}${path}`, { maxRedirects: 0 });
+    expect([301, 302, 307, 308]).toContain(response.status());
+    expect(response.headers().location).toContain("/community");
+  }
+});
+
+test("community feed controls meet keyboard and touch-target basics when enabled", async ({ page }) => {
+  const response = await page.goto(`${authBaseUrl}/community`);
+  test.skip(response?.status() === 404, "Community dark-launch gate is active in this environment.");
+
+  const publicTab = page.getByRole("tab", { name: "Public" });
+  await publicTab.focus();
+  await expect(publicTab).toBeFocused();
+  const box = await publicTab.boundingBox();
+  expect(box?.height).toBeGreaterThanOrEqual(44);
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("tab", { name: "Members" })).toBeFocused();
+});

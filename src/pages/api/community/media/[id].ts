@@ -1,0 +1,45 @@
+import type { APIRoute } from "astro";
+import { COMMUNITY_IMAGE_SELECT, COMMUNITY_PRIVATE_BUCKET, getCommunityStorageAdmin, mapCommunityImage } from "@/lib/community-storage";
+
+export const prerender = false;
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const PRIVATE_HEADERS = {
+  "Cache-Control": "private, no-store, max-age=0",
+  "CDN-Cache-Control": "no-store",
+  "Cloudflare-CDN-Cache-Control": "no-store",
+  "Pragma": "no-cache",
+  "Vary": "Cookie, Authorization",
+  "X-Content-Type-Options": "nosniff",
+  "X-Robots-Tag": "noindex, nofollow",
+};
+
+function unavailable() {
+  return new Response("Not found", { status: 404, headers: { ...PRIVATE_HEADERS, "Content-Type": "text/plain; charset=utf-8" } });
+}
+
+export const GET: APIRoute = async ({ params, locals }) => {
+  const imageId = params.id;
+  if (!imageId || !UUID.test(imageId) || !locals.supabase || !locals.communityIdentity.user
+    || !["member", "admin"].includes(locals.communityIdentity.role)) return unavailable();
+
+  const { data: rawImage, error } = await locals.supabase
+    .from("community_images").select(COMMUNITY_IMAGE_SELECT).eq("id", imageId).maybeSingle();
+  if (error || !rawImage) return unavailable();
+  const image = mapCommunityImage(rawImage as Record<string, unknown>);
+  if (image.audience !== "members" || image.bucket !== COMMUNITY_PRIVATE_BUCKET || image.state !== "ready") return unavailable();
+
+  const admin = await getCommunityStorageAdmin(locals);
+  if (!admin) return unavailable();
+  const { data, error: downloadError } = await admin.storage.from(COMMUNITY_PRIVATE_BUCKET).download(image.objectPath).asStream();
+  if (downloadError || !data) return unavailable();
+  return new Response(data, {
+    status: 200,
+    headers: {
+      ...PRIVATE_HEADERS,
+      "Content-Type": image.mimeType,
+      "Content-Length": String(image.byteSize),
+      "Content-Disposition": "inline",
+    },
+  });
+};

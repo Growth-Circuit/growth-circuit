@@ -1,17 +1,4 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import AnnouncementHold from "@/components/AnnouncementHold.astro";
+export const prerender = false;
+return Astro.redirect("/community", 301);
 ---
-
-<BaseLayout
-  title="Public Prompts Coming Later"
-  description="Monthly Bring Your Own Build prompts for the Growth Circuit community."
-  path="/challenges"
-  noindex
->
-  <AnnouncementHold
-    eyebrow="Coming later"
-    title="Public build prompts are paused for the announcement."
-    description="For now, the prompt lives inside the NYC community. We will turn the async challenge layer back on when the global community is ready."
-  />
-</BaseLayout>

@@ -1,17 +1,4 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import AnnouncementHold from "@/components/AnnouncementHold.astro";
+export const prerender = false;
+return Astro.redirect("/community", 301);
 ---
-
-<BaseLayout
-  title="Questions Coming Later"
-  description="Practical Q&A for marketing engineers working across AI search, analytics, paid media, automation, and growth systems."
-  path="/questions"
-  noindex
->
-  <AnnouncementHold
-    eyebrow="Coming later"
-    title="The public question archive is staying quiet for launch."
-    description="We are focusing the announcement on the NYC Marketing Engineer community first. The broader question-and-answer community will open once the first cohort gives it a stronger center of gravity."
-  />
-</BaseLayout>

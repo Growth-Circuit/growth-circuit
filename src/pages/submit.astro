@@ -1,24 +1,4 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import AnnouncementHold from "@/components/AnnouncementHold.astro";
-import { breadcrumbJsonLd } from "@/lib/seo";
+export const prerender = false;
+return Astro.redirect("/community/submit", 301);
 ---
-
-<BaseLayout
-  title="Posting Paused"
-  description="Start a Growth Circuit question, build note, or discussion thread for marketing engineers."
-  path="/submit"
-  noindex
-  jsonLd={[
-    breadcrumbJsonLd([
-      { name: "Home", path: "/" },
-      { name: "Submit a Post", path: "/submit" },
-    ]),
-  ]}
->
-  <AnnouncementHold
-    eyebrow="Posting paused"
-    title="Public submissions are hidden for this launch."
-    description="We are keeping the announcement focused on NYC community applications. The post composer is still in the codebase for the global community phase."
-  />
-</BaseLayout>

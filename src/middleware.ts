@@ -7,13 +7,22 @@ import {
   parseRolloutAllowlist,
   validateCsrfRequest,
 } from "@/lib/community-auth";
-import { createUserSupabaseClient } from "@/lib/supabase-server";
+import { createUserSupabaseClient, type SupabaseRuntimeEnv } from "@/lib/supabase-server";
 
-type CommunityRuntimeEnv = {
+type CommunityRuntimeEnv = SupabaseRuntimeEnv & {
   COMMUNITY_FEATURE_ENABLED?: string;
   COMMUNITY_KILL_SWITCH?: string;
   COMMUNITY_ROLLOUT_ALLOWLIST?: string;
 };
+
+async function getRuntimeEnv(): Promise<CommunityRuntimeEnv> {
+  try {
+    const runtime = await import("cloudflare:workers");
+    return runtime.env as unknown as CommunityRuntimeEnv;
+  } catch {
+    return import.meta.env as CommunityRuntimeEnv;
+  }
+}
 
 const AUTH_PATHS = ["/auth", "/api/auth"];
 const COMMUNITY_PATHS = ["/community", "/api/community", "/admin/community", "/media/community"];
@@ -77,10 +86,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isCommunity = pathStartsWith(requestUrl.pathname, COMMUNITY_PATHS);
   const sensitive = isAuth || isCommunity;
   const pendingHeaders: Record<string, string> = {};
-  const runtime = (context.locals as typeof context.locals & {
-    runtime?: { env?: Record<string, unknown> };
-  }).runtime;
-  const runtimeEnv = (runtime?.env || import.meta.env) as CommunityRuntimeEnv;
+  const runtimeEnv = await getRuntimeEnv();
   const rolloutConfig = {
     featureEnabled: envFlag(runtimeEnv.COMMUNITY_FEATURE_ENABLED),
     killSwitch: envFlag(runtimeEnv.COMMUNITY_KILL_SWITCH, true),
@@ -102,7 +108,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createUserSupabaseClient(
     context.request,
     context.cookies,
-    runtime?.env,
+    runtimeEnv,
     (headers) => Object.assign(pendingHeaders, headers),
   );
   const identity = supabase

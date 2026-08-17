@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { AstroCookies } from "astro";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/lib/supabase-config";
 
-type SupabaseRuntimeEnv = {
+export type SupabaseRuntimeEnv = {
   PUBLIC_SUPABASE_URL?: string;
   PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;

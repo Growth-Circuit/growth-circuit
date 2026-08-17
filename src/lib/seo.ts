@@ -1,4 +1,5 @@
 import type { Thread } from "@/data/forum";
+import type { CommunityPostView, CommunityReplyView } from "@/lib/community";
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.club";
 
@@ -125,4 +126,47 @@ export function breadcrumbJsonLd(items: Array<{ name: string; path: string }>) {
       item: canonical(item.path),
     })),
   };
+}
+
+export function communityPostJsonLd(post: CommunityPostView, replies: CommunityReplyView[] = []) {
+  if (post.audience !== "public" || post.state !== "published" || post.moderationState !== "visible") return null;
+  const url = canonical(`/community/${post.slug}`);
+  return {
+    "@context": "https://schema.org",
+    "@type": "DiscussionForumPosting",
+    headline: post.title,
+    text: post.bodyMarkdown,
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt,
+    url,
+    author: { "@type": "Person", name: post.authorName },
+    interactionStatistic: [
+      {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/LikeAction",
+        userInteractionCount: post.score,
+      },
+      {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/CommentAction",
+        userInteractionCount: post.replyCount,
+      },
+    ],
+    comment: replies.map((reply) => ({
+      "@type": "Comment",
+      text: reply.bodyMarkdown,
+      dateCreated: reply.createdAt,
+      author: { "@type": "Person", name: reply.authorName },
+    })),
+  };
+}
+
+export function communityExcerpt(markdown: string, maxLength = 180) {
+  const plain = markdown
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/[`*_>#~|\[\]()-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return plain.length > maxLength ? `${plain.slice(0, maxLength - 1).trimEnd()}…` : plain;
 }

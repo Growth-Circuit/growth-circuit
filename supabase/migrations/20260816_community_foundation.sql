@@ -69,10 +69,10 @@ create table if not exists public.community_images (
   byte_size bigint not null check (byte_size between 1 and 5242880),
   width integer check (width > 0),
   height integer check (height > 0),
-  position smallint not null check (position between 0 and 4),
+  -- Negative positions are reserved for the first phase of the atomic reorder RPC.
+  position smallint not null check (position between -5 and 4),
   state text not null default 'staging' check (state in ('staging', 'ready', 'deleted')),
   created_at timestamptz not null default now(),
-  unique (post_id, position),
   unique (id, post_id, audience),
   foreign key (post_id, author_id, audience)
     references public.community_posts(id, author_id, audience) on delete cascade,
@@ -130,8 +130,16 @@ create table if not exists public.community_post_rate_limits (
   post_count integer not null check (post_count >= 0)
 );
 
+create table if not exists public.community_upload_rate_limits (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  window_started_at timestamptz not null,
+  sign_count integer not null check (sign_count >= 0),
+  declared_bytes bigint not null check (declared_bytes >= 0)
+);
+
 create table if not exists public.community_membership_audits (
   id bigint generated always as identity primary key,
+  request_id uuid not null default extensions.gen_random_uuid() unique,
   actor_id uuid not null references public.community_admins(user_id) on delete restrict,
   subject_id uuid not null references auth.users(id) on delete restrict,
   previous_status text,
@@ -142,6 +150,7 @@ create table if not exists public.community_membership_audits (
 
 create table if not exists public.community_moderation_audits (
   id bigint generated always as identity primary key,
+  request_id uuid not null default extensions.gen_random_uuid() unique,
   actor_id uuid not null references public.community_admins(user_id) on delete restrict,
   content_type text not null check (content_type in ('post', 'reply')),
   content_id uuid not null,
@@ -168,6 +177,8 @@ create index if not exists community_replies_post_idx
   on public.community_replies (post_id, created_at, id);
 create index if not exists community_images_post_idx
   on public.community_images (post_id, state, position);
+create unique index if not exists community_images_live_position_idx
+  on public.community_images (post_id, position) where state <> 'deleted';
 
 create or replace function public.community_is_admin(subject uuid default auth.uid())
 returns boolean language sql stable security definer set search_path = '' as $$
@@ -272,6 +283,35 @@ begin
 end;
 $$;
 
+create or replace function public.community_consume_upload_quota(declared_byte_size_input bigint)
+returns void language plpgsql volatile security definer set search_path = '' as $$
+declare actor uuid := auth.uid(); current_count integer; current_bytes bigint;
+begin
+  if actor is null or not public.community_launch_allows(true, false) then
+    raise exception 'community write unavailable' using errcode = '42501';
+  end if;
+  if declared_byte_size_input not between 1 and 5242880 then
+    raise exception 'invalid image metadata' using errcode = '22023';
+  end if;
+  insert into public.community_upload_rate_limits (user_id, window_started_at, sign_count, declared_bytes)
+  values (actor, clock_timestamp(), 1, declared_byte_size_input)
+  on conflict (user_id) do update set
+    window_started_at = case
+      when public.community_upload_rate_limits.window_started_at <= clock_timestamp() - interval '1 hour'
+        then clock_timestamp() else public.community_upload_rate_limits.window_started_at end,
+    sign_count = case
+      when public.community_upload_rate_limits.window_started_at <= clock_timestamp() - interval '1 hour'
+        then 1 else public.community_upload_rate_limits.sign_count + 1 end,
+    declared_bytes = case
+      when public.community_upload_rate_limits.window_started_at <= clock_timestamp() - interval '1 hour'
+        then declared_byte_size_input else public.community_upload_rate_limits.declared_bytes + declared_byte_size_input end
+  returning sign_count, declared_bytes into current_count, current_bytes;
+  if current_count > 12 or current_bytes > 26214400 then
+    raise exception 'upload quota exceeded' using errcode = 'P0001';
+  end if;
+end;
+$$;
+
 create or replace function public.community_create_post(
   title_input text, body_input text, audience_input text, github_repository_input text default null
 ) returns public.community_posts
@@ -326,6 +366,63 @@ begin
 end;
 $$;
 
+create or replace function public.community_update_post(
+  post_input uuid, title_input text, body_input text, github_repository_input text default null
+) returns public.community_posts
+language plpgsql volatile security definer set search_path = '' as $$
+declare actor uuid := auth.uid(); target public.community_posts;
+begin
+  select * into target from public.community_posts p where p.id = post_input for update;
+  if actor is null or target.id is null or target.author_id <> actor
+     or target.publication_state = 'deleted' or target.moderation_state <> 'visible'
+     or not public.community_launch_allows(true, target.audience = 'members')
+     or (target.audience = 'members' and not public.community_is_active_member(actor))
+     or not exists (
+       select 1 from auth.users u join public.community_profiles p on p.id = u.id
+       where u.id = actor and u.email_confirmed_at is not null
+     ) then
+    raise exception 'post unavailable' using errcode = '42501';
+  end if;
+  if btrim(coalesce(title_input, '')) = '' or btrim(coalesce(body_input, '')) = '' then
+    raise exception 'title and body are required' using errcode = '22023';
+  end if;
+  if github_repository_input is not null and github_repository_input !~ '^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/?$' then
+    raise exception 'invalid GitHub repository URL' using errcode = '22023';
+  end if;
+  update public.community_posts set
+    title = btrim(title_input),
+    body_markdown = body_input,
+    github_repository_url = nullif(regexp_replace(github_repository_input, '/$', ''), ''),
+    updated_at = clock_timestamp()
+  where id = target.id
+  returning * into target;
+  return target;
+end;
+$$;
+
+create or replace function public.community_delete_post(post_input uuid)
+returns public.community_posts language plpgsql volatile security definer set search_path = '' as $$
+declare actor uuid := auth.uid(); target public.community_posts;
+begin
+  select * into target from public.community_posts p where p.id = post_input for update;
+  if actor is null or target.id is null or target.author_id <> actor
+     or not public.community_launch_allows(true, target.audience = 'members')
+     or (target.audience = 'members' and not public.community_is_active_member(actor))
+     or not exists (
+       select 1 from auth.users u join public.community_profiles p on p.id = u.id
+       where u.id = actor and u.email_confirmed_at is not null
+     ) then
+    raise exception 'post unavailable' using errcode = '42501';
+  end if;
+  if target.publication_state = 'deleted' then return target; end if;
+  update public.community_posts set
+    publication_state = 'deleted', deleted_at = clock_timestamp(), updated_at = clock_timestamp()
+  where id = target.id
+  returning * into target;
+  return target;
+end;
+$$;
+
 create or replace function public.community_create_reply(post_input uuid, body_input text)
 returns public.community_replies language plpgsql volatile security definer set search_path = '' as $$
 declare actor uuid := auth.uid(); parent public.community_posts; created public.community_replies;
@@ -373,7 +470,13 @@ declare actor uuid := auth.uid(); target public.community_posts;
 begin
   select * into target from public.community_posts p where p.id = post_input for update;
   if target.id is null or target.author_id <> actor or target.publication_state <> 'draft'
-     or not public.community_launch_allows(true, target.audience = 'members') then
+     or target.moderation_state <> 'visible'
+     or not public.community_launch_allows(true, target.audience = 'members')
+     or (target.audience = 'members' and not public.community_is_active_member(actor))
+     or not exists (
+       select 1 from auth.users u join public.community_profiles p on p.id = u.id
+       where u.id = actor and u.email_confirmed_at is not null
+     ) then
     raise exception 'post unavailable' using errcode = '42501';
   end if;
   if enabled_input and image_input is not null and not exists (
@@ -389,14 +492,177 @@ begin
 end;
 $$;
 
-create or replace function public.community_set_membership(subject_input uuid, status_input text, reason_input text)
+create or replace function public.community_begin_image(
+  post_input uuid, mime_type_input text, declared_byte_size_input bigint
+)
+returns public.community_images language plpgsql volatile security definer set search_path = '' as $$
+declare
+  actor uuid := auth.uid();
+  target public.community_posts;
+  created public.community_images;
+  image_id uuid := extensions.gen_random_uuid();
+  next_position smallint;
+  file_extension text;
+begin
+  select * into target from public.community_posts p where p.id = post_input for update;
+  if actor is null or target.id is null or target.author_id <> actor or target.publication_state <> 'draft'
+     or target.moderation_state <> 'visible'
+     or not public.community_launch_allows(true, target.audience = 'members')
+     or (target.audience = 'members' and not public.community_is_active_member(actor))
+     or not exists (
+       select 1 from auth.users u join public.community_profiles p on p.id = u.id
+       where u.id = actor and u.email_confirmed_at is not null
+     ) then
+    raise exception 'post unavailable' using errcode = '42501';
+  end if;
+  file_extension := case mime_type_input
+    when 'image/jpeg' then 'jpg' when 'image/png' then 'png' when 'image/webp' then 'webp' else null end;
+  if file_extension is null then raise exception 'invalid image metadata' using errcode = '22023'; end if;
+  if declared_byte_size_input not between 1 and 5242880 then
+    raise exception 'invalid image metadata' using errcode = '22023';
+  end if;
+  if (select count(*) from public.community_images i where i.post_id = target.id and i.state <> 'deleted') >= 5 then
+    raise exception 'image limit exceeded' using errcode = 'P0001';
+  end if;
+  select slot::smallint into next_position
+  from generate_series(0, 4) slot
+  where not exists (
+    select 1 from public.community_images i
+    where i.post_id = target.id and i.position = slot and i.state <> 'deleted'
+  ) order by slot limit 1;
+  perform public.community_consume_upload_quota(declared_byte_size_input);
+  insert into public.community_images (
+    id, post_id, author_id, audience, bucket_id, object_path, mime_type, byte_size, position, state
+  ) values (
+    image_id, target.id, actor, target.audience, 'community-staging',
+    actor::text || '/' || target.id::text || '/' || image_id::text || '.' || file_extension,
+    mime_type_input, declared_byte_size_input, next_position, 'staging'
+  ) returning * into created;
+  return created;
+end;
+$$;
+
+create or replace function public.community_finalize_image(
+  image_input uuid, mime_type_input text, byte_size_input bigint, width_input integer, height_input integer
+) returns public.community_images language plpgsql volatile security definer set search_path = '' as $$
+declare actor uuid := auth.uid(); target public.community_images; parent public.community_posts; destination text;
+begin
+  select * into target from public.community_images i where i.id = image_input;
+  if target.id is null or target.author_id <> actor then raise exception 'image unavailable' using errcode = '42501'; end if;
+  select * into parent from public.community_posts p where p.id = target.post_id for update;
+  select * into target from public.community_images i where i.id = image_input for update;
+  if parent.id is null or parent.author_id <> actor or parent.publication_state <> 'draft'
+     or parent.moderation_state <> 'visible' or parent.audience <> target.audience
+     or not public.community_launch_allows(true, parent.audience = 'members')
+     or (parent.audience = 'members' and not public.community_is_active_member(actor))
+     or not exists (
+       select 1 from auth.users u join public.community_profiles p on p.id = u.id
+       where u.id = actor and u.email_confirmed_at is not null
+     ) then raise exception 'image unavailable' using errcode = '42501'; end if;
+  if mime_type_input not in ('image/jpeg', 'image/png', 'image/webp') or mime_type_input <> target.mime_type
+     or byte_size_input not between 1 and 5242880
+     or width_input not between 1 and 16384 or height_input not between 1 and 16384
+     or width_input::bigint * height_input::bigint > 100000000 then
+    raise exception 'invalid image metadata' using errcode = '22023';
+  end if;
+  destination := case parent.audience when 'public' then 'community-public' else 'community-private' end;
+  if target.state = 'ready' then
+    if target.bucket_id = destination and target.mime_type = mime_type_input and target.byte_size = byte_size_input
+       and target.width = width_input and target.height = height_input then return target; end if;
+    raise exception 'image finalization mismatch' using errcode = '22023';
+  end if;
+  if target.state <> 'staging' or target.bucket_id <> 'community-staging' then
+    raise exception 'image unavailable' using errcode = '42501';
+  end if;
+  update public.community_images set bucket_id = destination, mime_type = mime_type_input,
+    byte_size = byte_size_input, width = width_input, height = height_input, state = 'ready'
+  where id = target.id returning * into target;
+  return target;
+end;
+$$;
+
+create or replace function public.community_delete_image(image_input uuid)
+returns public.community_images language plpgsql volatile security definer set search_path = '' as $$
+declare actor uuid := auth.uid(); target public.community_images; parent public.community_posts;
+begin
+  select * into target from public.community_images i where i.id = image_input;
+  if target.id is null or target.author_id <> actor then raise exception 'image unavailable' using errcode = '42501'; end if;
+  select * into parent from public.community_posts p where p.id = target.post_id for update;
+  select * into target from public.community_images i where i.id = image_input for update;
+  if parent.id is null or parent.author_id <> actor or parent.publication_state <> 'draft'
+     or parent.moderation_state <> 'visible'
+     or not public.community_launch_allows(true, parent.audience = 'members')
+     or (parent.audience = 'members' and not public.community_is_active_member(actor))
+     or not exists (
+       select 1 from auth.users u join public.community_profiles p on p.id = u.id
+       where u.id = actor and u.email_confirmed_at is not null
+     ) then
+    raise exception 'image unavailable' using errcode = '42501';
+  end if;
+  if target.state = 'deleted' then return target; end if;
+  update public.community_posts set header_image_id = null, updated_at = clock_timestamp()
+    where id = parent.id and header_image_id = target.id;
+  update public.community_images set state = 'deleted' where id = target.id returning * into target;
+  return target;
+end;
+$$;
+
+create or replace function public.community_reorder_images(post_input uuid, image_ids_input uuid[])
+returns setof public.community_images language plpgsql volatile security definer set search_path = '' as $$
+declare actor uuid := auth.uid(); parent public.community_posts; supplied_count integer := coalesce(cardinality(image_ids_input), 0);
+begin
+  select * into parent from public.community_posts p where p.id = post_input for update;
+  if parent.id is null or parent.author_id <> actor or parent.publication_state <> 'draft'
+     or parent.moderation_state <> 'visible'
+     or not public.community_launch_allows(true, parent.audience = 'members')
+     or (parent.audience = 'members' and not public.community_is_active_member(actor))
+     or not exists (
+       select 1 from auth.users u join public.community_profiles p on p.id = u.id
+       where u.id = actor and u.email_confirmed_at is not null
+     ) then
+    raise exception 'post unavailable' using errcode = '42501';
+  end if;
+  if supplied_count < 1 or supplied_count > 5
+     or (select count(distinct value) from unnest(image_ids_input) value) <> supplied_count
+     or (select count(*) from public.community_images i where i.post_id = parent.id and i.state <> 'deleted') <> supplied_count
+     or exists (
+       select 1 from unnest(image_ids_input) value
+       where not exists (
+         select 1 from public.community_images i where i.id = value and i.post_id = parent.id
+           and i.author_id = actor and i.audience = parent.audience and i.state <> 'deleted'
+       )
+     ) then raise exception 'invalid image order' using errcode = '22023'; end if;
+  update public.community_images i set position = position - 5
+  where i.post_id = parent.id and i.state <> 'deleted';
+  update public.community_images i set position = array_position(image_ids_input, i.id) - 1
+  where i.post_id = parent.id and i.state <> 'deleted';
+  return query select i.* from public.community_images i
+    where i.post_id = parent.id and i.state <> 'deleted' order by i.position;
+end;
+$$;
+
+create or replace function public.community_set_membership(
+  subject_input uuid, status_input text, reason_input text,
+  request_id_input uuid default extensions.gen_random_uuid()
+)
 returns public.community_memberships language plpgsql volatile security definer set search_path = '' as $$
-declare actor uuid := auth.uid(); old_status text; changed public.community_memberships;
+declare actor uuid := auth.uid(); old_status text; changed public.community_memberships; prior public.community_membership_audits;
 begin
   if not public.community_is_admin(actor) then raise exception 'admin required' using errcode = '42501'; end if;
   if not public.community_launch_allows(true, false) then raise exception 'community write unavailable' using errcode = '42501'; end if;
   if status_input not in ('active', 'suspended', 'revoked') or btrim(coalesce(reason_input, '')) = '' then
     raise exception 'invalid membership change' using errcode = '22023';
+  end if;
+  if request_id_input is null then raise exception 'request id required' using errcode = '22023'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(request_id_input::text, 0));
+  select * into prior from public.community_membership_audits where request_id = request_id_input;
+  if prior.id is not null then
+    if prior.actor_id <> actor or prior.subject_id <> subject_input or prior.new_status <> status_input
+       or prior.reason <> btrim(reason_input) then
+      raise exception 'request id reuse mismatch' using errcode = '22023';
+    end if;
+    select * into changed from public.community_memberships where user_id = subject_input;
+    return changed;
   end if;
   select status into old_status from public.community_memberships where user_id = subject_input for update;
   insert into public.community_memberships (user_id, status, granted_at, updated_at, updated_by)
@@ -405,21 +671,32 @@ begin
     granted_at = case when excluded.status = 'active' then coalesce(public.community_memberships.granted_at, clock_timestamp()) else public.community_memberships.granted_at end,
     updated_at = clock_timestamp(), updated_by = actor
   returning * into changed;
-  insert into public.community_membership_audits (actor_id, subject_id, previous_status, new_status, reason)
-  values (actor, subject_input, old_status, status_input, btrim(reason_input));
+  insert into public.community_membership_audits (request_id, actor_id, subject_id, previous_status, new_status, reason)
+  values (request_id_input, actor, subject_input, old_status, status_input, btrim(reason_input));
   return changed;
 end;
 $$;
 
 create or replace function public.community_moderate_content(
-  content_type_input text, content_input uuid, state_input text, reason_input text
+  content_type_input text, content_input uuid, state_input text, reason_input text,
+  request_id_input uuid default extensions.gen_random_uuid()
 ) returns void language plpgsql volatile security definer set search_path = '' as $$
-declare actor uuid := auth.uid(); old_state text;
+declare actor uuid := auth.uid(); old_state text; prior public.community_moderation_audits;
 begin
   if not public.community_is_admin(actor) then raise exception 'admin required' using errcode = '42501'; end if;
   if not public.community_launch_allows(true, false) then raise exception 'community write unavailable' using errcode = '42501'; end if;
   if state_input not in ('visible', 'hidden') or content_type_input not in ('post', 'reply')
      or btrim(coalesce(reason_input, '')) = '' then raise exception 'invalid moderation change' using errcode = '22023'; end if;
+  if request_id_input is null then raise exception 'request id required' using errcode = '22023'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(request_id_input::text, 0));
+  select * into prior from public.community_moderation_audits where request_id = request_id_input;
+  if prior.id is not null then
+    if prior.actor_id <> actor or prior.content_type <> content_type_input or prior.content_id <> content_input
+       or prior.new_state <> state_input or prior.reason <> btrim(reason_input) then
+      raise exception 'request id reuse mismatch' using errcode = '22023';
+    end if;
+    return;
+  end if;
   if content_type_input = 'post' then
     select moderation_state into old_state from public.community_posts where id = content_input for update;
     update public.community_posts set moderation_state = state_input, updated_at = clock_timestamp() where id = content_input;
@@ -428,8 +705,8 @@ begin
     update public.community_replies set moderation_state = state_input, updated_at = clock_timestamp() where id = content_input;
   end if;
   if old_state is null then raise exception 'content unavailable' using errcode = '42501'; end if;
-  insert into public.community_moderation_audits (actor_id, content_type, content_id, previous_state, new_state, reason)
-  values (actor, content_type_input, content_input, old_state, state_input, btrim(reason_input));
+  insert into public.community_moderation_audits (request_id, actor_id, content_type, content_id, previous_state, new_state, reason)
+  values (request_id_input, actor, content_type_input, content_input, old_state, state_input, btrim(reason_input));
 end;
 $$;
 
@@ -461,6 +738,7 @@ alter table public.community_images enable row level security;
 alter table public.community_replies enable row level security;
 alter table public.community_votes enable row level security;
 alter table public.community_post_rate_limits enable row level security;
+alter table public.community_upload_rate_limits enable row level security;
 alter table public.community_membership_audits enable row level security;
 alter table public.community_moderation_audits enable row level security;
 alter table public.community_launch_audits enable row level security;
@@ -473,6 +751,7 @@ alter table public.community_images force row level security;
 alter table public.community_replies force row level security;
 alter table public.community_votes force row level security;
 alter table public.community_post_rate_limits force row level security;
+alter table public.community_upload_rate_limits force row level security;
 alter table public.community_membership_audits force row level security;
 alter table public.community_moderation_audits force row level security;
 alter table public.community_launch_audits force row level security;
@@ -541,16 +820,21 @@ create policy community_launch_audits_read_admin on public.community_launch_audi
 revoke all on public.community_launch_state, public.community_profiles, public.community_admins,
   public.community_memberships, public.community_posts, public.community_images, public.community_replies,
   public.community_votes, public.community_post_rate_limits, public.community_membership_audits,
-  public.community_moderation_audits, public.community_launch_audits from anon, authenticated;
+  public.community_upload_rate_limits, public.community_moderation_audits,
+  public.community_launch_audits from anon, authenticated;
 revoke all on sequence public.community_membership_audits_id_seq,
   public.community_moderation_audits_id_seq, public.community_launch_audits_id_seq from anon, authenticated;
 revoke execute on function public.community_is_admin(uuid), public.community_is_active_member(uuid),
   public.community_launch_allows(boolean, boolean), public.community_can_access_audience(text),
   public.community_random_slug(text), public.community_consume_post_rate_limit(),
+  public.community_consume_upload_quota(bigint),
   public.community_create_post(text, text, text, text), public.community_publish_post(uuid),
+  public.community_update_post(uuid, text, text, text), public.community_delete_post(uuid),
   public.community_create_reply(uuid, text), public.community_toggle_vote(uuid),
-  public.community_set_post_header(uuid, uuid, boolean), public.community_set_membership(uuid, text, text),
-  public.community_moderate_content(text, uuid, text, text),
+  public.community_set_post_header(uuid, uuid, boolean), public.community_begin_image(uuid, text, bigint),
+  public.community_finalize_image(uuid, text, bigint, integer, integer), public.community_delete_image(uuid),
+  public.community_reorder_images(uuid, uuid[]), public.community_set_membership(uuid, text, text, uuid),
+  public.community_moderate_content(text, uuid, text, text, uuid),
   public.community_set_launch_state(boolean, boolean, text) from public, anon, authenticated;
 grant select on public.community_profiles, public.community_posts, public.community_images, public.community_replies to anon, authenticated;
 grant select on public.community_admins, public.community_memberships, public.community_votes to authenticated;
@@ -559,11 +843,17 @@ grant insert (id, first_name, last_name) on public.community_profiles to authent
 grant update (first_name, last_name, updated_at) on public.community_profiles to authenticated;
 grant execute on function public.community_create_post(text, text, text, text) to authenticated;
 grant execute on function public.community_publish_post(uuid) to authenticated;
+grant execute on function public.community_update_post(uuid, text, text, text) to authenticated;
+grant execute on function public.community_delete_post(uuid) to authenticated;
 grant execute on function public.community_create_reply(uuid, text) to authenticated;
 grant execute on function public.community_toggle_vote(uuid) to authenticated;
 grant execute on function public.community_set_post_header(uuid, uuid, boolean) to authenticated;
-grant execute on function public.community_set_membership(uuid, text, text) to authenticated;
-grant execute on function public.community_moderate_content(text, uuid, text, text) to authenticated;
+grant execute on function public.community_begin_image(uuid, text, bigint) to authenticated;
+grant execute on function public.community_finalize_image(uuid, text, bigint, integer, integer) to authenticated;
+grant execute on function public.community_delete_image(uuid) to authenticated;
+grant execute on function public.community_reorder_images(uuid, uuid[]) to authenticated;
+grant execute on function public.community_set_membership(uuid, text, text, uuid) to authenticated;
+grant execute on function public.community_moderate_content(text, uuid, text, text, uuid) to authenticated;
 grant execute on function public.community_set_launch_state(boolean, boolean, text) to authenticated;
 grant execute on function public.community_is_admin(uuid), public.community_is_active_member(uuid),
   public.community_launch_allows(boolean, boolean), public.community_can_access_audience(text) to anon, authenticated;
@@ -626,5 +916,7 @@ grant select on storage.buckets to anon, authenticated;
 
 comment on table public.community_admins is 'Bootstrapped only by an operator migration or SQL runbook. No product function grants admin status.';
 comment on table public.community_launch_state is 'Singleton database feature gate. Writes and private reads start disabled.';
-comment on function public.community_set_membership(uuid, text, text) is 'Atomic admin-only membership transition with immutable audit.';
+comment on function public.community_set_membership(uuid, text, text, uuid) is 'Atomic idempotent admin-only membership transition with immutable audit.';
 comment on function public.community_publish_post(uuid) is 'Idempotent author publication guarded by launch and audience state.';
+comment on function public.community_update_post(uuid, text, text, text) is 'Author-only content edit that cannot modify ownership, audience, moderation, state, or counters.';
+comment on function public.community_delete_post(uuid) is 'Idempotent author-only soft deletion guarded by current launch and audience eligibility.';
