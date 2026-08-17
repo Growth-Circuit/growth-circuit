@@ -1,11 +1,12 @@
 import { CheckCircle2, Loader2, Mail } from "lucide-react";
 import { useState } from "react";
 
-type Props = { code: string; csrfToken: string; nextPath: string };
+type Props = { code: string; tokenHash: string; type: string; csrfToken: string; nextPath: string };
 
-export default function AuthCallback({ code, csrfToken, nextPath }: Props) {
-  const [state, setState] = useState<"ready" | "loading" | "error" | "resending" | "resent">(code ? "ready" : "error");
-  const [message, setMessage] = useState(code ? "Confirm to finish signing in." : "This confirmation link is incomplete. Request a new one.");
+export default function AuthCallback({ code, tokenHash, type, csrfToken, nextPath }: Props) {
+  const hasConfirmation = Boolean(code || (tokenHash && type));
+  const [state, setState] = useState<"ready" | "loading" | "error" | "resending" | "resent">(hasConfirmation ? "ready" : "error");
+  const [message, setMessage] = useState(hasConfirmation ? "Confirm to finish signing in." : "This confirmation link is incomplete. Request a new one.");
   const [email, setEmail] = useState("");
 
   async function confirm() {
@@ -15,7 +16,7 @@ export default function AuthCallback({ code, csrfToken, nextPath }: Props) {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
-        body: JSON.stringify({ code, next: nextPath }),
+        body: JSON.stringify({ code, tokenHash, type, next: nextPath }),
       });
       const result = await response.json() as { error?: string; needsProfile?: boolean; next?: string };
       if (!response.ok) {

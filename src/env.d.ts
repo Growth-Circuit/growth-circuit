@@ -20,6 +20,7 @@ interface ImportMetaEnv {
   readonly BUZZ_WEBHOOK_URL?: string;
   readonly BUZZ_WEBHOOK_SECRET?: string;
   readonly TURNSTILE_SECRET_KEY?: string;
+  readonly SUPABASE_SEND_EMAIL_HOOK_SECRET?: string;
 }
 
 declare namespace App {

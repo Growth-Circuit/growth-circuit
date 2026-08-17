@@ -147,11 +147,11 @@ export async function completeCommunityProfile(
     return { ok: false as const, error: "Enter your first and last name." };
   }
 
-  const { error } = await client.from("community_profiles").insert({
+  const { error } = await client.from("community_profiles").upsert({
     id: userId,
     first_name: firstName,
     last_name: lastName,
-  });
+  }, { onConflict: "id" });
 
   if (error) return { ok: false as const, error: "We could not save your profile. Please try again." };
   return { ok: true as const, profile: { firstName, lastName } };

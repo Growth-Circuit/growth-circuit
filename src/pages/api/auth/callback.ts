@@ -14,12 +14,19 @@ export const POST: APIRoute = async ({ request, locals, cookies, url }) => {
   }
 
   const code = typeof body.code === "string" ? body.code : "";
+  const tokenHash = typeof body.tokenHash === "string" ? body.tokenHash : "";
+  const type = typeof body.type === "string" ? body.type : "";
   const nextPath = getSafeNextPath(typeof body.next === "string" ? body.next : null);
-  if (!code || code.length > 2048) {
+  const allowedOtpTypes = new Set(["signup", "invite", "magiclink", "recovery", "email_change", "email"]);
+  const hasCode = Boolean(code && code.length <= 2048);
+  const hasTokenHash = /^[a-f0-9]{40,128}$/i.test(tokenHash) && allowedOtpTypes.has(type);
+  if (!hasCode && !hasTokenHash) {
     return Response.json({ error: "This confirmation link is invalid. Request a new one." }, { status: 400 });
   }
 
-  const { data, error } = await locals.supabase.auth.exchangeCodeForSession(code);
+  const { data, error } = hasCode
+    ? await locals.supabase.auth.exchangeCodeForSession(code)
+    : await locals.supabase.auth.verifyOtp({ token_hash: tokenHash, type: type as "signup" | "invite" | "magiclink" | "recovery" | "email_change" | "email" });
   const user = data.user;
   if (error || !user || !user.email_confirmed_at) {
     return Response.json({ error: "This confirmation link is invalid, expired, or already used. Request a new one." }, { status: 400 });
