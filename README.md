@@ -101,7 +101,7 @@ Required fields:
 - `proud_build`
 - `referral_source`
 
-`POST /api/waitlist` stores global waitlist entries in the same Notion database with `Application type` set to `Global waitlist`.
+`POST /api/waitlist` requires `full_name`, `email`, `linkedin_url`, and cohort-opening consent. It stores global waitlist entries in the same Notion database with `Application type` set to `Global waitlist`.
 
 ## Build
 

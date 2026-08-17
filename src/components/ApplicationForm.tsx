@@ -39,8 +39,9 @@ export default function ApplicationForm() {
   const [waitlist, setWaitlist] = useState<{
     full_name: string;
     email: string;
+    linkedin_url: string;
     communication_preferences: CommunicationPreference[];
-  }>({ full_name: "", email: "", communication_preferences: [] });
+  }>({ full_name: "", email: "", linkedin_url: "", communication_preferences: [] });
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ApplicationPayload, string>>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -130,9 +131,13 @@ export default function ApplicationForm() {
     event.preventDefault();
     setMessage("");
 
-    if (!waitlist.full_name.trim() || !waitlist.email.includes("@")) {
+    const linkedinUrl = waitlist.linkedin_url.trim();
+    const hasValidLinkedIn = linkedinUrl.startsWith("https://www.linkedin.com/")
+      || linkedinUrl.startsWith("https://linkedin.com/");
+
+    if (!waitlist.full_name.trim() || !waitlist.email.includes("@") || !hasValidLinkedIn) {
       setStatus("error");
-      setMessage("Add your name and a valid email to join the waitlist.");
+      setMessage("Add your name, a valid email, and your LinkedIn profile to join the waitlist.");
       return;
     }
 
@@ -188,7 +193,7 @@ export default function ApplicationForm() {
           <button className="path-card path-card--global" type="button" onClick={() => choosePath("global")}>
             <span>No</span>
             <strong>Somewhere else</strong>
-            <small>Join the global waitlist with your name and email.</small>
+            <small>Join the global waitlist with your name, email, and LinkedIn profile.</small>
           </button>
         </div>
       )}
@@ -196,7 +201,8 @@ export default function ApplicationForm() {
       {path === "global" && (
         <>
           <p className="form-intro">
-            Leave your name and email. We’ll reach out when a cohort opens in your area. No noise until then.
+            Leave your name, email, and LinkedIn profile. We’ll reach out when a cohort opens in your area.
+            No noise until then.
           </p>
           <form onSubmit={submitWaitlist}>
             <Field label="Name">
@@ -214,6 +220,16 @@ export default function ApplicationForm() {
                 value={waitlist.email}
                 onChange={(event) => setWaitlist((current) => ({ ...current, email: event.target.value }))}
                 placeholder="you@example.com"
+              />
+            </Field>
+            <Field label="LinkedIn profile">
+              <input
+                name="linkedin_url"
+                type="url"
+                required
+                value={waitlist.linkedin_url}
+                onChange={(event) => setWaitlist((current) => ({ ...current, linkedin_url: event.target.value }))}
+                placeholder="https://www.linkedin.com/in/..."
               />
             </Field>
             <PreferenceOptions

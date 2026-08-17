@@ -28,13 +28,24 @@ export const POST: APIRoute = async ({ request }) => {
 
   const fullName = typeof body.full_name === "string" ? body.full_name.trim().slice(0, 200) : "";
   const email = typeof body.email === "string" ? normalizeEmailKey(body.email).slice(0, 320) : "";
+  const linkedInProfile = typeof body.linkedin_url === "string" ? body.linkedin_url.trim().slice(0, 2000) : "";
   const communicationPreferences = normalizeCommunicationPreferences(
     body.communication_preferences,
     GLOBAL_WAITLIST_COMMUNICATION_PREFERENCES,
   );
 
-  if (!fullName || !email.includes("@")) {
-    return json({ ok: false, error: "Add your name and a valid email to join the waitlist." }, 422);
+  if (
+    !fullName
+    || !email.includes("@")
+    || (
+      !linkedInProfile.startsWith("https://www.linkedin.com/")
+      && !linkedInProfile.startsWith("https://linkedin.com/")
+    )
+  ) {
+    return json({
+      ok: false,
+      error: "Add your name, a valid email, and your LinkedIn profile to join the waitlist.",
+    }, 422);
   }
 
   const preferenceError = validateCommunicationPreferences(communicationPreferences, "global");
@@ -51,6 +62,7 @@ export const POST: APIRoute = async ({ request }) => {
       submittedAt: new Date().toISOString(),
       fullName,
       email,
+      linkedInProfile,
       applicationType: "Global waitlist",
       location: "Outside New York",
       communicationPreferences,

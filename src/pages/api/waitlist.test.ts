@@ -37,23 +37,44 @@ describe("POST /api/waitlist", () => {
     const response = await post({
       full_name: "Alex Example",
       email: "alex@example.com",
+      linkedin_url: "https://www.linkedin.com/in/alex-example",
       communication_preferences: ["Cohort openings", "Community updates", "Events"],
     });
 
     expect(response.status).toBe(201);
     expect(mocks.createNotionSubmission).toHaveBeenCalledWith(expect.objectContaining({
       communicationPreferences: ["Cohort openings"],
+      linkedInProfile: "https://www.linkedin.com/in/alex-example",
       consentSource: "Global waitlist form v2",
     }));
   });
 
   it("rejects a waitlist submission without cohort-opening consent", async () => {
-    const response = await post({ full_name: "Alex Example", email: "alex@example.com" });
+    const response = await post({
+      full_name: "Alex Example",
+      email: "alex@example.com",
+      linkedin_url: "https://www.linkedin.com/in/alex-example",
+    });
 
     expect(response.status).toBe(422);
     await expect(response.json()).resolves.toEqual({
       ok: false,
       error: "Choose cohort-opening emails to join the waitlist.",
+    });
+    expect(mocks.createNotionSubmission).not.toHaveBeenCalled();
+  });
+
+  it("requires a LinkedIn profile for the global waitlist", async () => {
+    const response = await post({
+      full_name: "Alex Example",
+      email: "alex@example.com",
+      communication_preferences: ["Cohort openings"],
+    });
+
+    expect(response.status).toBe(422);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "Add your name, a valid email, and your LinkedIn profile to join the waitlist.",
     });
     expect(mocks.createNotionSubmission).not.toHaveBeenCalled();
   });
