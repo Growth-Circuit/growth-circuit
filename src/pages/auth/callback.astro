@@ -1,17 +1,9 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import AuthCallback from "@/components/AuthCallback";
----
+import { getSafeNextPath } from "@/lib/community-auth";
 
-<BaseLayout
-  title="Signing in"
-  description="Completing your Growth Circuit sign-in."
-  path="/auth/callback"
-  noindex
->
-  <section class="shell page-title">
-    <p class="eyebrow">Auth</p>
-    <h1>Signing you in.</h1>
-    <AuthCallback client:load />
-  </section>
-</BaseLayout>
+const target = new URL("/auth/confirm", Astro.url.origin);
+const code = Astro.url.searchParams.get("code");
+if (code) target.searchParams.set("code", code);
+target.searchParams.set("next", getSafeNextPath(Astro.url.searchParams.get("next")));
+return Astro.redirect(`${target.pathname}${target.search}`, 303);
+---

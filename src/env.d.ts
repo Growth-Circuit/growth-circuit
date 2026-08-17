@@ -11,11 +11,23 @@ interface ImportMetaEnv {
   readonly PUBLIC_SUPABASE_URL?: string;
   readonly PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
   readonly SUPABASE_SERVICE_ROLE_KEY?: string;
+  readonly COMMUNITY_FEATURE_ENABLED?: string;
+  readonly COMMUNITY_KILL_SWITCH?: string;
+  readonly COMMUNITY_ROLLOUT_ALLOWLIST?: string;
   readonly NOTION_API_TOKEN?: string;
   readonly NOTION_DATABASE_ID?: string;
   readonly BUZZ_WEBHOOK_URL?: string;
   readonly BUZZ_WEBHOOK_SECRET?: string;
   readonly TURNSTILE_SECRET_KEY?: string;
+}
+
+declare namespace App {
+  interface Locals {
+    supabase: import("@supabase/supabase-js").SupabaseClient | null;
+    communityIdentity: import("@/lib/community-auth").CommunityIdentity;
+    communityRollout: import("@/lib/community-auth").CommunityRolloutConfig;
+    csrfToken: string;
+  }
 }
 
 interface ImportMeta {

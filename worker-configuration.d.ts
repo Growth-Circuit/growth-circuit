@@ -9,6 +9,9 @@ interface __BaseEnv_Env {
 	NOTION_DATABASE_ID: "3b0b74c7ad9180aaa030e4214f064382";
 	PUBLIC_SUPABASE_URL: "https://twkvclxsynnbktppeozg.supabase.co";
 	PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_HtrWzzR4HB4Xu0rlSnLaXQ_mpKm0zun";
+	COMMUNITY_FEATURE_ENABLED?: string;
+	COMMUNITY_KILL_SWITCH?: string;
+	COMMUNITY_ROLLOUT_ALLOWLIST?: string;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
@@ -21,5 +24,5 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "PUBLIC_SITE_URL" | "BUZZ_WEBHOOK_URL" | "NOTION_DATABASE_ID" | "PUBLIC_SUPABASE_URL" | "PUBLIC_SUPABASE_PUBLISHABLE_KEY">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "PUBLIC_SITE_URL" | "BUZZ_WEBHOOK_URL" | "NOTION_DATABASE_ID" | "PUBLIC_SUPABASE_URL" | "PUBLIC_SUPABASE_PUBLISHABLE_KEY" | "COMMUNITY_FEATURE_ENABLED" | "COMMUNITY_KILL_SWITCH" | "COMMUNITY_ROLLOUT_ALLOWLIST">> {}
 }

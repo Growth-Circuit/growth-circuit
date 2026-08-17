@@ -1,22 +1,23 @@
 import { CheckCircle2, Loader2, LogIn, UserPlus } from "lucide-react";
-import { useMemo, useState } from "react";
-import { createBrowserSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
+import { useState } from "react";
 
-type Mode = "signin" | "signup";
+type Mode = "signin" | "signup" | "profile";
 
-export default function AuthForm() {
-  const [mode, setMode] = useState<Mode>("signin");
-  const [fullName, setFullName] = useState("");
+type Props = {
+  csrfToken: string;
+  nextPath: string;
+  initialMode?: Mode;
+  signupEnabled?: boolean;
+};
+
+export default function AuthForm({ csrfToken, nextPath, initialMode = "signin", signupEnabled = false }: Props) {
+  const [mode, setMode] = useState<Mode>(initialMode);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
-
-  const nextPath = useMemo(() => {
-    if (typeof window === "undefined") return "/";
-    return new URLSearchParams(window.location.search).get("next") || "/";
-  }, []);
 
   async function submitAuth(event: { preventDefault: () => void }) {
     event.preventDefault();
@@ -24,147 +25,85 @@ export default function AuthForm() {
     setStatus("idle");
     setMessage("");
 
-    const supabase = createBrowserSupabaseClient();
-
-    if (!supabase) {
-      setLoading(false);
-      setStatus("error");
-      setMessage("Add Supabase URL and publishable key to .env to enable email/password auth.");
-      return;
-    }
-
-    if (mode === "signup") {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+    const endpoint = mode === "profile" ? "/api/auth/profile" : "/api/auth/request-link";
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+        body: JSON.stringify({ mode, email, firstName, lastName, next: nextPath }),
       });
-
-      setLoading(false);
-
-      if (error) {
+      const result = await response.json() as { error?: string; message?: string; next?: string };
+      if (!response.ok) {
         setStatus("error");
-        setMessage(error.message);
+        setMessage(result.error || "We could not complete that request. Please try again.");
         return;
       }
 
-      if (!data.session) {
-        setStatus("success");
-        setMessage("Account created. Check your email to confirm before signing in.");
+      if (mode === "profile") {
+        window.location.assign(result.next || nextPath);
         return;
       }
 
-      window.location.href = nextPath;
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
+      setStatus("success");
+      setMessage(result.message || "Check your email for a confirmation link.");
+    } catch {
       setStatus("error");
-      setMessage(error.message);
-      return;
+      setMessage("We could not reach the sign-in service. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    window.location.href = nextPath;
   }
+
+  const title = mode === "signin"
+    ? "Sign in to Growth Circuit."
+    : mode === "signup"
+      ? "Create your Growth Circuit account."
+      : "Finish your profile.";
 
   return (
     <section className="composer auth-card" aria-labelledby="auth-title">
       <div className="application-card-head">
         <div>
           <p className="eyebrow">Account</p>
-          <h1 id="auth-title">{mode === "signin" ? "Sign in to Growth Circuit." : "Create your Growth Circuit account."}</h1>
+          <h1 id="auth-title">{title}</h1>
         </div>
       </div>
 
-      <div className="segmented-control" role="tablist" aria-label="Auth mode">
-        <button
-          type="button"
-          aria-selected={mode === "signin"}
-          onClick={() => {
-            setMode("signin");
-            setMessage("");
-          }}
-        >
-          Sign in
-        </button>
-        <button
-          type="button"
-          aria-selected={mode === "signup"}
-          onClick={() => {
-            setMode("signup");
-            setMessage("");
-          }}
-        >
-          Create account
-        </button>
-      </div>
-
-      {!isSupabaseConfigured && (
-        <div className="form-note">
-          Supabase is not configured locally yet. Add `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` to `.env`.
+      {mode !== "profile" && signupEnabled && (
+        <div className="segmented-control" role="tablist" aria-label="Auth mode">
+          <button type="button" aria-selected={mode === "signin"} onClick={() => { setMode("signin"); setMessage(""); }}>
+            Sign in
+          </button>
+          <button type="button" aria-selected={mode === "signup"} onClick={() => { setMode("signup"); setMessage(""); }}>
+            Create account
+          </button>
         </div>
       )}
 
       <form onSubmit={submitAuth}>
-        {mode === "signup" && (
-          <div className="field">
-            <label htmlFor="full-name">Name</label>
-            <input
-              id="full-name"
-              value={fullName}
-              onChange={(event) => setFullName(event.target.value)}
-              placeholder="Your name"
-              autoComplete="name"
-            />
+        {(mode === "signup" || mode === "profile") && (
+          <div className="application-grid two-col">
+            <div className="field">
+              <label htmlFor="first-name">First name</label>
+              <input id="first-name" value={firstName} onChange={(event) => setFirstName(event.target.value)} autoComplete="given-name" required maxLength={80} />
+            </div>
+            <div className="field">
+              <label htmlFor="last-name">Last name</label>
+              <input id="last-name" value={lastName} onChange={(event) => setLastName(event.target.value)} autoComplete="family-name" required maxLength={80} />
+            </div>
           </div>
         )}
-        <div className="field">
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
-            autoComplete="email"
-            required
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="At least 6 characters"
-            autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            required
-            minLength={6}
-          />
-        </div>
+        {mode !== "profile" && (
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" required maxLength={254} />
+          </div>
+        )}
 
         <button className="button matcha" type="submit" disabled={loading}>
-          {loading ? (
-            <Loader2 size={17} aria-hidden="true" />
-          ) : mode === "signup" ? (
-            <UserPlus size={17} aria-hidden="true" />
-          ) : (
-            <LogIn size={17} aria-hidden="true" />
-          )}
-          {mode === "signup" ? "Create account" : "Sign in"}
+          {loading ? <Loader2 size={17} aria-hidden="true" /> : mode === "signup" ? <UserPlus size={17} aria-hidden="true" /> : <LogIn size={17} aria-hidden="true" />}
+          {mode === "profile" ? "Save and continue" : mode === "signup" ? "Email me a confirmation link" : "Email me a sign-in link"}
         </button>
 
         {message && (

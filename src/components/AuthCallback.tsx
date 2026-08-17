@@ -1,32 +1,87 @@
-import { useEffect, useState } from "react";
-import { createBrowserSupabaseClient } from "@/lib/supabase";
+import { CheckCircle2, Loader2, Mail } from "lucide-react";
+import { useState } from "react";
 
-export default function AuthCallback() {
-  const [message, setMessage] = useState("Finishing sign-in.");
+type Props = { code: string; csrfToken: string; nextPath: string };
 
-  useEffect(() => {
-    async function finishSignIn() {
-      const supabase = createBrowserSupabaseClient();
+export default function AuthCallback({ code, csrfToken, nextPath }: Props) {
+  const [state, setState] = useState<"ready" | "loading" | "error" | "resending" | "resent">(code ? "ready" : "error");
+  const [message, setMessage] = useState(code ? "Confirm to finish signing in." : "This confirmation link is incomplete. Request a new one.");
+  const [email, setEmail] = useState("");
 
-      if (!supabase) {
-        setMessage("Supabase is not configured yet.");
-        window.setTimeout(() => window.location.replace("/"), 900);
+  async function confirm() {
+    setState("loading");
+    try {
+      const response = await fetch("/api/auth/callback", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+        body: JSON.stringify({ code, next: nextPath }),
+      });
+      const result = await response.json() as { error?: string; needsProfile?: boolean; next?: string };
+      if (!response.ok) {
+        setState("error");
+        setMessage(result.error || "This link could not be confirmed. Request a new one.");
         return;
       }
-
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
-
-      if (error) {
-        setMessage(error.message);
-        return;
-      }
-
-      setMessage("Signed in. Sending you back.");
-      window.setTimeout(() => window.location.replace("/apply"), 500);
+      const target = result.needsProfile
+        ? `/auth?complete=1&next=${encodeURIComponent(result.next || nextPath)}`
+        : result.next || nextPath;
+      window.location.replace(target);
+    } catch {
+      setState("error");
+      setMessage("We could not reach the sign-in service. Please try again.");
     }
+  }
 
-    finishSignIn();
-  }, []);
+  async function resend(event: { preventDefault: () => void }) {
+    event.preventDefault();
+    setState("resending");
+    try {
+      const response = await fetch("/api/auth/request-link", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+        body: JSON.stringify({ mode: "signin", email, next: nextPath }),
+      });
+      const result = await response.json() as { error?: string; message?: string };
+      if (!response.ok) {
+        setState("error");
+        setMessage(result.error || "We could not send a new link. Try again.");
+        return;
+      }
+      setState("resent");
+      setMessage(result.message || "A new confirmation link is on its way.");
+    } catch {
+      setState("error");
+      setMessage("We could not send a new link. Try again.");
+    }
+  }
 
-  return <p className="lead">{message}</p>;
+  return (
+    <section className="composer auth-card" aria-labelledby="confirm-title">
+      <p className="eyebrow">Email confirmation</p>
+      <h1 id="confirm-title">Finish signing in.</h1>
+      <p className="lead" role="status">{message}</p>
+
+      {(state === "ready" || state === "loading") && (
+        <button className="button matcha" type="button" onClick={confirm} disabled={state === "loading"}>
+          {state === "loading" ? <Loader2 size={17} aria-hidden="true" /> : <CheckCircle2 size={17} aria-hidden="true" />}
+          Confirm sign-in
+        </button>
+      )}
+
+      {(state === "error" || state === "resending" || state === "resent") && (
+        <form onSubmit={resend}>
+          <div className="field">
+            <label htmlFor="recovery-email">Email</label>
+            <input id="recovery-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required maxLength={254} />
+          </div>
+          <button className="button" type="submit" disabled={state === "resending"}>
+            {state === "resending" ? <Loader2 size={17} aria-hidden="true" /> : <Mail size={17} aria-hidden="true" />}
+            Send a new link
+          </button>
+        </form>
+      )}
+    </section>
+  );
 }
