@@ -1,0 +1,73 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostDetail from "@/components/community/PostDetail.astro";
+import { getCommunityPostBySlug, getCommunityReplies } from "@/lib/community-server";
+import { renderCommunityMarkdown } from "@/lib/community-markdown";
+import { getCommunityGitHubRepository } from "@/lib/community-github";
+import { breadcrumbJsonLd, communityExcerpt, communityPostJsonLd } from "@/lib/seo";
+import "@/styles/community.css";
+
+export const prerender = false;
+
+const privateHeaders = {
+  "Cache-Control": "private, no-store, max-age=0",
+  "CDN-Cache-Control": "no-store",
+  "Cloudflare-CDN-Cache-Control": "no-store",
+  "X-Robots-Tag": "noindex, nofollow",
+};
+
+const slug = Astro.params.slug;
+if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{12}$/i.test(slug) || !Astro.locals.supabase) {
+  return new Response("Not found", { status: 404, headers: { ...privateHeaders, "Content-Type": "text/plain; charset=utf-8" } });
+}
+
+const { data: post, error } = await getCommunityPostBySlug(Astro.locals.supabase, slug);
+if (error || !post) return new Response("Not found", { status: 404, headers: { ...privateHeaders, "Content-Type": "text/plain; charset=utf-8" } });
+const replyResult = await getCommunityReplies(Astro.locals.supabase, post.id);
+if (replyResult.error) return new Response("Not found", { status: 404, headers: { ...privateHeaders, "Content-Type": "text/plain; charset=utf-8" } });
+const replies = await Promise.all((replyResult.data || []).map(async (reply) => ({ ...reply, html: await renderCommunityMarkdown(reply.bodyMarkdown) })));
+const bodyHtml = await renderCommunityMarkdown(post.bodyMarkdown);
+const github = post.githubRepositoryUrl ? getCommunityGitHubRepository(post.githubRepositoryUrl) : null;
+
+const { data: imageRows } = await Astro.locals.supabase.from("community_images")
+  .select("id,bucket_id,object_path,width,height,position,state").eq("post_id", post.id).eq("state", "ready").order("position", { ascending: true });
+const images = (imageRows || []).flatMap((image) => {
+  if (image.bucket_id !== "community-private" && image.bucket_id !== "community-public") return [];
+  return [{ id: image.id, url: `/api/community/media/${image.id}`, width: image.width, height: image.height }];
+});
+const headerImage = post.headerEnabled && post.headerImageId ? images.find((image) => image.id === post.headerImageId) : null;
+const isPublic = post.audience === "public";
+if (!isPublic) {
+  for (const [name, value] of Object.entries(privateHeaders)) Astro.response.headers.set(name, value);
+}
+const jsonLd = isPublic ? [
+  breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "The Circuit", path: "/community" }, { name: post.title, path: `/community/${post.slug}` }]),
+  communityPostJsonLd(post, replies),
+].filter(Boolean) : [];
+---
+
+<BaseLayout
+  title={post.title}
+  description={communityExcerpt(post.bodyMarkdown)}
+  path={`/community/${post.slug}`}
+  noindex={!isPublic}
+  jsonLd={jsonLd}
+  socialType={isPublic ? "article" : "website"}
+  socialImage={isPublic ? headerImage?.url : undefined}
+  socialImageAlt={isPublic && headerImage ? `Header image for ${post.title}` : undefined}
+  bodyClass="community-page"
+>
+  <div class="shell community-detail-page">
+    <a class="community-back-link" href={`/community${post.audience === "members" ? "?tab=members" : ""}`}>← Back to the feed</a>
+    <PostDetail
+      post={post}
+      bodyHtml={bodyHtml}
+      replies={replies}
+      images={images}
+      github={github}
+      csrfToken={Astro.locals.csrfToken}
+      signedIn={Boolean(Astro.locals.communityIdentity.user && Astro.locals.communityIdentity.profile)}
+      isAuthor={Astro.locals.communityIdentity.user?.id === post.authorId}
+    />
+  </div>
+</BaseLayout>

@@ -1,6 +1,15 @@
 ---
 import AuthForm from "@/components/AuthForm";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getSafeNextPath } from "@/lib/community-auth";
+
+const nextPath = getSafeNextPath(Astro.url.searchParams.get("next"));
+const needsProfile = Astro.url.searchParams.get("complete") === "1"
+  && Boolean(Astro.locals.communityIdentity.user)
+  && !Astro.locals.communityIdentity.profile;
+if (Astro.locals.communityIdentity.profile && !needsProfile) {
+  return Astro.redirect(nextPath, 303);
+}
 ---
 
 <BaseLayout
@@ -11,13 +20,20 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 >
   <section class="shell auth-page">
     <div>
-      <p class="eyebrow">Light auth</p>
-      <h1>Email and password for now.</h1>
+      <p class="eyebrow">Community account</p>
+      <h1>{needsProfile ? "Tell us your name." : "Use your email to join in."}</h1>
       <p class="lead">
-        Account features are parked while the announcement focuses on NYC community applications.
-        The wider community layer will come later.
+        {needsProfile
+          ? "Your first and last name will appear with the posts and replies you publish."
+          : "We will send a passwordless link. Opening it shows a confirmation step before signing you in."}
       </p>
     </div>
-    <AuthForm client:load />
+    <AuthForm
+      client:load
+      csrfToken={Astro.locals.csrfToken}
+      nextPath={nextPath}
+      initialMode={needsProfile ? "profile" : "signin"}
+      signupEnabled={Astro.locals.communityRollout.featureEnabled}
+    />
   </section>
 </BaseLayout>

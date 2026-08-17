@@ -1,0 +1,90 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import AuthBar from "@/components/AuthBar";
+import CommunityFeed from "@/components/community/CommunityFeed";
+import { getCommunityFeed } from "@/lib/community-server";
+import type { CommunityPostView } from "@/lib/community";
+import "@/styles/community.css";
+
+export const prerender = false;
+
+const identity = Astro.locals.communityIdentity;
+const requestedAudience = Astro.url.searchParams.get("tab") === "members" ? "members" : "public";
+const canReadMembers = identity.role === "member" || identity.role === "admin";
+const audience = requestedAudience === "members" && canReadMembers ? "members" : requestedAudience;
+let posts: CommunityPostView[] = [];
+let nextCursor: string | null = null;
+let initialError = "";
+
+if (Astro.locals.supabase && (audience === "public" || canReadMembers)) {
+  const feed = await getCommunityFeed(Astro.locals.supabase, { audience, limit: 20 });
+  if (feed.error || !feed.data) {
+    initialError = "The feed could not be loaded. Try again in a moment.";
+  } else {
+    posts = feed.data.posts;
+    nextCursor = feed.data.nextCursor;
+  }
+}
+
+const displayName = identity.profile ? `${identity.profile.firstName} ${identity.profile.lastName}` : undefined;
+---
+
+<BaseLayout
+  title="The Circuit"
+  description="Build notes, useful questions, and lessons from the Growth Circuit community."
+  path="/community"
+  bodyClass="community-page"
+>
+  <section class="community-hero">
+    <div class="shell community-hero__inner">
+      <div>
+        <div class="community-online-strip"><span aria-hidden="true"></span><strong>ONLINE NOW</strong><span>Marketing engineers sharing the useful part</span></div>
+        <p class="community-script-label">Growth Circuit community</p>
+        <h1>The Circuit</h1>
+        <p>Build notes, hard-won lessons, and questions worth answering. One shared feed for people who make growth systems work.</p>
+      </div>
+      <div class="community-hero__actions">
+        <a class="community-button community-button--primary" href="/community/submit">Share a post</a>
+        <AuthBar client:load csrfToken={Astro.locals.csrfToken} signedIn={Boolean(identity.user)} name={displayName} />
+      </div>
+    </div>
+  </section>
+
+  <div class="shell community-shell">
+    <main class="community-shell__feed">
+      <CommunityFeed
+        client:load
+        initialPosts={posts}
+        initialNextCursor={nextCursor}
+        initialAudience={audience}
+        role={identity.role}
+        initialError={initialError}
+      />
+    </main>
+    <aside class="community-rail" aria-label="Community guide">
+      <section class="community-rail__module">
+        <div class="community-module-bar"><span>START HERE</span></div>
+        <div>
+          <p>Share the thing someone else can use: what worked, what broke, or what you learned.</p>
+          <a href="/community/submit">Write your first post →</a>
+        </div>
+      </section>
+      <section class="community-rail__module">
+        <div class="community-module-bar"><span>HOUSE RULES</span></div>
+        <ol>
+          <li>Show the work.</li>
+          <li>Ask useful questions.</li>
+          <li>Be generous with context.</li>
+        </ol>
+      </section>
+      <section class="community-rail__module">
+        <div class="community-module-bar"><span>KEEP UP</span></div>
+        <div class="community-rail__links">
+          <a href="/rss.xml">Public RSS</a>
+          <a href="/sitemap-community.xml">Community sitemap</a>
+          {identity.role === "admin" && <a href="/community/admin/members">Manage members</a>}
+        </div>
+      </section>
+    </aside>
+  </div>
+</BaseLayout>

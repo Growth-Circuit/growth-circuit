@@ -110,6 +110,17 @@ npm run build
 
 This runs `astro check` and builds the Cloudflare Worker output.
 
+## Verification
+
+```bash
+npm run test
+npm run test:db
+npm run test:e2e
+npm run build
+```
+
+The database-policy command requires the local Supabase foundation added with the community migration. Browser tests build and start the Cloudflare-targeted Astro preview automatically. Production readiness evidence is tracked in [`docs/community-readiness.md`](docs/community-readiness.md); do not store credentials, private Auth identifiers, or magic links in the repository.
+
 ## Deploy
 
 The project includes `wrangler.jsonc` for Cloudflare Workers. Set production environment variables in Cloudflare, then deploy through your preferred Cloudflare workflow.

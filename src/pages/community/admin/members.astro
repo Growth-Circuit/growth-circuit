@@ -1,0 +1,62 @@
+---
+import MembershipAdmin from "@/components/community/MembershipAdmin";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const privateHeaders = {
+  "Cache-Control": "private, no-store, max-age=0",
+  "CDN-Cache-Control": "no-store",
+  "Cloudflare-CDN-Cache-Control": "no-store",
+  "Pragma": "no-cache",
+  "Vary": "Cookie, Authorization",
+  "X-Robots-Tag": "noindex, nofollow",
+};
+for (const [name, value] of Object.entries(privateHeaders)) Astro.response.headers.set(name, value);
+
+if (Astro.locals.communityIdentity.role !== "admin") {
+  return new Response("Not found", {
+    status: 404,
+    headers: { ...privateHeaders, "Content-Type": "text/plain; charset=utf-8" },
+  });
+}
+---
+
+<BaseLayout
+  title="Membership administration"
+  description="Manage Growth Circuit community membership."
+  path="/community/admin/members"
+  noindex
+>
+  <section class="shell membership-page">
+    <div class="membership-page__intro">
+      <p class="eyebrow">Community administration</p>
+      <h1>Manage Members access.</h1>
+      <p class="lead">Grant, suspend, restore, or revoke access for verified contributors. Every completed change is audited and takes effect on the next private request.</p>
+      <p class="membership-page__guidance">Contributors cannot approve themselves. Anyone who needs access should contact Nick or Lucy.</p>
+    </div>
+    <MembershipAdmin client:load csrfToken={Astro.locals.csrfToken} />
+  </section>
+</BaseLayout>
+
+<style>
+  .membership-page {
+    display: grid;
+    gap: 28px;
+    padding-block: clamp(48px, 8vw, 88px);
+  }
+
+  .membership-page__intro {
+    max-width: 760px;
+  }
+
+  .membership-page__intro h1 {
+    margin: 8px 0 14px;
+    font-size: clamp(36px, 6vw, 64px);
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+  }
+
+  .membership-page__guidance {
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>

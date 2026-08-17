@@ -1,17 +1,4 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import AnnouncementHold from "@/components/AnnouncementHold.astro";
+export const prerender = false;
+return Astro.redirect("/community", 301);
 ---
-
-<BaseLayout
-  title="Builds Coming Later"
-  description="BYOB demos and teardown posts from marketing engineers building agents, automations, dashboards, and launch systems."
-  path="/builds"
-  noindex
->
-  <AnnouncementHold
-    eyebrow="Coming later"
-    title="The build library will open after the NYC community starts."
-    description="The scaffolding is still here, but we are not publishing seeded build notes for the announcement. First we want real demos, real discussions, and real lessons."
-  />
-</BaseLayout>

@@ -1,0 +1,24 @@
+---
+import AuthCallback from "@/components/AuthCallback";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getSafeNextPath } from "@/lib/community-auth";
+
+const code = Astro.url.searchParams.get("code") || "";
+const nextPath = getSafeNextPath(Astro.url.searchParams.get("next"));
+---
+
+<BaseLayout
+  title="Confirm Sign In"
+  description="Confirm your Growth Circuit sign-in."
+  path="/auth/confirm"
+  noindex
+>
+  <section class="shell auth-page">
+    <div>
+      <p class="eyebrow">One last step</p>
+      <h1>Confirm when you are ready.</h1>
+      <p class="lead">This page has not signed you in yet. Choose confirm to use the email link.</p>
+    </div>
+    <AuthCallback client:load code={code} csrfToken={Astro.locals.csrfToken} nextPath={nextPath} />
+  </section>
+</BaseLayout>

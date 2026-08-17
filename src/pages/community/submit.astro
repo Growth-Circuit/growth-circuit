@@ -1,0 +1,39 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostComposer from "@/components/community/PostComposer";
+import "@/styles/community.css";
+
+export const prerender = false;
+
+const identity = Astro.locals.communityIdentity;
+if (!identity.user || !identity.profile) {
+  return Astro.redirect(`/auth?next=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`, 302);
+}
+const canPublishToMembers = identity.role === "member" || identity.role === "admin";
+const requestedAudience = Astro.url.searchParams.get("audience") === "members" ? "members" : "public";
+const initialAudience = requestedAudience === "members" && canPublishToMembers ? "members" : "public";
+---
+
+<BaseLayout
+  title="Share a post"
+  description="Share a build, question, or lesson with Growth Circuit."
+  path="/community/submit"
+  noindex
+  bodyClass="community-page"
+>
+  <section class="community-submit shell">
+    <a class="community-back-link" href={`/community${initialAudience === "members" ? "?tab=members" : ""}`}>← Back to the feed</a>
+    <div class="community-submit__grid">
+      <PostComposer client:load csrfToken={Astro.locals.csrfToken} canPublishToMembers={canPublishToMembers} initialAudience={initialAudience} />
+      <aside class="community-submit__guide">
+        <div class="community-module-bar"><span>A GOOD POST</span></div>
+        <ul>
+          <li>Starts with what someone can use.</li>
+          <li>Includes enough context to reproduce the lesson.</li>
+          <li>Names what broke without polishing away the interesting part.</li>
+        </ul>
+        <p>Public posts can appear in search, RSS, and the community sitemap. Members posts stay inside the private feed.</p>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>

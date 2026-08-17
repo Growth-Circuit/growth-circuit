@@ -1,0 +1,182 @@
+---
+import type { CommunityPostView, CommunityReplyView } from "@/lib/community";
+import type { CommunityGitHubRepository } from "@/lib/community-github";
+import ReplyComposer from "@/components/community/ReplyComposer";
+import VoteButton from "@/components/community/VoteButton";
+
+type DisplayReply = CommunityReplyView & { html: string };
+type DisplayImage = { id: string; url: string; width?: number | null; height?: number | null };
+type Props = {
+  post: CommunityPostView;
+  bodyHtml: string;
+  replies: DisplayReply[];
+  images: DisplayImage[];
+  github: CommunityGitHubRepository | null;
+  csrfToken: string;
+  signedIn: boolean;
+  isAuthor: boolean;
+};
+
+const { post, bodyHtml, replies, images, github, csrfToken, signedIn, isAuthor } = Astro.props;
+const published = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" })
+  .format(new Date(post.publishedAt || post.updatedAt));
+---
+
+<article class="community-detail">
+  <div class="community-module-bar community-detail__bar">
+    <span>{post.audience === "members" ? "MEMBERS" : "PUBLIC"} POST</span>
+    <span>{published}</span>
+  </div>
+
+  <div class="community-detail__layout">
+    <aside class="community-detail__vote" aria-label="Post voting">
+      <VoteButton client:load postId={post.id} score={post.score} csrfToken={csrfToken} signedIn={signedIn} initialVoted={post.votedByViewer} />
+    </aside>
+    <div class="community-detail__content">
+      <p class="community-post-card__byline">Posted by <strong>{post.authorName}</strong></p>
+      <h1>{post.title}</h1>
+
+      {images.length > 0 && (
+        <div class:list={["community-detail__images", images.length === 1 && "community-detail__images--single"]}>
+          {images.map((image, index) => (
+            <img src={image.url} alt={`Image ${index + 1} shared with ${post.title}`} width={image.width || undefined} height={image.height || undefined} />
+          ))}
+        </div>
+      )}
+
+      <div class="community-markdown" set:html={bodyHtml}></div>
+
+      {github && (
+        <a class="community-github-card" href={github.url} target="_blank" rel="ugc nofollow noopener noreferrer">
+          <span class="community-script-label">GitHub repository</span>
+          <strong>{github.label}</strong>
+          <span>View the code ↗</span>
+        </a>
+      )}
+
+      {isAuthor && (
+        <section
+          class="community-author-tools"
+          data-community-author-tools
+          data-post-id={post.id}
+          data-csrf-token={csrfToken}
+          data-return-path={`/community?tab=${post.audience}`}
+        >
+          <div class="community-author-tools__actions">
+            <button class="community-button" type="button" data-edit-toggle>Edit post</button>
+            <button class="community-button community-button--danger" type="button" data-delete-post>Delete post</button>
+          </div>
+          <form class="community-edit-form" data-edit-form hidden>
+            <label>
+              Title
+              <input name="title" value={post.title} maxlength="180" required />
+            </label>
+            <label>
+              Post
+              <textarea name="bodyMarkdown" maxlength="50000" required>{post.bodyMarkdown}</textarea>
+            </label>
+            <label>
+              GitHub repository URL
+              <input name="githubRepositoryUrl" type="url" value={post.githubRepositoryUrl || ""} />
+            </label>
+            <div class="community-author-tools__actions">
+              <button class="community-button community-button--primary" type="submit">Save changes</button>
+              <button class="community-button" type="button" data-edit-cancel>Cancel</button>
+            </div>
+          </form>
+          <p class="community-form-status" data-author-status role="status" aria-live="polite"></p>
+        </section>
+      )}
+    </div>
+  </div>
+</article>
+
+<section class="community-replies" id="replies" aria-labelledby="community-replies-title">
+  <div class="community-module-bar"><span>REPLIES</span><span>{replies.length}</span></div>
+  <div class="community-replies__inner">
+    <h2 id="community-replies-title">Conversation</h2>
+    {replies.length > 0 ? (
+      <ol class="community-reply-list">
+        {replies.map((reply) => (
+          <li>
+            <div class="community-reply__meta">
+              <strong>{reply.authorName}</strong>
+              <time datetime={reply.createdAt}>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(reply.createdAt))}</time>
+            </div>
+            <div class="community-markdown community-markdown--reply" set:html={reply.html}></div>
+          </li>
+        ))}
+      </ol>
+    ) : <p class="community-replies__empty">No replies yet. Add the first useful thought.</p>}
+    <ReplyComposer client:load postId={post.id} csrfToken={csrfToken} signedIn={signedIn} nextPath={`/community/${post.slug}`} />
+  </div>
+</section>
+
+<script>
+  const tools = document.querySelector<HTMLElement>("[data-community-author-tools]");
+  if (tools) {
+    const form = tools.querySelector<HTMLFormElement>("[data-edit-form]");
+    const status = tools.querySelector<HTMLElement>("[data-author-status]");
+    const postId = tools.dataset.postId || "";
+    const csrfToken = tools.dataset.csrfToken || "";
+    let pending = false;
+    const controls = Array.from(tools.querySelectorAll<HTMLButtonElement>("button"));
+    const setPending = (value: boolean) => {
+      pending = value;
+      for (const control of controls) control.disabled = value;
+    };
+    const setEditing = (editing: boolean) => {
+      if (form) form.hidden = !editing;
+      tools.querySelector<HTMLButtonElement>("[data-edit-toggle]")?.setAttribute("aria-expanded", String(editing));
+      if (editing) form?.querySelector<HTMLInputElement>("input")?.focus();
+    };
+    tools.querySelector("[data-edit-toggle]")?.addEventListener("click", () => setEditing(true));
+    tools.querySelector("[data-edit-cancel]")?.addEventListener("click", () => setEditing(false));
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (pending) return;
+      setPending(true);
+      if (status) status.textContent = "Saving changes…";
+      try {
+        const data = new FormData(form);
+        const response = await fetch(`/api/community/posts/${postId}`, {
+          method: "PATCH",
+          credentials: "same-origin",
+          headers: { "content-type": "application/json", "x-csrf-token": csrfToken },
+          body: JSON.stringify({
+            title: data.get("title"),
+            bodyMarkdown: data.get("bodyMarkdown"),
+            githubRepositoryUrl: data.get("githubRepositoryUrl") || null,
+          }),
+        });
+        const result = await response.json() as { error?: { message?: string } };
+        if (!response.ok) throw new Error(result.error?.message || "The changes could not be saved.");
+        if (status) status.textContent = "Changes saved.";
+        window.setTimeout(() => window.location.reload(), 250);
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : "The changes could not be saved.";
+        setPending(false);
+      }
+    });
+    tools.querySelector("[data-delete-post]")?.addEventListener("click", async () => {
+      if (pending) return;
+      if (!window.confirm("Delete this post? It will disappear from the feed and cannot be restored here.")) return;
+      setPending(true);
+      if (status) status.textContent = "Deleting post…";
+      try {
+        const response = await fetch(`/api/community/posts/${postId}`, {
+          method: "DELETE",
+          credentials: "same-origin",
+          headers: { "x-csrf-token": csrfToken },
+        });
+        const result = await response.json() as { error?: { message?: string } };
+        if (!response.ok) throw new Error(result.error?.message || "The post could not be deleted.");
+        if (status) status.textContent = "Post deleted. Returning to the feed…";
+        window.setTimeout(() => window.location.assign(tools.dataset.returnPath || "/community"), 350);
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : "The post could not be deleted.";
+        setPending(false);
+      }
+    });
+  }
+</script>

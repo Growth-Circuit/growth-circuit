@@ -1,6 +1,6 @@
 ---
 import "@/styles/global.css";
-import { canonical, organizationJsonLd } from "@/lib/seo";
+import { canonical, organizationJsonLd, serializeJsonLd } from "@/lib/seo";
 
 type Props = {
   title?: string;
@@ -10,6 +10,9 @@ type Props = {
   jsonLd?: unknown[];
   hideHeader?: boolean;
   bodyClass?: string;
+  socialImage?: string;
+  socialImageAlt?: string;
+  socialType?: "website" | "article";
 };
 
 const {
@@ -20,12 +23,15 @@ const {
   jsonLd = [],
   hideHeader = false,
   bodyClass,
+  socialImage,
+  socialImageAlt: suppliedSocialImageAlt,
+  socialType = "website",
 } = Astro.props;
 
 const fullTitle = title === "Growth Circuit" ? title : `${title} | Growth Circuit`;
 const canonicalUrl = canonical(path);
-const socialImageUrl = canonical("/growth-circuit-og-v2.png");
-const socialImageAlt = "Growth Circuit: Make cool sh*t together. New York, September 2026.";
+const socialImageUrl = socialImage ? canonical(socialImage) : canonical("/growth-circuit-og-v2.png");
+const socialImageAlt = suppliedSocialImageAlt || "Growth Circuit: Make cool sh*t together. New York, September 2026.";
 const allJsonLd = [organizationJsonLd(), ...jsonLd];
 const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
 ---
@@ -43,7 +49,7 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
     {noindex && <meta name="robots" content="noindex,nofollow" />}
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={socialType} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
@@ -59,7 +65,7 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImageUrl} />
     <meta name="twitter:image:alt" content={socialImageAlt} />
-    {allJsonLd.map((entry) => <script is:inline type="application/ld+json" set:html={JSON.stringify(entry)} />)}
+    {allJsonLd.map((entry) => <script is:inline type="application/ld+json" set:html={serializeJsonLd(entry)} />)}
   </head>
   <body class={bodyClass}>
     {
@@ -72,6 +78,7 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
             </a>
             {path !== "/apply" && (
               <div class="header-actions">
+                <a class="button button--community" href="/community">Community</a>
                 <a class="button matcha" href="/apply">Apply</a>
               </div>
             )}

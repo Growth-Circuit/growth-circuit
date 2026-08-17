@@ -7,6 +7,10 @@
     "binding": "ASSETS",
     "directory": "./dist"
   },
+  "images": {
+    "binding": "IMAGES"
+  },
+  // Encrypted server binding required at deploy time: SUPABASE_SERVICE_ROLE_KEY
   "routes": [
     { "pattern": "growthcircuit.club", "custom_domain": true },
     { "pattern": "www.growthcircuit.club", "custom_domain": true }
