@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   normalizeApplication,
+  normalizeCommunicationPreferences,
   validateCommunicationPreferences,
 } from "./application";
 
@@ -11,6 +12,25 @@ describe("application communication preferences", () => {
     });
 
     expect(application.communication_preferences).toEqual(["Community updates", "Events"]);
+  });
+
+  it("keeps the default normalization behavior when no allowlist is provided", () => {
+    expect(normalizeCommunicationPreferences(["Cohort openings", "Events"])).toEqual([
+      "Cohort openings",
+      "Events",
+    ]);
+  });
+
+  it("filters preferences to the named form's allowlist", () => {
+    expect(normalizeCommunicationPreferences(
+      ["Cohort openings", "Community updates", "Events"],
+      ["Cohort openings"],
+    )).toEqual(["Cohort openings"]);
+
+    expect(normalizeApplication(
+      { communication_preferences: ["Cohort openings", "Community updates", "Events"] },
+      ["Community updates", "Events"],
+    ).communication_preferences).toEqual(["Community updates", "Events"]);
   });
 
   it("requires cohort-opening consent for the global waitlist", () => {

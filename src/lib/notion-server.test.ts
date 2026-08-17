@@ -26,6 +26,7 @@ function jsonResponse(body: unknown, status = 200) {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe("Notion CRM submissions", () => {
@@ -50,6 +51,23 @@ describe("Notion CRM submissions", () => {
       parent: { type: "data_source_id", data_source_id: "applications-source" },
       properties: { Person: { relation: [{ id: "person-1" }] } },
     });
+  });
+
+  it("marks a new person without preferences as not asked and not eligible", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ results: [] }))
+      .mockResolvedValueOnce(jsonResponse({ id: "person-1", url: "https://notion.so/person-1" }))
+      .mockResolvedValueOnce(jsonResponse({ id: "application-1", url: "https://notion.so/application-1" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createNotionSubmission({
+      ...submission,
+      communicationPreferences: [],
+    }, notionEnv);
+
+    const createPerson = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(createPerson.properties["Consent status"]).toEqual({ select: { name: "Not asked" } });
+    expect(createPerson.properties["Sync status"]).toEqual({ select: { name: "Not eligible" } });
   });
 
   it("updates an existing person and preserves established lifecycle data", async () => {
@@ -88,5 +106,43 @@ describe("Notion CRM submissions", () => {
 
     await expect(createNotionSubmission(submission, notionEnv)).rejects.toThrow("NOTION_DUPLICATE_PERSON");
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses a five-second abort signal and propagates an aborted Notion request", async () => {
+    const controller = new AbortController();
+    const timeoutSpy = vi.spyOn(AbortSignal, "timeout").mockReturnValue(controller.signal);
+    const fetchMock = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+      expect(init.signal).toBe(controller.signal);
+      controller.abort(new DOMException("The operation timed out", "TimeoutError"));
+      return Promise.reject(controller.signal.reason);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(createNotionSubmission(submission, notionEnv)).rejects.toMatchObject({
+      name: "TimeoutError",
+    });
+
+    expect(timeoutSpy).toHaveBeenCalledWith(5000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a non-OK Notion response", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({
+      code: "unauthorized",
+    }, 401));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(createNotionSubmission(submission, notionEnv)).rejects.toThrow("NOTION_REQUEST_FAILED");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a successful page response without an id", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ results: [] }))
+      .mockResolvedValueOnce(jsonResponse({ url: "https://notion.so/person-without-id" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(createNotionSubmission(submission, notionEnv)).rejects.toThrow("NOTION_INVALID_RESPONSE");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

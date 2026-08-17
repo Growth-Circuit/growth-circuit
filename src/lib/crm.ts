@@ -1,13 +1,20 @@
 import type { CommunicationPreference, SubmissionType } from "./submission";
+import { COMMUNICATION_PREFERENCES } from "./submission";
 
-export type PersonLifecycle =
-  | "Applicant"
-  | "Waitlist"
-  | "Approved member"
-  | "Broader community"
-  | "Active member"
-  | "Alumni"
-  | "Inactive";
+export const PERSON_LIFECYCLES = [
+  "Applicant",
+  "Waitlist",
+  "Approved member",
+  "Broader community",
+  "Active member",
+  "Alumni",
+  "Inactive",
+] as const;
+
+export const PERSON_MARKETS = ["New York City", "Global"] as const;
+
+export type PersonLifecycle = (typeof PERSON_LIFECYCLES)[number];
+export type PersonMarket = (typeof PERSON_MARKETS)[number];
 
 type PersonPropertiesInput = {
   fullName: string;
@@ -19,13 +26,27 @@ type PersonPropertiesInput = {
   communicationPreferences: CommunicationPreference[];
   consentSource?: string;
   submittedAt: string;
+  isNew: boolean;
   currentLifecycle?: PersonLifecycle;
-  currentMarket?: "New York City" | "Global";
+  currentMarket?: PersonMarket;
   currentPreferences?: CommunicationPreference[];
 };
 
 export function normalizeEmailKey(email: string) {
   return email.trim().toLowerCase();
+}
+
+export function isPersonLifecycle(value: unknown): value is PersonLifecycle {
+  return typeof value === "string" && PERSON_LIFECYCLES.some((lifecycle) => lifecycle === value);
+}
+
+export function isPersonMarket(value: unknown): value is PersonMarket {
+  return typeof value === "string" && PERSON_MARKETS.some((market) => market === value);
+}
+
+export function isCommunicationPreference(value: unknown): value is CommunicationPreference {
+  return typeof value === "string"
+    && COMMUNICATION_PREFERENCES.some((preference) => preference === value);
 }
 
 export function notionRichText(value: string) {
@@ -64,7 +85,7 @@ export function buildPersonProperties(input: PersonPropertiesInput) {
     Email: { email: normalizeEmailKey(input.email) },
     "Email key": { rich_text: notionRichText(normalizeEmailKey(input.email)) },
     Lifecycle: { select: { name: mergeLifecycle(input.currentLifecycle, input.applicationType) } },
-    Market: { select: { name: input.currentMarket || (isNewYork ? "New York City" : "Global") } },
+    Market: { select: { name: isNewYork ? "New York City" : (input.currentMarket || "Global") } },
     "Communication preferences": { multi_select: preferences.map((name) => ({ name })) },
   };
 
@@ -83,6 +104,9 @@ export function buildPersonProperties(input: PersonPropertiesInput) {
     properties["Consent source"] = { rich_text: notionRichText(input.consentSource || "Website form") };
     properties["Consent at"] = { date: { start: input.submittedAt } };
     properties["Sync status"] = { select: { name: "Pending" } };
+  } else if (input.isNew) {
+    properties["Consent status"] = { select: { name: "Not asked" } };
+    properties["Sync status"] = { select: { name: "Not eligible" } };
   }
 
   return properties;

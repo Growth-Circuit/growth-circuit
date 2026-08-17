@@ -1,11 +1,13 @@
 import { env as cloudflareEnv } from "cloudflare:workers";
 import {
   buildPersonProperties,
+  isCommunicationPreference,
+  isPersonLifecycle,
+  isPersonMarket,
   normalizeEmailKey,
   notionRichText,
-  type PersonLifecycle,
 } from "@/lib/crm";
-import type { CommunicationPreference, SubmissionMetadata } from "@/lib/submission";
+import type { SubmissionMetadata } from "@/lib/submission";
 
 type NotionRuntimeEnv = {
   NOTION_API_TOKEN?: string;
@@ -70,6 +72,7 @@ async function notionRequest<T>(url: string, token: string, init: RequestInit) {
   const response = await fetch(url, {
     ...init,
     headers: notionHeaders(token),
+    signal: AbortSignal.timeout(5000),
   });
 
   if (!response.ok) {
@@ -106,7 +109,7 @@ function getSelectName(page: NotionPage, property: string) {
 function getMultiSelectNames(page: NotionPage, property: string) {
   return (page.properties?.[property]?.multi_select || [])
     .map((option) => option.name)
-    .filter((name): name is CommunicationPreference => Boolean(name));
+    .filter(isCommunicationPreference);
 }
 
 export function isServerNotionConfigured(env: NotionRuntimeEnv = runtimeEnv) {
@@ -148,10 +151,13 @@ async function upsertPerson(
   peopleDataSourceId: string,
 ) {
   const existing = await findPersonByEmail(submission.email, token, peopleDataSourceId);
+  const currentLifecycle = getSelectName(existing || {}, "Lifecycle");
+  const currentMarket = getSelectName(existing || {}, "Market");
   const properties = buildPersonProperties({
     ...submission,
-    currentLifecycle: getSelectName(existing || {}, "Lifecycle") as PersonLifecycle | undefined,
-    currentMarket: getSelectName(existing || {}, "Market") as "New York City" | "Global" | undefined,
+    isNew: !existing?.id,
+    currentLifecycle: isPersonLifecycle(currentLifecycle) ? currentLifecycle : undefined,
+    currentMarket: isPersonMarket(currentMarket) ? currentMarket : undefined,
     currentPreferences: getMultiSelectNames(existing || {}, "Communication preferences"),
   });
 

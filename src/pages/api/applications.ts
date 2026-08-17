@@ -1,5 +1,10 @@
 import type { APIRoute } from "astro";
-import { normalizeApplication, validateApplication, type ApplicationResult } from "@/lib/application";
+import {
+  normalizeApplication,
+  NYC_COMMUNICATION_PREFERENCES,
+  validateApplication,
+  type ApplicationResult,
+} from "@/lib/application";
 import { enqueueBuzzSubmissionNotification } from "@/lib/buzz-server";
 import { createNotionSubmission, isServerNotionConfigured, type NotionSubmission } from "@/lib/notion-server";
 
@@ -23,7 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, error: "Invalid JSON body." }, 400);
   }
 
-  const payload = normalizeApplication(body);
+  const payload = normalizeApplication(body, NYC_COMMUNICATION_PREFERENCES);
   const fieldErrors = validateApplication(payload);
 
   if (Object.keys(fieldErrors).length > 0) {

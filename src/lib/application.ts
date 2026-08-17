@@ -1,4 +1,7 @@
-import type { CommunicationPreference } from "./submission";
+import {
+  COMMUNICATION_PREFERENCES,
+  type CommunicationPreference,
+} from "./submission";
 
 export type ApplicationPayload = {
   full_name: string;
@@ -20,12 +23,6 @@ export type ApplicationPayload = {
   user_id?: string | null;
 };
 
-export const COMMUNICATION_PREFERENCES = [
-  "Cohort openings",
-  "Community updates",
-  "Events",
-] as const satisfies readonly CommunicationPreference[];
-
 export type ApplicationResult =
   | { ok: true; id?: string; mode: "notion" }
   | { ok: false; error: string; fieldErrors?: Partial<Record<keyof ApplicationPayload, string>> };
@@ -41,7 +38,19 @@ export const APPLICATION_TEXT_LIMITS = {
   },
 } as const;
 
-const textFields: Array<keyof Omit<ApplicationPayload, "consent_to_promotional_clips">> = [
+export const NYC_COMMUNICATION_PREFERENCES = [
+  "Community updates",
+  "Events",
+] as const satisfies readonly CommunicationPreference[];
+
+export const GLOBAL_WAITLIST_COMMUNICATION_PREFERENCES = [
+  "Cohort openings",
+] as const satisfies readonly CommunicationPreference[];
+
+const textFields: Array<keyof Omit<
+  ApplicationPayload,
+  "consent_to_promotional_clips" | "communication_preferences"
+>> = [
   "full_name",
   "email",
   "linkedin_url",
@@ -63,7 +72,10 @@ function clean(value: unknown) {
   return typeof value === "string" ? value.trim().slice(0, 2400) : "";
 }
 
-export function normalizeApplication(input: unknown): ApplicationPayload {
+export function normalizeApplication(
+  input: unknown,
+  allowedCommunicationPreferences: readonly CommunicationPreference[] = COMMUNICATION_PREFERENCES,
+): ApplicationPayload {
   const source = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const payload = {} as ApplicationPayload;
 
@@ -74,7 +86,10 @@ export function normalizeApplication(input: unknown): ApplicationPayload {
   payload.referral_source = payload.referral_source.slice(0, APPLICATION_TEXT_LIMITS.referral_source.max);
 
   payload.consent_to_promotional_clips = Boolean(source.consent_to_promotional_clips);
-  payload.communication_preferences = normalizeCommunicationPreferences(source.communication_preferences);
+  payload.communication_preferences = normalizeCommunicationPreferences(
+    source.communication_preferences,
+    allowedCommunicationPreferences,
+  );
   payload.build_interest ||= "Not collected in the announcement form.";
   payload.speciality_dish ||= "Not collected in the announcement form.";
   payload.profile_source ||= "self_reported";
@@ -84,10 +99,13 @@ export function normalizeApplication(input: unknown): ApplicationPayload {
   return payload;
 }
 
-export function normalizeCommunicationPreferences(value: unknown): CommunicationPreference[] {
+export function normalizeCommunicationPreferences(
+  value: unknown,
+  allowedPreferences: readonly CommunicationPreference[] = COMMUNICATION_PREFERENCES,
+): CommunicationPreference[] {
   if (!Array.isArray(value)) return [];
 
-  const supported = new Set<string>(COMMUNICATION_PREFERENCES);
+  const supported = new Set<string>(allowedPreferences);
   return [...new Set(value.filter((item): item is CommunicationPreference => (
     typeof item === "string" && supported.has(item)
   )))];

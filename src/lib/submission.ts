@@ -1,6 +1,12 @@
 export type SubmissionType = "New York application" | "Global waitlist";
 
-export type CommunicationPreference = "Cohort openings" | "Community updates" | "Events";
+export const COMMUNICATION_PREFERENCES = [
+  "Cohort openings",
+  "Community updates",
+  "Events",
+] as const;
+
+export type CommunicationPreference = (typeof COMMUNICATION_PREFERENCES)[number];
 
 export type SubmissionMetadata = {
   fullName: string;

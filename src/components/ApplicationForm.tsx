@@ -7,6 +7,7 @@ import {
   type ApplicationPayload,
   type ApplicationResult,
 } from "@/lib/application";
+import { mergeCommunicationPreferences } from "@/lib/crm";
 import type { CommunicationPreference } from "@/lib/submission";
 
 type FormState = ApplicationPayload;
@@ -59,7 +60,7 @@ export default function ApplicationForm() {
     setFieldErrors({});
   }
 
-  function updateField(field: keyof FormState, value: string | boolean | CommunicationPreference[]) {
+  function updateField<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
     setMessage("");
@@ -69,7 +70,7 @@ export default function ApplicationForm() {
     const current = form.communication_preferences;
     updateField(
       "communication_preferences",
-      checked ? [...new Set([...current, preference])] : current.filter((item) => item !== preference),
+      checked ? mergeCommunicationPreferences(current, [preference]) : current.filter((item) => item !== preference),
     );
   }
 
@@ -77,7 +78,7 @@ export default function ApplicationForm() {
     setWaitlist((current) => ({
       ...current,
       communication_preferences: checked
-        ? [...new Set([...current.communication_preferences, preference])]
+        ? mergeCommunicationPreferences(current.communication_preferences, [preference])
         : current.communication_preferences.filter((item) => item !== preference),
     }));
     setMessage("");
