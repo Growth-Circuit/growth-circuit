@@ -73,8 +73,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     height_input: normalized.height,
   });
   if (finalizeError || !finalized) {
-    const { data: current } = await admin.from("community_images").select(COMMUNITY_IMAGE_SELECT).eq("id", image.id).maybeSingle();
-    if (!current || current.state !== "ready") await admin.storage.from(destination).remove([image.objectPath]);
+    const { data: current, error: verifyError } = await admin.from("community_images").select(COMMUNITY_IMAGE_SELECT).eq("id", image.id).maybeSingle();
+    if (!verifyError && current && current.state !== "ready") await admin.storage.from(destination).remove([image.objectPath]);
     return apiError(409, "IMAGE_FINALIZE_FAILED", "The image was not finalized. Check your access and try again.");
   }
 

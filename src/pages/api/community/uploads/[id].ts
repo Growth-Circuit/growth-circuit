@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { apiError, isUuid, jsonCommunity, readJson } from "@/lib/community";
-import { COMMUNITY_IMAGE_SELECT, getCommunityStorageAdmin, mapCommunityImage, MAX_IMAGE_BYTES } from "@/lib/community-storage";
+import { COMMUNITY_IMAGE_SELECT, getCommunityStorageAdmin, mapCommunityImage } from "@/lib/community-storage";
 
 export const prerender = false;
 
@@ -66,22 +66,14 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
   const admin = await getCommunityStorageAdmin();
   if (!admin) return apiError(503, "IMAGE_SERVICE_UNAVAILABLE", "Image removal is temporarily unavailable. Please try again.");
-  const { data: stored } = await admin.storage.from(image.bucket).download(image.objectPath);
-  if (stored && stored.size > MAX_IMAGE_BYTES) return apiError(409, "IMAGE_REMOVE_FAILED", "The stored image could not be removed safely.");
-  const backup = stored ? new Uint8Array(await stored.arrayBuffer()) : null;
-  const { error: removeError } = await admin.storage.from(image.bucket).remove([image.objectPath]);
-  if (removeError) return apiError(503, "IMAGE_REMOVE_FAILED", "The image was not removed. Please try again.");
-
   const { data: deleted, error: deleteError } = await locals.supabase.rpc("community_delete_image", { image_input: imageId });
   if (deleteError || !deleted) {
-    if (backup) {
-      await admin.storage.from(image.bucket).upload(image.objectPath, backup, {
-        contentType: image.mimeType,
-        cacheControl: image.audience === "public" ? "31536000" : "0",
-        upsert: true,
-      });
-    }
     return apiError(409, "IMAGE_REMOVE_FAILED", "The image was not removed. Reload the draft and try again.");
   }
-  return jsonCommunity({ ok: true, image: mapCommunityImage(deleted as Record<string, unknown>) });
+  const { error: removeError } = await admin.storage.from(image.bucket).remove([image.objectPath]);
+  return jsonCommunity({
+    ok: true,
+    image: mapCommunityImage(deleted as Record<string, unknown>),
+    cleanupPending: Boolean(removeError),
+  });
 };

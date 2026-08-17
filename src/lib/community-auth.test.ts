@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   completeCommunityProfile,
   evaluateCommunityAccess,
+  envKillSwitch,
   getCurrentCommunityIdentity,
   getSafeNextPath,
   normalizeProfileName,
@@ -123,6 +124,19 @@ describe("evaluateCommunityAccess", () => {
     const config = { featureEnabled: true, killSwitch: true, allowlist: [] };
     expect(evaluateCommunityAccess(config, admin, { isWrite: true, isPrivate: false })).toBe(false);
     expect(evaluateCommunityAccess(config, admin, { isWrite: false, isPrivate: true })).toBe(false);
-    expect(evaluateCommunityAccess(config, anonymous, { isWrite: false, isPrivate: false })).toBe(true);
+    expect(evaluateCommunityAccess(config, anonymous, { isWrite: false, isPrivate: false })).toBe(false);
+  });
+});
+
+describe("envKillSwitch", () => {
+  it("fails closed for missing and malformed values", () => {
+    expect(envKillSwitch(undefined)).toBe(true);
+    expect(envKillSwitch("yes")).toBe(true);
+    expect(envKillSwitch(" true ")).toBe(true);
+  });
+
+  it("disengages only for explicit false values", () => {
+    expect(envKillSwitch("false")).toBe(false);
+    expect(envKillSwitch(" 0 ")).toBe(false);
   });
 });

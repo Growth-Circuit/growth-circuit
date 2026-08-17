@@ -44,7 +44,11 @@ test("cookie-auth mutations reject cross-site and missing CSRF requests", async 
   const missingToken = await request.post(`${authBaseUrl}/api/auth/signout`, {
     headers: { Origin: authBaseUrl || "http://127.0.0.1:4321", "Sec-Fetch-Site": "same-origin" },
   });
-  expect(missingToken.status()).toBe(404);
+  expect(missingToken.status()).toBe(403);
+  expect(await missingToken.json()).toMatchObject({
+    ok: false,
+    error: { code: "CSRF_STALE" },
+  });
 });
 
 test("member media IDs never disclose content to an anonymous request", async ({ request }) => {

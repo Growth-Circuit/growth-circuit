@@ -26,7 +26,7 @@ export default function AuthBar({ csrfToken, name, signedIn = false }: Props) {
     return (
       <button className="button" type="button" onClick={signOut} disabled={loading} title="Sign out">
         <UserRound size={18} aria-hidden="true" />
-        {loading ? "Signing out" : name || "Account"}
+        {loading ? "Signing out" : name ? `Sign out ${name}` : "Sign out"}
       </button>
     );
   }

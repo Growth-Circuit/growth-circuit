@@ -3,21 +3,23 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select extensions.no_plan();
 
-select extensions.has_table('public', 'community_profiles');
-select extensions.has_table('public', 'community_admins');
-select extensions.has_table('public', 'community_memberships');
-select extensions.has_table('public', 'community_posts');
-select extensions.has_table('public', 'community_images');
-select extensions.has_table('public', 'community_replies');
-select extensions.has_table('public', 'community_votes');
-select extensions.has_table('public', 'community_launch_state');
-select extensions.has_table('public', 'community_membership_audits');
-select extensions.has_table('public', 'community_moderation_audits');
-select extensions.has_table('public', 'community_upload_rate_limits');
+select extensions.has_table('public', 'community_profiles', 'community_profiles exists');
+select extensions.has_table('public', 'community_admins', 'community_admins exists');
+select extensions.has_table('public', 'community_memberships', 'community_memberships exists');
+select extensions.has_table('public', 'community_posts', 'community_posts exists');
+select extensions.has_table('public', 'community_images', 'community_images exists');
+select extensions.has_table('public', 'community_replies', 'community_replies exists');
+select extensions.has_table('public', 'community_votes', 'community_votes exists');
+select extensions.has_table('public', 'community_launch_state', 'community_launch_state exists');
+select extensions.has_table('public', 'community_membership_audits', 'community_membership_audits exists');
+select extensions.has_table('public', 'community_moderation_audits', 'community_moderation_audits exists');
+select extensions.has_table('public', 'community_upload_rate_limits', 'community_upload_rate_limits exists');
 
 select extensions.has_function('public', 'community_is_admin', array['uuid']);
 select extensions.has_function('public', 'community_is_active_member', array['uuid']);
+select extensions.has_function('public', 'community_has_verified_email', array[]::text[]);
 select extensions.has_function('public', 'community_random_slug', array['text']);
+select extensions.has_function('public', 'community_markdown_is_safe', array['text']);
 select extensions.has_function('public', 'community_create_post', array['text', 'text', 'text', 'text']);
 select extensions.has_function('public', 'community_publish_post', array['uuid']);
 select extensions.has_function('public', 'community_update_post', array['uuid', 'text', 'text', 'text']);
@@ -103,8 +105,8 @@ select extensions.is(
 );
 select extensions.is(
   (select public from storage.buckets where id = 'community-public'),
-  true,
-  'only finalized public media uses a public bucket'
+  false,
+  'public media stays private at rest and is served through the authorized proxy'
 );
 select extensions.is(
   (select public from storage.buckets where id = 'community-private'),
@@ -133,7 +135,8 @@ values
   ('10000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated', 'member@example.test', now(), '{}', '{}'),
   ('10000000-0000-0000-0000-000000000003', 'authenticated', 'authenticated', 'contributor@example.test', now(), '{}', '{}'),
   ('10000000-0000-0000-0000-000000000004', 'authenticated', 'authenticated', 'newcomer@example.test', now(), '{}', '{}'),
-  ('10000000-0000-0000-0000-000000000005', 'authenticated', 'authenticated', 'second-admin@example.test', now(), '{}', '{}');
+  ('10000000-0000-0000-0000-000000000005', 'authenticated', 'authenticated', 'second-admin@example.test', now(), '{}', '{}'),
+  ('10000000-0000-0000-0000-000000000006', 'authenticated', 'authenticated', 'new-profile@example.test', now(), '{}', '{}');
 insert into public.community_profiles (id, first_name, last_name) values
   ('10000000-0000-0000-0000-000000000001', 'Ada', 'Admin'),
   ('10000000-0000-0000-0000-000000000002', 'Mina', 'Member'),
@@ -157,8 +160,8 @@ insert into public.community_images (
   ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', 'members', 'community-private', 'private.jpg', 'image/jpeg', 100, 0, 'ready');
 
 set local role anon;
-select extensions.is((select count(*)::integer from public.community_posts), 1, 'anonymous sees only the public post');
-select extensions.is((select count(*)::integer from public.community_images), 1, 'anonymous sees only public image records');
+select extensions.is((select count(*)::integer from public.community_posts), 0, 'anonymous public rows remain dark before launch');
+select extensions.is((select count(*)::integer from public.community_images), 0, 'anonymous public image records remain dark before launch');
 reset role;
 
 set local role authenticated;
@@ -185,10 +188,28 @@ reset role;
 update public.community_launch_state set writes_enabled = true, private_reads_enabled = true where id;
 
 set local role authenticated;
+select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000006', true);
+select extensions.lives_ok(
+  $$insert into public.community_profiles (id, first_name, last_name)
+    values ('10000000-0000-0000-0000-000000000006', 'Fresh', 'Profile')$$,
+  'a verified user can create their own profile after launch'
+);
+reset role;
+
+set local role anon;
+select extensions.is((select count(*)::integer from public.community_posts), 1, 'anonymous sees the public post after launch');
+select extensions.is((select count(*)::integer from public.community_images), 1, 'anonymous sees public image records after launch');
+reset role;
+
+set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000003', true);
 select extensions.lives_ok(
   $$select public.community_create_post('Same title', 'A public draft', 'public', null)$$,
   'a verified contributor can create a public draft after launch'
+);
+select extensions.throws_ok(
+  $$select public.community_create_post('Unsafe', '<script>alert(1)</script>', 'public', null)$$,
+  '22023', 'title and body are required', 'direct RPC callers cannot bypass Markdown safety'
 );
 select extensions.throws_ok(
   $$select public.community_create_post('Private attempt', 'Blocked', 'members', null)$$,
@@ -466,9 +487,8 @@ select extensions.lives_ok(
   'deleting slot four makes it reusable by a new staging image'
 );
 select extensions.is(
-  (select position::integer from public.community_images
-    where post_id = '20000000-0000-0000-0000-000000000010' and state = 'staging'
-    order by created_at desc limit 1),
+  (select max(position)::integer from public.community_images
+    where post_id = '20000000-0000-0000-0000-000000000010' and state = 'staging'),
   4, 'the new staging image safely reuses deleted slot four'
 );
 select extensions.is(

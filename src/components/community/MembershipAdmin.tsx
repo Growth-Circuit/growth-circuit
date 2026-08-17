@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import type { CommunityMembershipStatus } from "@/types/community";
 
-type MembershipStatus = "active" | "suspended" | "revoked" | null;
+type MembershipStatus = CommunityMembershipStatus | null;
 type Member = {
   userId: string;
   name: string;

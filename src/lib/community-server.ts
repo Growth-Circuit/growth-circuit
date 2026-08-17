@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CommunityPost, CommunityReply } from "@/types/community";
 import { decodeFeedCursor, encodeFeedCursor, type CommunityPostView, type CommunityReplyView } from "@/lib/community";
 
-type PostRow = Record<string, unknown> & { community_profiles?: unknown };
+type PostRow = Record<string, unknown> & { community_profiles?: unknown; viewer_votes?: unknown };
 type ReplyRow = Record<string, unknown> & { community_profiles?: unknown };
 
 function profileName(value: unknown) {
@@ -15,9 +15,9 @@ function profileName(value: unknown) {
 export function mapPost(row: PostRow, client?: SupabaseClient): CommunityPostView {
   const rawHeader = Array.isArray(row.header_image) ? row.header_image[0] : row.header_image;
   const header = rawHeader && typeof rawHeader === "object" ? rawHeader as Record<string, unknown> : null;
-  const headerImageUrl = row.audience === "public" && header?.bucket_id === "community-public" && header.state === "ready"
-    && typeof header.object_path === "string" && client
-    ? client.storage.from("community-public").getPublicUrl(header.object_path).data.publicUrl
+  void client;
+  const headerImageUrl = header?.state === "ready" && typeof row.header_image_id === "string"
+    ? `/api/community/media/${row.header_image_id}`
     : null;
   return {
     id: String(row.id),
@@ -38,6 +38,7 @@ export function mapPost(row: PostRow, client?: SupabaseClient): CommunityPostVie
     updatedAt: String(row.updated_at),
     deletedAt: typeof row.deleted_at === "string" ? row.deleted_at : null,
     authorName: profileName(row.community_profiles),
+    votedByViewer: Array.isArray(row.viewer_votes) && row.viewer_votes.length > 0,
     headerImageUrl,
   };
 }
@@ -58,7 +59,7 @@ export function mapReply(row: ReplyRow): CommunityReplyView {
   };
 }
 
-const POST_SELECT = "id,author_id,audience,publication_state,moderation_state,title,slug,body_markdown,github_repository_url,header_image_id,header_enabled,score,reply_count,published_at,created_at,updated_at,deleted_at,community_profiles(first_name,last_name),header_image:community_images!community_posts_header_image_fk(bucket_id,object_path,state)";
+const POST_SELECT = "id,author_id,audience,publication_state,moderation_state,title,slug,body_markdown,github_repository_url,header_image_id,header_enabled,score,reply_count,published_at,created_at,updated_at,deleted_at,community_profiles!community_posts_author_id_fkey(first_name,last_name),header_image:community_images!community_posts_header_image_fk(bucket_id,object_path,state),viewer_votes:community_votes(user_id)";
 
 export async function getCommunityFeed(
   client: SupabaseClient,
@@ -102,6 +103,12 @@ export async function getCommunityPost(client: SupabaseClient, id: string) {
   return { data: data ? mapPost(data as PostRow, client) : null, error };
 }
 
+export async function getCommunityPostBySlug(client: SupabaseClient, slug: string) {
+  const { data, error } = await client.from("community_posts").select(POST_SELECT)
+    .eq("slug", slug).eq("publication_state", "published").eq("moderation_state", "visible").maybeSingle();
+  return { data: data ? mapPost(data as PostRow, client) : null, error };
+}
+
 export async function createCommunityPost(client: SupabaseClient, input: {
   title: string; bodyMarkdown: string; audience: "public" | "members"; githubRepositoryUrl: string | null;
 }) {
@@ -111,7 +118,8 @@ export async function createCommunityPost(client: SupabaseClient, input: {
     audience_input: input.audience,
     github_repository_input: input.githubRepositoryUrl,
   });
-  return { data: data ? mapPost(data as PostRow) : null, error };
+  if (error || !data) return { data: null, error };
+  return getCommunityPost(client, String((data as PostRow).id));
 }
 
 export async function updateCommunityPost(client: SupabaseClient, id: string, input: {
@@ -123,7 +131,8 @@ export async function updateCommunityPost(client: SupabaseClient, id: string, in
     body_input: input.bodyMarkdown,
     github_repository_input: input.githubRepositoryUrl,
   });
-  return { data: data ? mapPost(data as PostRow) : null, error };
+  if (error || !data) return { data: null, error };
+  return getCommunityPost(client, String((data as PostRow).id));
 }
 
 export async function softDeleteCommunityPost(client: SupabaseClient, id: string) {
@@ -133,20 +142,29 @@ export async function softDeleteCommunityPost(client: SupabaseClient, id: string
 
 export async function publishCommunityPost(client: SupabaseClient, id: string) {
   const { data, error } = await client.rpc("community_publish_post", { post_input: id });
-  return { data: data ? mapPost(data as PostRow) : null, error };
+  if (error || !data) return { data: null, error };
+  return getCommunityPost(client, String((data as PostRow).id));
 }
 
 export async function getCommunityReplies(client: SupabaseClient, postId: string) {
   const { data, error } = await client.from("community_replies")
     .select("id,post_id,author_id,audience,body_markdown,moderation_state,score,created_at,updated_at,deleted_at,community_profiles(first_name,last_name)")
     .eq("post_id", postId).eq("moderation_state", "visible").is("deleted_at", null)
-    .order("created_at", { ascending: true }).order("id", { ascending: true });
-  return { data: data?.map((row) => mapReply(row as ReplyRow)) || null, error };
+    .order("created_at", { ascending: true }).order("id", { ascending: true }).limit(101);
+  return {
+    data: data?.slice(0, 100).map((row) => mapReply(row as ReplyRow)) || null,
+    hasMore: Boolean(data && data.length > 100),
+    error,
+  };
 }
 
 export async function createCommunityReply(client: SupabaseClient, postId: string, bodyMarkdown: string) {
   const { data, error } = await client.rpc("community_create_reply", { post_input: postId, body_input: bodyMarkdown });
-  return { data: data ? mapReply(data as ReplyRow) : null, error };
+  if (error || !data) return { data: null, error };
+  const { data: reply, error: readError } = await client.from("community_replies")
+    .select("id,post_id,author_id,audience,body_markdown,moderation_state,score,created_at,updated_at,deleted_at,community_profiles(first_name,last_name)")
+    .eq("id", String((data as ReplyRow).id)).maybeSingle();
+  return { data: reply ? mapReply(reply as ReplyRow) : null, error: readError };
 }
 
 export async function toggleCommunityVote(client: SupabaseClient, postId: string) {

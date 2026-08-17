@@ -7,10 +7,13 @@ const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.club";
 export const GET: APIRoute = async ({ locals }) => {
   let items = "";
   if (locals.supabase) {
-    const { data } = await locals.supabase.from("community_posts")
+    const { data, error } = await locals.supabase.from("community_posts")
       .select("title,slug,body_markdown,published_at,updated_at")
       .eq("audience", "public").eq("publication_state", "published").eq("moderation_state", "visible")
       .order("published_at", { ascending: false }).limit(50);
+    if (error) {
+      return new Response("Community feed unavailable", { status: 503, headers: { "Cache-Control": "no-store", "Content-Type": "text/plain; charset=utf-8" } });
+    }
     items = (data || []).map((post) => {
       const url = new URL(`/community/${post.slug}`, siteUrl).toString();
       return [

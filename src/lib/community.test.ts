@@ -53,6 +53,14 @@ describe("community post input", () => {
 });
 
 describe("community error normalization", () => {
+  it("maps image processing conflicts without reporting an outage", () => {
+    expect(classifyCommunityError({ code: "P0001", message: "images are still processing" })).toEqual({
+      status: 409,
+      code: "IMAGES_PROCESSING",
+      message: "Wait for every image to finish processing, then publish again.",
+    });
+  });
+
   it("maps the database rate limit without returning database text", () => {
     expect(classifyCommunityError({ code: "P0001", message: "post creation rate limit exceeded" })).toEqual({
       status: 429,
@@ -93,7 +101,10 @@ describe("author mutations", () => {
 
   it("updates through the author-safe database function", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: row, error: null });
-    const client = { rpc } as unknown as SupabaseClient;
+    const maybeSingle = vi.fn().mockResolvedValue({ data: row, error: null });
+    const eq = vi.fn(() => ({ maybeSingle }));
+    const select = vi.fn(() => ({ eq }));
+    const client = { rpc, from: vi.fn(() => ({ select })) } as unknown as SupabaseClient;
     await updateCommunityPost(client, row.id, {
       title: "Updated",
       bodyMarkdown: "Safe body",
@@ -109,8 +120,13 @@ describe("author mutations", () => {
 
   it("soft deletes through the idempotent database function", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: { ...row, publication_state: "deleted" }, error: null });
-    await softDeleteCommunityPost({ rpc } as unknown as SupabaseClient, row.id);
+    const maybeSingle = vi.fn().mockResolvedValue({ data: { ...row, publication_state: "deleted" }, error: null });
+    const eq = vi.fn(() => ({ maybeSingle }));
+    const select = vi.fn(() => ({ eq }));
+    const deleted = await softDeleteCommunityPost({ rpc, from: vi.fn(() => ({ select })) } as unknown as SupabaseClient, row.id);
     expect(rpc).toHaveBeenCalledWith("community_delete_post", { post_input: row.id });
+    expect(deleted.data?.id).toBe(row.id);
+    expect(select).not.toHaveBeenCalled();
   });
 });
 
@@ -137,16 +153,16 @@ describe("public header image projection", () => {
     storage: { from: vi.fn(() => ({ getPublicUrl: vi.fn(() => ({ data: { publicUrl: "https://cdn.example/public-image.webp" } })) })) },
   } as unknown as SupabaseClient;
 
-  it("maps a stable public URL without exposing the object path", () => {
+  it("maps a stable public proxy URL without exposing the object path", () => {
     const post = mapPost({ ...baseRow, audience: "public", header_image: { bucket_id: "community-public", object_path: "private/source/path.webp", state: "ready" } }, client);
-    expect(post.headerImageUrl).toBe("https://cdn.example/public-image.webp");
+    expect(post.headerImageUrl).toBe("/api/community/media/30000000-0000-0000-0000-000000000001");
     expect(post).not.toHaveProperty("objectPath");
     expect(JSON.stringify(post)).not.toContain("private/source/path.webp");
   });
 
-  it("never projects a member bucket path or signed URL", () => {
+  it("projects member media through the same authorized proxy", () => {
     const post = mapPost({ ...baseRow, audience: "members", header_image: { bucket_id: "community-private", object_path: "member/secret.webp", state: "ready" } }, client);
-    expect(post.headerImageUrl).toBeNull();
+    expect(post.headerImageUrl).toBe("/api/community/media/30000000-0000-0000-0000-000000000001");
     expect(JSON.stringify(post)).not.toContain("member/secret.webp");
     expect(client.storage.from).not.toHaveBeenCalledWith("community-private");
   });

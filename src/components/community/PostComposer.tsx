@@ -1,5 +1,5 @@
 import { Loader2, Send } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { CommunityAudience, CommunityPost } from "@/types/community";
 import { normalizeCommunityGitHubUrl } from "@/lib/community-github";
 import { renderCommunityMarkdown } from "@/lib/community-markdown";
@@ -85,6 +85,16 @@ export default function PostComposer({
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "error" | "success">("idle");
   const [draftPost, setDraftPost] = useState<CommunityPost | null>(null);
+  const [imagesBusy, setImagesBusy] = useState(false);
+  const handleImagesBusy = useCallback((busy: boolean) => setImagesBusy(busy), []);
+
+  function finishPublishing(post: CommunityPost) {
+    if (onPublished) {
+      onPublished(post);
+      return;
+    }
+    window.location.assign(`/community/${post.slug}`);
+  }
 
   async function handleSubmit(event: { preventDefault: () => void }) {
     event.preventDefault();
@@ -108,7 +118,7 @@ export default function PostComposer({
         const post = await submitPost(draft);
         setStatus("success");
         setMessage("Your post is live.");
-        onPublished?.(post);
+        finishPublishing(post);
       } else {
         const post = await createCommunityDraft(draft, csrfToken);
         setDraftPost(post);
@@ -131,7 +141,7 @@ export default function PostComposer({
       const post = await publishExistingDraft(draftPost.id, csrfToken);
       setStatus("success");
       setMessage("Your post is live.");
-      onPublished?.(post);
+      finishPublishing(post);
     } catch (error) {
       setStatus("error");
       setMessage(error instanceof Error ? error.message : "We could not publish your post.");
@@ -191,10 +201,10 @@ export default function PostComposer({
 
       {draftPost ? (
         <div className="community-post-composer__publish-step">
-          <ImageUploader postId={draftPost.id} csrfToken={csrfToken} />
-          <button className="button matcha" type="button" disabled={submitting} onClick={() => void handlePublish()}>
+          <ImageUploader postId={draftPost.id} csrfToken={csrfToken} onBusyChange={handleImagesBusy} />
+          <button className="button matcha" type="button" disabled={submitting || imagesBusy} onClick={() => void handlePublish()}>
             {submitting ? <Loader2 size={17} aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}
-            {submitting ? "Publishing…" : "Publish post"}
+            {submitting ? "Publishing…" : imagesBusy ? "Finish image upload first" : "Publish post"}
           </button>
         </div>
       ) : null}

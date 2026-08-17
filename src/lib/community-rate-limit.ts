@@ -8,6 +8,9 @@ export type NormalizedCommunityError = {
 
 export function classifyCommunityError(error: DatabaseError): NormalizedCommunityError {
   const message = error?.message?.toLowerCase() || "";
+  if (error?.code === "P0001" && message.includes("images are still processing")) {
+    return { status: 409, code: "IMAGES_PROCESSING", message: "Wait for every image to finish processing, then publish again." };
+  }
   if (error?.code === "P0001" && message.includes("rate limit")) {
     return {
       status: 429,

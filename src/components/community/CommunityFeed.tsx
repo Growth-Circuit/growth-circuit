@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CommunityPostView } from "@/lib/community";
+import type { CommunityRole } from "@/lib/community-auth";
 import { communityExcerpt } from "@/lib/seo";
 
-type FeedPost = CommunityPostView & { headerImageUrl?: string | null };
-type Role = "anonymous" | "contributor" | "member" | "admin";
+type FeedPost = CommunityPostView;
 type FeedState = { posts: FeedPost[]; nextCursor: string | null; loaded: boolean };
 
 type Props = {
   initialPosts: FeedPost[];
   initialNextCursor: string | null;
   initialAudience: "public" | "members";
-  role: Role;
+  role: CommunityRole;
   initialError?: string;
 };
 
@@ -59,6 +59,7 @@ export default function CommunityFeed({ initialPosts, initialNextCursor, initial
   const [error, setError] = useState(initialError);
   const canReadMembers = role === "member" || role === "admin";
   const feedsRef = useRef(feeds);
+  const requestsRef = useRef<Record<"public" | "members", AbortController | null>>({ public: null, members: null });
 
   useEffect(() => {
     feedsRef.current = feeds;
@@ -67,12 +68,15 @@ export default function CommunityFeed({ initialPosts, initialNextCursor, initial
   const load = useCallback(async (target: "public" | "members", append = false) => {
     if (target === "members" && !canReadMembers) return;
     const current = feedsRef.current[target];
+    requestsRef.current[target]?.abort();
+    const controller = new AbortController();
+    requestsRef.current[target] = controller;
     setLoading(true);
     setError("");
     try {
       const params = new URLSearchParams({ audience: target });
       if (append && current.nextCursor) params.set("cursor", current.nextCursor);
-      const response = await fetch(`/api/community/feed?${params}`, { credentials: "same-origin" });
+      const response = await fetch(`/api/community/feed?${params}`, { credentials: "same-origin", signal: controller.signal });
       const result = await response.json() as { posts?: FeedPost[]; nextCursor?: string | null; error?: { message?: string } };
       if (!response.ok || !result.posts) throw new Error(result.error?.message || "The feed could not be loaded.");
       setFeeds((all) => {
@@ -88,14 +92,26 @@ export default function CommunityFeed({ initialPosts, initialNextCursor, initial
         return next;
       });
     } catch (cause) {
+      if (controller.signal.aborted) return;
       setError(cause instanceof Error ? cause.message : "The feed could not be loaded.");
     } finally {
-      setLoading(false);
+      if (requestsRef.current[target] === controller) {
+        requestsRef.current[target] = null;
+        setLoading(false);
+      }
     }
   }, [canReadMembers]);
 
+  useEffect(() => () => {
+    requestsRef.current.public?.abort();
+    requestsRef.current.members?.abort();
+  }, []);
+
   function choose(target: "public" | "members") {
+    requestsRef.current[audience]?.abort();
+    requestsRef.current[audience] = null;
     setAudience(target);
+    setLoading(false);
     setError("");
     const url = new URL(window.location.href);
     if (target === "members") url.searchParams.set("tab", "members");
@@ -151,7 +167,7 @@ export default function CommunityFeed({ initialPosts, initialNextCursor, initial
         <div className="community-feed-state">
           <h3>{audience === "public" ? "Be the first to post" : "The members feed is ready for its first note"}</h3>
           <p>Share a build, a useful question, or the lesson you wish you had yesterday.</p>
-          <a className="community-button community-button--primary" href={`/community/submit?audience=${audience}`}>Share a post</a>
+          <a className="community-button community-button--primary" href={`/community/submit?audience=${audience}`}>Share the first post</a>
         </div>
       ) : (
         <div className="community-post-list" role="tabpanel" aria-label={`${audience} posts`}>

@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import type { CommunityImage } from "@/types/community";
 
-type ImageItem = {
-  id: string;
-  postId: string;
-  mimeType: "image/jpeg" | "image/png" | "image/webp";
-  position: number;
-  state: "staging" | "ready" | "deleted";
+type ImageItem = Pick<CommunityImage, "id" | "postId" | "mimeType" | "position" | "state"> & {
   previewUrl?: string;
   status?: "uploading" | "processing" | "ready" | "failed";
   error?: string;
@@ -19,6 +15,7 @@ type Props = {
   initialImages?: ImageItem[];
   initialHeaderImageId?: string | null;
   initialHeaderEnabled?: boolean;
+  onBusyChange?: (busy: boolean) => void;
 };
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -34,6 +31,7 @@ export default function ImageUploader({
   initialImages = [],
   initialHeaderImageId = null,
   initialHeaderEnabled = true,
+  onBusyChange,
 }: Props) {
   const [images, setImages] = useState(() => initialImages.filter((image) => image.state !== "deleted").sort((a, b) => a.position - b.position));
   const [headerImageId, setHeaderImageId] = useState(initialHeaderImageId);
@@ -46,6 +44,10 @@ export default function ImageUploader({
     for (const url of previewUrls.current) URL.revokeObjectURL(url);
     previewUrls.current.clear();
   }, []);
+
+  useEffect(() => {
+    onBusyChange?.(busy);
+  }, [busy, onBusyChange]);
 
   async function finalize(imageId: string) {
     setImages((current) => current.map((image) => image.id === imageId ? { ...image, status: "processing", error: undefined } : image));
@@ -60,7 +62,7 @@ export default function ImageUploader({
     setImages((current) => current.map((image) => image.id === imageId
       ? { ...image, ...result.image, status: "ready", error: undefined, file: undefined, signedUrl: undefined }
       : image));
-    if (headerEnabled && !headerImageId) setHeaderImageId(imageId);
+    if (headerEnabled) setHeaderImageId((current) => current ?? imageId);
   }
 
   async function uploadStaged(imageId: string, file: File, signedUrl: string) {
@@ -69,6 +71,9 @@ export default function ImageUploader({
     form.append("", file);
     const uploadResponse = await fetch(signedUrl, { method: "PUT", headers: { "x-upsert": "false" }, body: form });
     if (!uploadResponse.ok) throw new Error("The upload stopped before processing. Retry or remove this image.");
+    setImages((current) => current.map((image) => image.id === imageId
+      ? { ...image, file: undefined, signedUrl: undefined }
+      : image));
     await finalize(imageId);
   }
 

@@ -5,10 +5,11 @@ type Props = {
   score: number;
   csrfToken: string;
   signedIn: boolean;
+  initialVoted?: boolean;
 };
 
-export default function VoteButton({ postId, score, csrfToken, signedIn }: Props) {
-  const [voted, setVoted] = useState(false);
+export default function VoteButton({ postId, score, csrfToken, signedIn, initialVoted = false }: Props) {
+  const [voted, setVoted] = useState(initialVoted);
   const [currentScore, setCurrentScore] = useState(score);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");

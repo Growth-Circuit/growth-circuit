@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { apiError, jsonCommunity, readJson } from "@/lib/community";
-import { COMMUNITY_STAGING_BUCKET, mapCommunityImage, validateImageUploadRequest } from "@/lib/community-storage";
+import { COMMUNITY_STAGING_BUCKET, getCommunityStorageAdmin, mapCommunityImage, validateImageUploadRequest } from "@/lib/community-storage";
 
 export const prerender = false;
 
@@ -27,7 +27,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
     .from(COMMUNITY_STAGING_BUCKET)
     .createSignedUploadUrl(image.objectPath, { upsert: false });
   if (signError || !signed) {
-    await locals.supabase.rpc("community_delete_image", { image_input: image.id });
+    const { error: cleanupError } = await locals.supabase.rpc("community_delete_image", { image_input: image.id });
+    if (cleanupError) {
+      const admin = await getCommunityStorageAdmin();
+      if (admin) {
+        await admin.from("community_images").update({ state: "deleted" })
+          .eq("id", image.id).eq("author_id", locals.communityIdentity.user.id).eq("state", "staging");
+      }
+    }
     return apiError(503, "UPLOAD_SIGNING_FAILED", "We could not prepare the private upload. Please try again.");
   }
 
@@ -37,4 +44,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     upload: { signedUrl: signed.signedUrl, token: signed.token, path: signed.path },
   }, 201);
 };
-

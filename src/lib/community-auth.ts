@@ -56,7 +56,14 @@ export function parseRolloutAllowlist(value: string | undefined) {
 
 export function envFlag(value: string | undefined, fallback = false) {
   if (value === undefined || value === "") return fallback;
-  return value.toLowerCase() === "true" || value === "1";
+  const normalized = value.trim().toLowerCase();
+  return normalized === "true" || normalized === "1";
+}
+
+export function envKillSwitch(value: string | undefined) {
+  if (value === undefined || value.trim() === "") return true;
+  const normalized = value.trim().toLowerCase();
+  return normalized !== "false" && normalized !== "0";
 }
 
 export function evaluateCommunityAccess(
@@ -64,7 +71,8 @@ export function evaluateCommunityAccess(
   identity: CommunityIdentity,
   request: { isWrite: boolean; isPrivate: boolean },
 ) {
-  if (config.killSwitch && (request.isWrite || request.isPrivate)) return false;
+  void request;
+  if (config.killSwitch) return false;
   if (config.featureEnabled) return true;
   if (identity.role !== "admin" || !identity.user) return false;
 

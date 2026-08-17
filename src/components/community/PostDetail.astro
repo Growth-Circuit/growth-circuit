@@ -30,7 +30,7 @@ const published = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeri
 
   <div class="community-detail__layout">
     <aside class="community-detail__vote" aria-label="Post voting">
-      <VoteButton client:load postId={post.id} score={post.score} csrfToken={csrfToken} signedIn={signedIn} />
+      <VoteButton client:load postId={post.id} score={post.score} csrfToken={csrfToken} signedIn={signedIn} initialVoted={post.votedByViewer} />
     </aside>
     <div class="community-detail__content">
       <p class="community-post-card__byline">Posted by <strong>{post.authorName}</strong></p>
@@ -119,6 +119,12 @@ const published = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeri
     const status = tools.querySelector<HTMLElement>("[data-author-status]");
     const postId = tools.dataset.postId || "";
     const csrfToken = tools.dataset.csrfToken || "";
+    let pending = false;
+    const controls = Array.from(tools.querySelectorAll<HTMLButtonElement>("button"));
+    const setPending = (value: boolean) => {
+      pending = value;
+      for (const control of controls) control.disabled = value;
+    };
     const setEditing = (editing: boolean) => {
       if (form) form.hidden = !editing;
       tools.querySelector<HTMLButtonElement>("[data-edit-toggle]")?.setAttribute("aria-expanded", String(editing));
@@ -128,41 +134,49 @@ const published = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeri
     tools.querySelector("[data-edit-cancel]")?.addEventListener("click", () => setEditing(false));
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (pending) return;
+      setPending(true);
       if (status) status.textContent = "Saving changes…";
-      const data = new FormData(form);
-      const response = await fetch(`/api/community/posts/${postId}`, {
-        method: "PATCH",
-        credentials: "same-origin",
-        headers: { "content-type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({
-          title: data.get("title"),
-          bodyMarkdown: data.get("bodyMarkdown"),
-          githubRepositoryUrl: data.get("githubRepositoryUrl") || null,
-        }),
-      });
-      const result = await response.json() as { error?: { message?: string } };
-      if (!response.ok) {
-        if (status) status.textContent = result.error?.message || "The changes could not be saved.";
-        return;
+      try {
+        const data = new FormData(form);
+        const response = await fetch(`/api/community/posts/${postId}`, {
+          method: "PATCH",
+          credentials: "same-origin",
+          headers: { "content-type": "application/json", "x-csrf-token": csrfToken },
+          body: JSON.stringify({
+            title: data.get("title"),
+            bodyMarkdown: data.get("bodyMarkdown"),
+            githubRepositoryUrl: data.get("githubRepositoryUrl") || null,
+          }),
+        });
+        const result = await response.json() as { error?: { message?: string } };
+        if (!response.ok) throw new Error(result.error?.message || "The changes could not be saved.");
+        if (status) status.textContent = "Changes saved.";
+        window.setTimeout(() => window.location.reload(), 250);
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : "The changes could not be saved.";
+        setPending(false);
       }
-      if (status) status.textContent = "Changes saved.";
-      window.setTimeout(() => window.location.reload(), 250);
     });
     tools.querySelector("[data-delete-post]")?.addEventListener("click", async () => {
+      if (pending) return;
       if (!window.confirm("Delete this post? It will disappear from the feed and cannot be restored here.")) return;
+      setPending(true);
       if (status) status.textContent = "Deleting post…";
-      const response = await fetch(`/api/community/posts/${postId}`, {
-        method: "DELETE",
-        credentials: "same-origin",
-        headers: { "x-csrf-token": csrfToken },
-      });
-      const result = await response.json() as { error?: { message?: string } };
-      if (!response.ok) {
-        if (status) status.textContent = result.error?.message || "The post could not be deleted.";
-        return;
+      try {
+        const response = await fetch(`/api/community/posts/${postId}`, {
+          method: "DELETE",
+          credentials: "same-origin",
+          headers: { "x-csrf-token": csrfToken },
+        });
+        const result = await response.json() as { error?: { message?: string } };
+        if (!response.ok) throw new Error(result.error?.message || "The post could not be deleted.");
+        if (status) status.textContent = "Post deleted. Returning to the feed…";
+        window.setTimeout(() => window.location.assign(tools.dataset.returnPath || "/community"), 350);
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : "The post could not be deleted.";
+        setPending(false);
       }
-      if (status) status.textContent = "Post deleted. Returning to the feed…";
-      window.setTimeout(() => window.location.assign(tools.dataset.returnPath || "/community"), 350);
     });
   }
 </script>

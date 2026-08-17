@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import PostDetail from "@/components/community/PostDetail.astro";
-import { mapPost, getCommunityReplies } from "@/lib/community-server";
+import { getCommunityPostBySlug, getCommunityReplies } from "@/lib/community-server";
 import { renderCommunityMarkdown } from "@/lib/community-markdown";
 import { getCommunityGitHubRepository } from "@/lib/community-github";
 import { breadcrumbJsonLd, communityExcerpt, communityPostJsonLd } from "@/lib/seo";
@@ -13,24 +13,18 @@ const privateHeaders = {
   "Cache-Control": "private, no-store, max-age=0",
   "CDN-Cache-Control": "no-store",
   "Cloudflare-CDN-Cache-Control": "no-store",
-  "Content-Type": "text/plain; charset=utf-8",
   "X-Robots-Tag": "noindex, nofollow",
 };
-for (const [name, value] of Object.entries(privateHeaders)) Astro.response.headers.set(name, value);
 
 const slug = Astro.params.slug;
 if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{12}$/i.test(slug) || !Astro.locals.supabase) {
-  return new Response("Not found", { status: 404, headers: privateHeaders });
+  return new Response("Not found", { status: 404, headers: { ...privateHeaders, "Content-Type": "text/plain; charset=utf-8" } });
 }
 
-const postSelect = "id,author_id,audience,publication_state,moderation_state,title,slug,body_markdown,github_repository_url,header_image_id,header_enabled,score,reply_count,published_at,created_at,updated_at,deleted_at,community_profiles(first_name,last_name)";
-const { data: row, error } = await Astro.locals.supabase.from("community_posts").select(postSelect)
-  .eq("slug", slug).eq("publication_state", "published").eq("moderation_state", "visible").maybeSingle();
-if (error || !row) return new Response("Not found", { status: 404, headers: privateHeaders });
-
-const post = mapPost(row as Record<string, unknown>);
+const { data: post, error } = await getCommunityPostBySlug(Astro.locals.supabase, slug);
+if (error || !post) return new Response("Not found", { status: 404, headers: { ...privateHeaders, "Content-Type": "text/plain; charset=utf-8" } });
 const replyResult = await getCommunityReplies(Astro.locals.supabase, post.id);
-if (replyResult.error) return new Response("Not found", { status: 404, headers: privateHeaders });
+if (replyResult.error) return new Response("Not found", { status: 404, headers: { ...privateHeaders, "Content-Type": "text/plain; charset=utf-8" } });
 const replies = await Promise.all((replyResult.data || []).map(async (reply) => ({ ...reply, html: await renderCommunityMarkdown(reply.bodyMarkdown) })));
 const bodyHtml = await renderCommunityMarkdown(post.bodyMarkdown);
 const github = post.githubRepositoryUrl ? getCommunityGitHubRepository(post.githubRepositoryUrl) : null;
@@ -38,13 +32,14 @@ const github = post.githubRepositoryUrl ? getCommunityGitHubRepository(post.gith
 const { data: imageRows } = await Astro.locals.supabase.from("community_images")
   .select("id,bucket_id,object_path,width,height,position,state").eq("post_id", post.id).eq("state", "ready").order("position", { ascending: true });
 const images = (imageRows || []).flatMap((image) => {
-  if (image.bucket_id === "community-private") return [{ id: image.id, url: `/api/community/media/${image.id}`, width: image.width, height: image.height }];
-  if (image.bucket_id !== "community-public") return [];
-  const { data } = Astro.locals.supabase!.storage.from("community-public").getPublicUrl(image.object_path);
-  return [{ id: image.id, url: data.publicUrl, width: image.width, height: image.height }];
+  if (image.bucket_id !== "community-private" && image.bucket_id !== "community-public") return [];
+  return [{ id: image.id, url: `/api/community/media/${image.id}`, width: image.width, height: image.height }];
 });
 const headerImage = post.headerEnabled && post.headerImageId ? images.find((image) => image.id === post.headerImageId) : null;
 const isPublic = post.audience === "public";
+if (!isPublic) {
+  for (const [name, value] of Object.entries(privateHeaders)) Astro.response.headers.set(name, value);
+}
 const jsonLd = isPublic ? [
   breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "The Circuit", path: "/community" }, { name: post.title, path: `/community/${post.slug}` }]),
   communityPostJsonLd(post, replies),

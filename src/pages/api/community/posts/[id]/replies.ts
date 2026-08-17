@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     const error = classifyCommunityError(result.error);
     return apiError(error.status, error.code, error.message);
   }
-  return jsonCommunity({ ok: true, replies: result.data });
+  return jsonCommunity({ ok: true, replies: result.data, hasMore: result.hasMore });
 };
 
 export const POST: APIRoute = async ({ request, params, locals }) => {

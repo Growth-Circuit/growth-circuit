@@ -7,6 +7,10 @@ export function canonical(pathname: string) {
   return new URL(pathname, siteUrl).toString();
 }
 
+export function serializeJsonLd(value: unknown) {
+  return JSON.stringify(value).replaceAll("<", "\\u003c");
+}
+
 export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",

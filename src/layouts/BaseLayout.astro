@@ -1,6 +1,6 @@
 ---
 import "@/styles/global.css";
-import { canonical, organizationJsonLd } from "@/lib/seo";
+import { canonical, organizationJsonLd, serializeJsonLd } from "@/lib/seo";
 
 type Props = {
   title?: string;
@@ -65,7 +65,7 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImageUrl} />
     <meta name="twitter:image:alt" content={socialImageAlt} />
-    {allJsonLd.map((entry) => <script is:inline type="application/ld+json" set:html={JSON.stringify(entry)} />)}
+    {allJsonLd.map((entry) => <script is:inline type="application/ld+json" set:html={serializeJsonLd(entry)} />)}
   </head>
   <body class={bodyClass}>
     {

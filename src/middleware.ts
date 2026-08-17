@@ -2,6 +2,7 @@ import { defineMiddleware } from "astro:middleware";
 import {
   COMMUNITY_CSRF_COOKIE,
   envFlag,
+  envKillSwitch,
   evaluateCommunityAccess,
   getCurrentCommunityIdentity,
   parseRolloutAllowlist,
@@ -10,17 +11,31 @@ import {
 import { createUserSupabaseClient, type SupabaseRuntimeEnv } from "@/lib/supabase-server";
 
 type CommunityRuntimeEnv = SupabaseRuntimeEnv & {
+  COMMUNITY_E2E_MODE?: string;
   COMMUNITY_FEATURE_ENABLED?: string;
   COMMUNITY_KILL_SWITCH?: string;
   COMMUNITY_ROLLOUT_ALLOWLIST?: string;
 };
 
 async function getRuntimeEnv(): Promise<CommunityRuntimeEnv> {
+  const buildEnv = import.meta.env as CommunityRuntimeEnv;
   try {
     const runtime = await import("cloudflare:workers");
-    return runtime.env as unknown as CommunityRuntimeEnv;
+    const workerEnv = runtime.env as unknown as CommunityRuntimeEnv;
+    if (buildEnv.COMMUNITY_E2E_MODE === "true") {
+      return {
+        ...workerEnv,
+        PUBLIC_SUPABASE_URL: buildEnv.PUBLIC_SUPABASE_URL,
+        PUBLIC_SUPABASE_PUBLISHABLE_KEY: buildEnv.PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+        SUPABASE_SERVICE_ROLE_KEY: buildEnv.SUPABASE_SERVICE_ROLE_KEY,
+        COMMUNITY_FEATURE_ENABLED: buildEnv.COMMUNITY_FEATURE_ENABLED,
+        COMMUNITY_KILL_SWITCH: buildEnv.COMMUNITY_KILL_SWITCH,
+        COMMUNITY_ROLLOUT_ALLOWLIST: buildEnv.COMMUNITY_ROLLOUT_ALLOWLIST,
+      };
+    }
+    return workerEnv;
   } catch {
-    return import.meta.env as CommunityRuntimeEnv;
+    return buildEnv;
   }
 }
 
@@ -41,7 +56,7 @@ function isPrivateCommunityRequest(url: URL) {
     || url.pathname.startsWith("/media/community");
 }
 
-function applySecurityHeaders(response: Response, requestUrl: URL, sensitive: boolean) {
+function applySecurityHeaders(response: Response, requestUrl: URL, noStore: boolean) {
   response.headers.set("Content-Security-Policy", [
     "default-src 'self'",
     "base-uri 'self'",
@@ -55,11 +70,11 @@ function applySecurityHeaders(response: Response, requestUrl: URL, sensitive: bo
   ].join("; "));
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
-  response.headers.set("Referrer-Policy", sensitive ? "no-referrer" : "strict-origin-when-cross-origin");
+  response.headers.set("Referrer-Policy", noStore ? "no-referrer" : "strict-origin-when-cross-origin");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
 
-  if (sensitive) {
+  if (noStore) {
     response.headers.set("Cache-Control", "private, no-store, max-age=0");
     response.headers.set("CDN-Cache-Control", "no-store");
     response.headers.set("Cloudflare-CDN-Cache-Control", "no-store");
@@ -86,6 +101,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isAuth = pathStartsWith(requestUrl.pathname, AUTH_PATHS);
   const isCommunity = pathStartsWith(requestUrl.pathname, COMMUNITY_PATHS);
   const sensitive = isAuth || isCommunity;
+  const privateResponse = isAuth
+    || UNSAFE_METHODS.has(context.request.method.toUpperCase())
+    || isPrivateCommunityRequest(requestUrl);
   const needsCommunityContext = sensitive || pathStartsWith(requestUrl.pathname, COMMUNITY_DISCOVERY_PATHS);
 
   if (!needsCommunityContext) {
@@ -102,7 +120,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const runtimeEnv = await getRuntimeEnv();
   const rolloutConfig = {
     featureEnabled: envFlag(runtimeEnv.COMMUNITY_FEATURE_ENABLED),
-    killSwitch: envFlag(runtimeEnv.COMMUNITY_KILL_SWITCH, true),
+    killSwitch: envKillSwitch(runtimeEnv.COMMUNITY_KILL_SWITCH),
     allowlist: parseRolloutAllowlist(runtimeEnv.COMMUNITY_ROLLOUT_ALLOWLIST),
   };
 
@@ -136,6 +154,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (sensitive && UNSAFE_METHODS.has(context.request.method.toUpperCase())) {
     const csrf = validateCsrfRequest(context.request, csrfToken);
     if (!csrf.ok) {
+      if (csrf.reason === "csrf") {
+        const response = new Response(JSON.stringify({
+          ok: false,
+          error: { code: "CSRF_STALE", message: "Your page expired. Refresh it and try again." },
+        }), {
+          status: 403,
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+        });
+        applySecurityHeaders(response, requestUrl, true);
+        return response;
+      }
       const response = genericDenial();
       applySecurityHeaders(response, requestUrl, true);
       return response;
@@ -157,6 +186,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const response = await next();
   for (const [name, value] of Object.entries(pendingHeaders)) response.headers.set(name, value);
-  applySecurityHeaders(response, requestUrl, sensitive);
+  applySecurityHeaders(response, requestUrl, privateResponse);
   return response;
 });

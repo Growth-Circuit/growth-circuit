@@ -217,6 +217,14 @@ returns boolean language sql stable security definer set search_path = '' as $$
   end;
 $$;
 
+create or replace function public.community_has_verified_email()
+returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (
+    select 1 from auth.users u
+    where u.id = auth.uid() and u.email_confirmed_at is not null
+  );
+$$;
+
 create or replace function public.community_random_slug(title_input text)
 returns text language plpgsql volatile security definer set search_path = '' as $$
 declare
@@ -226,6 +234,14 @@ begin
   fragment := trim(both '-' from left(coalesce(nullif(fragment, ''), 'post'), 72));
   return fragment || '-' || encode(extensions.gen_random_bytes(6), 'hex');
 end;
+$$;
+
+create or replace function public.community_markdown_is_safe(markdown_input text)
+returns boolean language sql immutable set search_path = '' as $$
+  select char_length(coalesce(markdown_input, '')) between 1 and 50000
+    and markdown_input !~ '<[A-Za-z!/][^>]*>'
+    and markdown_input !~* '\]\(\s*(javascript:|data:|//|\\\\)'
+    and markdown_input !~* '!\[[^]]*\]\(\s*(https?:|data:|//|\\\\)';
 $$;
 
 create or replace function public.community_reject_audit_mutation()
@@ -329,7 +345,7 @@ begin
   if audience_input = 'members' and not public.community_launch_allows(true, true) then
     raise exception 'community audience unavailable' using errcode = '42501';
   end if;
-  if btrim(coalesce(title_input, '')) = '' or btrim(coalesce(body_input, '')) = '' then
+  if btrim(coalesce(title_input, '')) = '' or not public.community_markdown_is_safe(body_input) then
     raise exception 'title and body are required' using errcode = '22023';
   end if;
   if github_repository_input is not null and github_repository_input !~ '^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/?$' then
@@ -383,7 +399,7 @@ begin
      ) then
     raise exception 'post unavailable' using errcode = '42501';
   end if;
-  if btrim(coalesce(title_input, '')) = '' or btrim(coalesce(body_input, '')) = '' then
+  if btrim(coalesce(title_input, '')) = '' or not public.community_markdown_is_safe(body_input) then
     raise exception 'title and body are required' using errcode = '22023';
   end if;
   if github_repository_input is not null and github_repository_input !~ '^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/?$' then
@@ -434,7 +450,7 @@ begin
      or not exists (select 1 from public.community_profiles p where p.id = actor) then
     raise exception 'post unavailable' using errcode = '42501';
   end if;
-  if btrim(coalesce(body_input, '')) = '' then raise exception 'reply body is required' using errcode = '22023'; end if;
+  if not public.community_markdown_is_safe(body_input) then raise exception 'reply body is required' using errcode = '22023'; end if;
   insert into public.community_replies (post_id, author_id, audience, body_markdown)
   values (parent.id, actor, parent.audience, body_input) returning * into created;
   update public.community_posts set reply_count = reply_count + 1 where id = parent.id;
@@ -479,10 +495,10 @@ begin
      ) then
     raise exception 'post unavailable' using errcode = '42501';
   end if;
-  if enabled_input and image_input is not null and not exists (
+  if enabled_input and (image_input is null or not exists (
     select 1 from public.community_images i where i.id = image_input and i.post_id = target.id
       and i.audience = target.audience and i.state = 'ready'
-  ) then raise exception 'header image unavailable' using errcode = '42501'; end if;
+  )) then raise exception 'header image unavailable' using errcode = '42501'; end if;
   update public.community_posts set
     header_enabled = enabled_input,
     header_image_id = case when enabled_input then image_input else null end,
@@ -770,15 +786,15 @@ drop policy if exists community_moderation_audits_read_admin on public.community
 drop policy if exists community_launch_audits_read_admin on public.community_launch_audits;
 
 create policy community_profiles_read on public.community_profiles for select using (
-  community_profiles.id = auth.uid() or public.community_is_admin() or exists (
+  community_profiles.id = auth.uid() or (current_user = 'authenticated' and public.community_is_admin()) or exists (
     select 1 from public.community_posts p where p.author_id = community_profiles.id and p.audience = 'public'
       and p.publication_state = 'published' and p.moderation_state = 'visible'
+      and public.community_launch_allows(true, false)
   ) or (public.community_launch_allows(false, true) and public.community_is_active_member())
 );
 create policy community_profiles_insert_self on public.community_profiles for insert with check (
-  id = auth.uid() and public.community_launch_allows(true, false) and exists (
-    select 1 from auth.users u where u.id = auth.uid() and u.email_confirmed_at is not null
-  )
+  id = auth.uid() and (public.community_launch_allows(true, false) or public.community_is_admin())
+    and public.community_has_verified_email()
 );
 create policy community_profiles_update_self on public.community_profiles for update using (
   id = auth.uid() and public.community_launch_allows(true, false)
@@ -788,16 +804,19 @@ create policy community_memberships_read_self_or_admin on public.community_membe
   user_id = auth.uid() or public.community_is_admin()
 );
 create policy community_posts_read on public.community_posts for select using (
-  (audience = 'public' and publication_state = 'published' and moderation_state = 'visible') or
+  (current_user = 'authenticated' and public.community_is_admin()) or
+  (audience = 'public' and publication_state = 'published' and moderation_state = 'visible'
+    and public.community_launch_allows(true, false)) or
   (audience = 'members' and publication_state = 'published' and moderation_state = 'visible'
     and public.community_launch_allows(false, true) and public.community_is_active_member()) or
-  (author_id = auth.uid() and (audience = 'public' or (
+  (current_user = 'authenticated' and author_id = auth.uid() and (audience = 'public' or (
     public.community_launch_allows(false, true) and public.community_is_active_member()
   )))
 );
 create policy community_images_read on public.community_images for select using (
   exists (select 1 from public.community_posts p where p.id = post_id and (
-    (p.audience = 'public' and p.publication_state = 'published' and p.moderation_state = 'visible' and state = 'ready') or
+    (p.audience = 'public' and p.publication_state = 'published' and p.moderation_state = 'visible'
+      and state = 'ready' and public.community_launch_allows(true, false)) or
     (p.audience = 'members' and p.publication_state = 'published' and p.moderation_state = 'visible'
       and state = 'ready' and public.community_launch_allows(false, true) and public.community_is_active_member()) or
     (p.author_id = auth.uid() and (p.audience = 'public' or (
@@ -806,10 +825,11 @@ create policy community_images_read on public.community_images for select using 
   ))
 );
 create policy community_replies_read on public.community_replies for select using (
-  moderation_state = 'visible' and deleted_at is null and exists (
+  (current_user = 'authenticated' and public.community_is_admin()) or (moderation_state = 'visible' and deleted_at is null and exists (
     select 1 from public.community_posts p where p.id = post_id and p.publication_state = 'published'
       and p.moderation_state = 'visible' and public.community_can_access_audience(p.audience)
-  )
+      and (p.audience <> 'public' or public.community_launch_allows(true, false))
+  ))
 );
 create policy community_votes_read_self on public.community_votes for select using (user_id = auth.uid());
 create policy community_membership_audits_read_admin on public.community_membership_audits for select using (public.community_is_admin());
@@ -826,7 +846,8 @@ revoke all on sequence public.community_membership_audits_id_seq,
   public.community_moderation_audits_id_seq, public.community_launch_audits_id_seq from anon, authenticated;
 revoke execute on function public.community_is_admin(uuid), public.community_is_active_member(uuid),
   public.community_launch_allows(boolean, boolean), public.community_can_access_audience(text),
-  public.community_random_slug(text), public.community_consume_post_rate_limit(),
+  public.community_has_verified_email(),
+  public.community_random_slug(text), public.community_markdown_is_safe(text), public.community_consume_post_rate_limit(),
   public.community_consume_upload_quota(bigint),
   public.community_create_post(text, text, text, text), public.community_publish_post(uuid),
   public.community_update_post(uuid, text, text, text), public.community_delete_post(uuid),
@@ -836,8 +857,9 @@ revoke execute on function public.community_is_admin(uuid), public.community_is_
   public.community_reorder_images(uuid, uuid[]), public.community_set_membership(uuid, text, text, uuid),
   public.community_moderate_content(text, uuid, text, text, uuid),
   public.community_set_launch_state(boolean, boolean, text) from public, anon, authenticated;
-grant select on public.community_profiles, public.community_posts, public.community_images, public.community_replies to anon, authenticated;
-grant select on public.community_admins, public.community_memberships, public.community_votes to authenticated;
+grant select on public.community_profiles, public.community_posts, public.community_images, public.community_replies,
+  public.community_votes to anon, authenticated;
+grant select on public.community_admins, public.community_memberships to authenticated;
 grant select on public.community_membership_audits, public.community_moderation_audits, public.community_launch_audits to authenticated;
 grant insert (id, first_name, last_name) on public.community_profiles to authenticated;
 grant update (first_name, last_name, updated_at) on public.community_profiles to authenticated;
@@ -857,6 +879,7 @@ grant execute on function public.community_moderate_content(text, uuid, text, te
 grant execute on function public.community_set_launch_state(boolean, boolean, text) to authenticated;
 grant execute on function public.community_is_admin(uuid), public.community_is_active_member(uuid),
   public.community_launch_allows(boolean, boolean), public.community_can_access_audience(text) to anon, authenticated;
+grant execute on function public.community_has_verified_email() to authenticated;
 
 -- Keep the existing application forms operating while the dormant forum remains unreachable.
 grant insert on public.applications, public.global_waitlist to anon, authenticated;
@@ -865,7 +888,7 @@ revoke all on public.profiles, public.threads, public.posts, public.tags, public
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
-  ('community-public', 'community-public', true, 5242880, array['image/jpeg', 'image/png', 'image/webp']),
+  ('community-public', 'community-public', false, 5242880, array['image/jpeg', 'image/png', 'image/webp']),
   ('community-private', 'community-private', false, 5242880, array['image/jpeg', 'image/png', 'image/webp']),
   ('community-staging', 'community-staging', false, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
 on conflict (id) do update set public = excluded.public, file_size_limit = excluded.file_size_limit,
@@ -876,14 +899,6 @@ drop policy if exists community_private_media_read on storage.objects;
 drop policy if exists community_staging_media_owner_read on storage.objects;
 drop policy if exists community_staging_media_owner_insert on storage.objects;
 
-create policy community_public_media_read on storage.objects for select to anon, authenticated using (
-  bucket_id = 'community-public' and exists (
-    select 1 from public.community_images i join public.community_posts p on p.id = i.post_id
-    where i.bucket_id = storage.objects.bucket_id and i.object_path = storage.objects.name
-      and i.state = 'ready' and p.audience = 'public' and p.publication_state = 'published'
-      and p.moderation_state = 'visible'
-  )
-);
 create policy community_private_media_read on storage.objects for select to authenticated using (
   bucket_id = 'community-private' and public.community_launch_allows(false, true)
     and public.community_is_active_member() and exists (
@@ -908,11 +923,6 @@ create policy community_staging_media_owner_insert on storage.objects for insert
     )
     and coalesce((metadata ->> 'mimetype') in ('image/jpeg', 'image/png', 'image/webp'), false)
 );
-
-revoke all on storage.objects, storage.buckets from anon, authenticated;
-grant select on storage.objects to anon, authenticated;
-grant insert on storage.objects to authenticated;
-grant select on storage.buckets to anon, authenticated;
 
 comment on table public.community_admins is 'Bootstrapped only by an operator migration or SQL runbook. No product function grants admin status.';
 comment on table public.community_launch_state is 'Singleton database feature gate. Writes and private reads start disabled.';
