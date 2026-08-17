@@ -1,5 +1,10 @@
 import type { APIRoute } from "astro";
-import { normalizeApplication, validateApplication, type ApplicationResult } from "@/lib/application";
+import {
+  normalizeApplication,
+  NYC_COMMUNICATION_PREFERENCES,
+  validateApplication,
+  type ApplicationResult,
+} from "@/lib/application";
 import { enqueueBuzzSubmissionNotification } from "@/lib/buzz-server";
 import { createNotionSubmission, isServerNotionConfigured, type NotionSubmission } from "@/lib/notion-server";
 
@@ -23,7 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, error: "Invalid JSON body." }, 400);
   }
 
-  const payload = normalizeApplication(body);
+  const payload = normalizeApplication(body, NYC_COMMUNICATION_PREFERENCES);
   const fieldErrors = validateApplication(payload);
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -36,6 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const submission: NotionSubmission = {
+      submittedAt: new Date().toISOString(),
       fullName: payload.full_name,
       email: payload.email,
       applicationType: "New York application",
@@ -43,6 +49,8 @@ export const POST: APIRoute = async ({ request }) => {
       proudBuild: payload.proud_build,
       referralSource: payload.referral_source,
       location: "New York City",
+      communicationPreferences: payload.communication_preferences,
+      consentSource: payload.communication_preferences.length > 0 ? "New York application form v2" : undefined,
     };
     const page = await createNotionSubmission(submission);
 

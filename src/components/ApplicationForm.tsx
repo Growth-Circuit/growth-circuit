@@ -7,6 +7,8 @@ import {
   type ApplicationPayload,
   type ApplicationResult,
 } from "@/lib/application";
+import { mergeCommunicationPreferences } from "@/lib/crm";
+import type { CommunicationPreference } from "@/lib/submission";
 
 type FormState = ApplicationPayload;
 type ApplicationPath = "nyc" | "global";
@@ -25,6 +27,7 @@ const blankForm: FormState = {
   video_url: "",
   speciality_dish: "Not collected in the announcement form.",
   consent_to_promotional_clips: false,
+  communication_preferences: [],
   auth_provider: "manual",
   profile_source: "self_reported",
   user_id: null,
@@ -33,7 +36,12 @@ const blankForm: FormState = {
 export default function ApplicationForm() {
   const [path, setPath] = useState<ApplicationPath | null>(null);
   const [form, setForm] = useState<FormState>(blankForm);
-  const [waitlist, setWaitlist] = useState({ full_name: "", email: "" });
+  const [waitlist, setWaitlist] = useState<{
+    full_name: string;
+    email: string;
+    linkedin_url: string;
+    communication_preferences: CommunicationPreference[];
+  }>({ full_name: "", email: "", linkedin_url: "", communication_preferences: [] });
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ApplicationPayload, string>>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -53,9 +61,27 @@ export default function ApplicationForm() {
     setFieldErrors({});
   }
 
-  function updateField(field: keyof FormState, value: string | boolean) {
+  function updateField<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
+    setMessage("");
+  }
+
+  function toggleApplicationPreference(preference: CommunicationPreference, checked: boolean) {
+    const current = form.communication_preferences;
+    updateField(
+      "communication_preferences",
+      checked ? mergeCommunicationPreferences(current, [preference]) : current.filter((item) => item !== preference),
+    );
+  }
+
+  function toggleWaitlistPreference(preference: CommunicationPreference, checked: boolean) {
+    setWaitlist((current) => ({
+      ...current,
+      communication_preferences: checked
+        ? mergeCommunicationPreferences(current.communication_preferences, [preference])
+        : current.communication_preferences.filter((item) => item !== preference),
+    }));
     setMessage("");
   }
 
@@ -105,9 +131,19 @@ export default function ApplicationForm() {
     event.preventDefault();
     setMessage("");
 
-    if (!waitlist.full_name.trim() || !waitlist.email.includes("@")) {
+    const linkedinUrl = waitlist.linkedin_url.trim();
+    const hasValidLinkedIn = linkedinUrl.startsWith("https://www.linkedin.com/")
+      || linkedinUrl.startsWith("https://linkedin.com/");
+
+    if (!waitlist.full_name.trim() || !waitlist.email.includes("@") || !hasValidLinkedIn) {
       setStatus("error");
-      setMessage("Add your name and a valid email to join the waitlist.");
+      setMessage("Add your name, a valid email, and your LinkedIn profile to join the waitlist.");
+      return;
+    }
+
+    if (!waitlist.communication_preferences.includes("Cohort openings")) {
+      setStatus("error");
+      setMessage("Choose cohort-opening emails to join the waitlist.");
       return;
     }
 
@@ -157,7 +193,7 @@ export default function ApplicationForm() {
           <button className="path-card path-card--global" type="button" onClick={() => choosePath("global")}>
             <span>No</span>
             <strong>Somewhere else</strong>
-            <small>Join the global waitlist with your name and email.</small>
+            <small>Join the global waitlist with your name, email, and LinkedIn profile.</small>
           </button>
         </div>
       )}
@@ -165,7 +201,8 @@ export default function ApplicationForm() {
       {path === "global" && (
         <>
           <p className="form-intro">
-            Leave your name and email. We’ll reach out when a cohort opens in your area. No noise until then.
+            Leave your name, email, and LinkedIn profile. We’ll reach out when a cohort opens in your area.
+            No noise until then.
           </p>
           <form onSubmit={submitWaitlist}>
             <Field label="Name">
@@ -185,6 +222,28 @@ export default function ApplicationForm() {
                 placeholder="you@example.com"
               />
             </Field>
+            <Field label="LinkedIn profile">
+              <input
+                name="linkedin_url"
+                type="url"
+                required
+                value={waitlist.linkedin_url}
+                onChange={(event) => setWaitlist((current) => ({ ...current, linkedin_url: event.target.value }))}
+                placeholder="https://www.linkedin.com/in/..."
+              />
+            </Field>
+            <PreferenceOptions
+              legend="Email preference"
+              description="Required so we can contact you for the reason you joined."
+              preferences={[
+                {
+                  name: "Cohort openings",
+                  label: "Email me when a Growth Circuit cohort opens near me",
+                },
+              ]}
+              selected={waitlist.communication_preferences}
+              onChange={toggleWaitlistPreference}
+            />
             <button className="button matcha" type="submit" disabled={status === "submitting"}>
               {status === "submitting" ? <Loader2 size={17} aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}
               Join the global waitlist
@@ -264,6 +323,17 @@ export default function ApplicationForm() {
               />
             </Field>
 
+            <PreferenceOptions
+              legend="Keep me in the loop"
+              description="Optional. We will still contact you about your application."
+              preferences={[
+                { name: "Community updates", label: "Community updates" },
+                { name: "Events", label: "Events and meetups" },
+              ]}
+              selected={form.communication_preferences}
+              onChange={toggleApplicationPreference}
+            />
+
             <button className="button matcha" type="submit" disabled={status === "submitting"}>
               {status === "submitting" ? <Loader2 size={17} aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}
               Submit application
@@ -286,6 +356,39 @@ export default function ApplicationForm() {
         </div>
       )}
     </section>
+  );
+}
+
+function PreferenceOptions({
+  legend,
+  description,
+  preferences,
+  selected,
+  onChange,
+}: {
+  legend: string;
+  description: string;
+  preferences: Array<{ name: CommunicationPreference; label: string }>;
+  selected: CommunicationPreference[];
+  onChange: (preference: CommunicationPreference, checked: boolean) => void;
+}) {
+  return (
+    <fieldset className="preference-fieldset">
+      <legend>{legend}</legend>
+      <p>{description}</p>
+      <div className="preference-options">
+        {preferences.map((preference) => (
+          <label className="preference-option" key={preference.name}>
+            <input
+              type="checkbox"
+              checked={selected.includes(preference.name)}
+              onChange={(event) => onChange(preference.name, event.target.checked)}
+            />
+            <span>{preference.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 

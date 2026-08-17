@@ -1,9 +1,18 @@
 import { env as cloudflareEnv } from "cloudflare:workers";
+import {
+  buildPersonProperties,
+  isCommunicationPreference,
+  isPersonLifecycle,
+  isPersonMarket,
+  normalizeEmailKey,
+  notionRichText,
+} from "@/lib/crm";
 import type { SubmissionMetadata } from "@/lib/submission";
 
 type NotionRuntimeEnv = {
   NOTION_API_TOKEN?: string;
-  NOTION_DATABASE_ID?: string;
+  NOTION_APPLICATIONS_DATA_SOURCE_ID?: string;
+  NOTION_PEOPLE_DATA_SOURCE_ID?: string;
 };
 
 export type NotionSubmission = SubmissionMetadata & {
@@ -18,79 +27,52 @@ type NotionPageResult = {
   url: string;
 };
 
-type NotionCreatePageResponse = {
-  id?: string;
-  url?: string;
+type NotionProperty = {
+  select?: { name?: string } | null;
+  multi_select?: Array<{ name?: string }>;
 };
 
-const NOTION_API_VERSION = "2022-06-28";
+type NotionPage = {
+  id?: string;
+  url?: string;
+  properties?: Record<string, NotionProperty>;
+};
+
+type NotionQueryResponse = {
+  results?: NotionPage[];
+};
+
+const NOTION_API_VERSION = "2026-03-11";
 const buildToken = import.meta.env.NOTION_API_TOKEN;
-const buildDatabaseId = import.meta.env.NOTION_DATABASE_ID;
+const buildApplicationsDataSourceId = import.meta.env.NOTION_APPLICATIONS_DATA_SOURCE_ID;
+const buildPeopleDataSourceId = import.meta.env.NOTION_PEOPLE_DATA_SOURCE_ID;
 const runtimeEnv = cloudflareEnv as NotionRuntimeEnv;
 
 function getNotionToken(env: NotionRuntimeEnv = runtimeEnv) {
   return env.NOTION_API_TOKEN || buildToken;
 }
 
-function getNotionDatabaseId(env: NotionRuntimeEnv = runtimeEnv) {
-  return env.NOTION_DATABASE_ID || buildDatabaseId;
+function getApplicationsDataSourceId(env: NotionRuntimeEnv = runtimeEnv) {
+  return env.NOTION_APPLICATIONS_DATA_SOURCE_ID || buildApplicationsDataSourceId;
 }
 
-function richText(value: string) {
-  const chunks = value.match(/[\s\S]{1,2000}/g) || [];
-  return chunks.map((content) => ({
-    type: "text" as const,
-    text: { content },
-  }));
+function getPeopleDataSourceId(env: NotionRuntimeEnv = runtimeEnv) {
+  return env.NOTION_PEOPLE_DATA_SOURCE_ID || buildPeopleDataSourceId;
 }
 
-export function isServerNotionConfigured(env: NotionRuntimeEnv = runtimeEnv) {
-  return Boolean(getNotionToken(env) && getNotionDatabaseId(env));
-}
-
-export async function createNotionSubmission(
-  submission: NotionSubmission,
-  env: NotionRuntimeEnv = runtimeEnv,
-) {
-  const token = getNotionToken(env);
-  const databaseId = getNotionDatabaseId(env);
-
-  if (!token || !databaseId) {
-    throw new Error("NOTION_NOT_CONFIGURED");
-  }
-
-  const properties: Record<string, unknown> = {
-    Name: { title: richText(submission.fullName) },
-    Email: { email: submission.email },
-    "Application status": { status: { name: "Waiting" } },
-    "Application type": { select: { name: submission.applicationType } },
-    "Submitted at": { date: { start: new Date().toISOString() } },
+function notionHeaders(token: string) {
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    "Notion-Version": NOTION_API_VERSION,
   };
+}
 
-  if (submission.linkedInProfile) {
-    properties["LinkedIn profile"] = { url: submission.linkedInProfile };
-  }
-  if (submission.proudBuild) {
-    properties["Proud build"] = { rich_text: richText(submission.proudBuild) };
-  }
-  if (submission.referralSource) {
-    properties["Referral source"] = { rich_text: richText(submission.referralSource) };
-  }
-  if (submission.location) {
-    properties.Location = { rich_text: richText(submission.location) };
-  }
-
-  const response = await fetch("https://api.notion.com/v1/pages", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      "Notion-Version": NOTION_API_VERSION,
-    },
-    body: JSON.stringify({
-      parent: { database_id: databaseId },
-      properties,
-    }),
+async function notionRequest<T>(url: string, token: string, init: RequestInit) {
+  const response = await fetch(url, {
+    ...init,
+    headers: notionHeaders(token),
+    signal: AbortSignal.timeout(5000),
   });
 
   if (!response.ok) {
@@ -101,18 +83,161 @@ export async function createNotionSubmission(
     } catch {
       // The status and safe error code are enough for server-side diagnostics.
     }
-    console.error(`[notion] submission failed with ${response.status} (${code})`);
-    throw new Error("NOTION_SUBMISSION_FAILED");
+    console.error(`[notion] request failed with ${response.status} (${code})`);
+    throw new Error("NOTION_REQUEST_FAILED");
   }
 
-  const page = (await response.json()) as NotionCreatePageResponse;
+  return (await response.json()) as T;
+}
+
+function requirePage(page: NotionPage) {
   if (!page.id) {
-    console.error("[notion] submission response did not include a page id");
-    throw new Error("NOTION_SUBMISSION_INVALID_RESPONSE");
+    console.error("[notion] response did not include a page id");
+    throw new Error("NOTION_INVALID_RESPONSE");
   }
 
   return {
     id: page.id,
     url: page.url || `https://www.notion.so/${page.id.replaceAll("-", "")}`,
   } satisfies NotionPageResult;
+}
+
+function getSelectName(page: NotionPage, property: string) {
+  return page.properties?.[property]?.select?.name;
+}
+
+function getMultiSelectNames(page: NotionPage, property: string) {
+  return (page.properties?.[property]?.multi_select || [])
+    .map((option) => option.name)
+    .filter(isCommunicationPreference);
+}
+
+export function isServerNotionConfigured(env: NotionRuntimeEnv = runtimeEnv) {
+  return Boolean(
+    getNotionToken(env)
+    && getApplicationsDataSourceId(env)
+    && getPeopleDataSourceId(env),
+  );
+}
+
+async function findPersonByEmail(email: string, token: string, peopleDataSourceId: string) {
+  const response = await notionRequest<NotionQueryResponse>(
+    `https://api.notion.com/v1/data_sources/${peopleDataSourceId}/query`,
+    token,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        filter: {
+          property: "Email key",
+          rich_text: { equals: normalizeEmailKey(email) },
+        },
+        page_size: 2,
+      }),
+    },
+  );
+  const matches = response.results || [];
+
+  if (matches.length > 1) {
+    console.error("[notion] multiple People records share one email key");
+    throw new Error("NOTION_DUPLICATE_PERSON");
+  }
+
+  return matches[0];
+}
+
+async function upsertPerson(
+  submission: NotionSubmission,
+  token: string,
+  peopleDataSourceId: string,
+) {
+  const existing = await findPersonByEmail(submission.email, token, peopleDataSourceId);
+  const currentLifecycle = getSelectName(existing || {}, "Lifecycle");
+  const currentMarket = getSelectName(existing || {}, "Market");
+  const properties = buildPersonProperties({
+    ...submission,
+    isNew: !existing?.id,
+    currentLifecycle: isPersonLifecycle(currentLifecycle) ? currentLifecycle : undefined,
+    currentMarket: isPersonMarket(currentMarket) ? currentMarket : undefined,
+    currentPreferences: getMultiSelectNames(existing || {}, "Communication preferences"),
+  });
+
+  if (existing?.id) {
+    const updated = await notionRequest<NotionPage>(
+      `https://api.notion.com/v1/pages/${existing.id}`,
+      token,
+      { method: "PATCH", body: JSON.stringify({ properties }) },
+    );
+    return requirePage(updated);
+  }
+
+  const created = await notionRequest<NotionPage>(
+    "https://api.notion.com/v1/pages",
+    token,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        parent: { type: "data_source_id", data_source_id: peopleDataSourceId },
+        properties,
+      }),
+    },
+  );
+  return requirePage(created);
+}
+
+async function createApplication(
+  submission: NotionSubmission,
+  personId: string,
+  token: string,
+  applicationsDataSourceId: string,
+) {
+  const properties: Record<string, unknown> = {
+    Name: { title: notionRichText(submission.fullName) },
+    Email: { email: normalizeEmailKey(submission.email) },
+    "Application status": { status: { name: "Waiting" } },
+    "Application type": { select: { name: submission.applicationType } },
+    "Submitted at": { date: { start: submission.submittedAt } },
+    Person: { relation: [{ id: personId }] },
+  };
+
+  if (submission.linkedInProfile) {
+    properties["LinkedIn profile"] = { url: submission.linkedInProfile };
+  }
+  if (submission.proudBuild) {
+    properties["Proud build"] = { rich_text: notionRichText(submission.proudBuild) };
+  }
+  if (submission.referralSource) {
+    properties["Referral source"] = { rich_text: notionRichText(submission.referralSource) };
+  }
+  if (submission.location) {
+    properties.Location = { rich_text: notionRichText(submission.location) };
+  }
+
+  const page = await notionRequest<NotionPage>(
+    "https://api.notion.com/v1/pages",
+    token,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        parent: { type: "data_source_id", data_source_id: applicationsDataSourceId },
+        properties,
+      }),
+    },
+  );
+  return requirePage(page);
+}
+
+export async function createNotionSubmission(
+  submission: NotionSubmission,
+  env: NotionRuntimeEnv = runtimeEnv,
+) {
+  const token = getNotionToken(env);
+  const applicationsDataSourceId = getApplicationsDataSourceId(env);
+  const peopleDataSourceId = getPeopleDataSourceId(env);
+
+  if (!token || !applicationsDataSourceId || !peopleDataSourceId) {
+    throw new Error("NOTION_NOT_CONFIGURED");
+  }
+
+  const person = await upsertPerson(submission, token, peopleDataSourceId);
+  return createApplication(submission, person.id, token, applicationsDataSourceId);
 }
