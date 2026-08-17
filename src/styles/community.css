@@ -8,6 +8,7 @@
   --community-ink: #16191d;
   --community-muted: #616872;
   --community-line: #cfd3cf;
+  font-family: inherit;
   background: var(--community-navy);
   color: var(--porcelain);
 }
@@ -65,11 +66,10 @@
 .community-script-label {
   margin: 0;
   color: var(--community-amber);
-  font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  transform: rotate(-1deg);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  letter-spacing: 0;
 }
 
 .community-online-strip {
@@ -82,9 +82,10 @@
   padding: 5px 10px;
   background: rgba(247, 248, 243, 0.05);
   color: rgba(247, 248, 243, 0.68);
-  font-family: "SFMono-Regular", Consolas, monospace;
+  font-family: inherit;
   font-size: 11px;
-  letter-spacing: 0.05em;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .community-online-strip > span:first-child {
@@ -257,10 +258,10 @@
   padding: 5px 10px;
   background: var(--community-accent);
   color: var(--community-navy);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-family: inherit;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
 }
 
 .community-post-card__image {
