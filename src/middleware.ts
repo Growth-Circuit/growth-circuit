@@ -26,6 +26,7 @@ async function getRuntimeEnv(): Promise<CommunityRuntimeEnv> {
 
 const AUTH_PATHS = ["/auth", "/api/auth"];
 const COMMUNITY_PATHS = ["/community", "/api/community", "/admin/community", "/media/community"];
+const COMMUNITY_DISCOVERY_PATHS = ["/rss.xml", "/sitemap-community.xml"];
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 function pathStartsWith(pathname: string, roots: string[]) {
@@ -85,6 +86,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isAuth = pathStartsWith(requestUrl.pathname, AUTH_PATHS);
   const isCommunity = pathStartsWith(requestUrl.pathname, COMMUNITY_PATHS);
   const sensitive = isAuth || isCommunity;
+  const needsCommunityContext = sensitive || pathStartsWith(requestUrl.pathname, COMMUNITY_DISCOVERY_PATHS);
+
+  if (!needsCommunityContext) {
+    context.locals.supabase = null;
+    context.locals.communityIdentity = { role: "anonymous", user: null, profile: null };
+    context.locals.communityRollout = { featureEnabled: false, killSwitch: true, allowlist: [] };
+    context.locals.csrfToken = "";
+    const response = await next();
+    applySecurityHeaders(response, requestUrl, false);
+    return response;
+  }
+
   const pendingHeaders: Record<string, string> = {};
   const runtimeEnv = await getRuntimeEnv();
   const rolloutConfig = {

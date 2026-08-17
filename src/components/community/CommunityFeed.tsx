@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CommunityPostView } from "@/lib/community";
+import { communityExcerpt } from "@/lib/seo";
 
 type FeedPost = CommunityPostView & { headerImageUrl?: string | null };
 type Role = "anonymous" | "contributor" | "member" | "admin";
@@ -12,12 +13,6 @@ type Props = {
   role: Role;
   initialError?: string;
 };
-
-function excerpt(markdown: string) {
-  const text = markdown.replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/[`*_>#~|\[\]()-]+/g, " ").replace(/\s+/g, " ").trim();
-  return text.length > 220 ? `${text.slice(0, 219).trimEnd()}…` : text;
-}
 
 function dateLabel(value: string | null) {
   if (!value) return "Draft";
@@ -42,7 +37,7 @@ function FeedCard({ post }: { post: FeedPost }) {
         <div className="community-post-card__content">
           <p className="community-post-card__byline">Posted by <strong>{post.authorName}</strong></p>
           <h2><a href={`/community/${post.slug}`}>{post.title}</a></h2>
-          <p>{excerpt(post.bodyMarkdown)}</p>
+          <p>{communityExcerpt(post.bodyMarkdown, 220)}</p>
           <div className="community-post-card__meta">
             <a href={`/community/${post.slug}#replies`}>{post.replyCount} {post.replyCount === 1 ? "reply" : "replies"}</a>
             <span>{post.score} {post.score === 1 ? "upvote" : "upvotes"}</span>
@@ -63,10 +58,15 @@ export default function CommunityFeed({ initialPosts, initialNextCursor, initial
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(initialError);
   const canReadMembers = role === "member" || role === "admin";
+  const feedsRef = useRef(feeds);
 
-  async function load(target: "public" | "members", append = false) {
+  useEffect(() => {
+    feedsRef.current = feeds;
+  }, [feeds]);
+
+  const load = useCallback(async (target: "public" | "members", append = false) => {
     if (target === "members" && !canReadMembers) return;
-    const current = feeds[target];
+    const current = feedsRef.current[target];
     setLoading(true);
     setError("");
     try {
@@ -75,20 +75,24 @@ export default function CommunityFeed({ initialPosts, initialNextCursor, initial
       const response = await fetch(`/api/community/feed?${params}`, { credentials: "same-origin" });
       const result = await response.json() as { posts?: FeedPost[]; nextCursor?: string | null; error?: { message?: string } };
       if (!response.ok || !result.posts) throw new Error(result.error?.message || "The feed could not be loaded.");
-      setFeeds((all) => ({
-        ...all,
-        [target]: {
+      setFeeds((all) => {
+        const next = {
+          ...all,
+          [target]: {
           posts: append ? [...all[target].posts, ...result.posts!] : result.posts!,
           nextCursor: result.nextCursor || null,
           loaded: true,
         },
-      }));
+        };
+        feedsRef.current = next;
+        return next;
+      });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "The feed could not be loaded.");
     } finally {
       setLoading(false);
     }
-  }
+  }, [canReadMembers]);
 
   function choose(target: "public" | "members") {
     setAudience(target);
@@ -105,11 +109,11 @@ export default function CommunityFeed({ initialPosts, initialNextCursor, initial
       void event;
       const next = new URL(window.location.href).searchParams.get("tab") === "members" ? "members" : "public";
       setAudience(next);
-      if (!feeds[next].loaded && (next === "public" || canReadMembers)) void load(next);
+      if (!feedsRef.current[next].loaded && (next === "public" || canReadMembers)) void load(next);
     };
     window.addEventListener("popstate", handler);
     return () => window.removeEventListener("popstate", handler);
-  }, [feeds, canReadMembers]);
+  }, [canReadMembers, load]);
 
   const current = feeds[audience];
   const guidance = audience === "members" && !canReadMembers;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ImageItem = {
   id: string;
@@ -40,6 +40,12 @@ export default function ImageUploader({
   const [headerEnabled, setHeaderEnabled] = useState(initialHeaderEnabled);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const previewUrls = useRef(new Set<string>());
+
+  useEffect(() => () => {
+    for (const url of previewUrls.current) URL.revokeObjectURL(url);
+    previewUrls.current.clear();
+  }, []);
 
   async function finalize(imageId: string) {
     setImages((current) => current.map((image) => image.id === imageId ? { ...image, status: "processing", error: undefined } : image));
@@ -80,6 +86,7 @@ export default function ImageUploader({
     if (!signResponse.ok || !signed.image || !signed.upload) throw new Error(signed.error?.message || "The private upload could not start.");
 
     const previewUrl = URL.createObjectURL(file);
+    previewUrls.current.add(previewUrl);
     const pendingImage: ImageItem = { ...signed.image, previewUrl, status: "uploading", file, signedUrl: signed.upload.signedUrl };
     setImages((current) => [...current, pendingImage].sort((a, b) => a.position - b.position));
     await uploadStaged(signed.image.id, file, signed.upload.signedUrl);
@@ -175,7 +182,10 @@ export default function ImageUploader({
       });
       const result = await response.json() as { error?: { message?: string } };
       if (!response.ok) throw new Error(result.error?.message || "The image was not removed.");
-      if (image.previewUrl?.startsWith("blob:")) URL.revokeObjectURL(image.previewUrl);
+      if (image.previewUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(image.previewUrl);
+        previewUrls.current.delete(image.previewUrl);
+      }
       setImages((current) => current.filter((item) => item.id !== image.id));
       if (headerImageId === image.id) setHeaderImageId(null);
       setNotice("Image removed from the draft.");

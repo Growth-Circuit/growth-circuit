@@ -1,16 +1,8 @@
 import type { APIRoute } from "astro";
 import { communityExcerpt } from "@/lib/seo";
+import { escapeXml } from "@/lib/xml";
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.club";
-
-function escapeXml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
-}
 
 export const GET: APIRoute = async ({ locals }) => {
   let items = "";

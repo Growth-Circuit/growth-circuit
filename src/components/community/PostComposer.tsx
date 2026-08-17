@@ -43,21 +43,11 @@ export async function publishCommunityPost(
   csrfToken: string,
   request: typeof fetch = fetch,
 ): Promise<CommunityPost> {
-  const headers = { "Content-Type": "application/json", "X-CSRF-Token": csrfToken };
-  const created = await responseResult(await request("/api/community/posts", {
-    method: "POST",
-    credentials: "same-origin",
-    headers,
-    body: JSON.stringify(draft),
-  }));
-  return (await responseResult(await request(`/api/community/posts/${created.post!.id}/publish`, {
-    method: "POST",
-    credentials: "same-origin",
-    headers,
-  }))).post!;
+  const created = await createCommunityDraft(draft, csrfToken, request);
+  return publishExistingDraft(created.id, csrfToken, request);
 }
 
-async function createCommunityDraft(
+export async function createCommunityDraft(
   draft: CommunityPostDraft,
   csrfToken: string,
   request: typeof fetch = fetch,
@@ -70,7 +60,7 @@ async function createCommunityDraft(
   }))).post!;
 }
 
-async function publishExistingDraft(postId: string, csrfToken: string, request: typeof fetch = fetch) {
+export async function publishExistingDraft(postId: string, csrfToken: string, request: typeof fetch = fetch) {
   return (await responseResult(await request(`/api/community/posts/${postId}/publish`, {
     method: "POST",
     credentials: "same-origin",

@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
+import { isUuid } from "@/lib/community";
 import { COMMUNITY_IMAGE_SELECT, COMMUNITY_PRIVATE_BUCKET, getCommunityStorageAdmin, mapCommunityImage } from "@/lib/community-storage";
 
 export const prerender = false;
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PRIVATE_HEADERS = {
   "Cache-Control": "private, no-store, max-age=0",
   "CDN-Cache-Control": "no-store",
@@ -20,7 +20,7 @@ function unavailable() {
 
 export const GET: APIRoute = async ({ params, locals }) => {
   const imageId = params.id;
-  if (!imageId || !UUID.test(imageId) || !locals.supabase || !locals.communityIdentity.user
+  if (!isUuid(imageId) || !locals.supabase || !locals.communityIdentity.user
     || !["member", "admin"].includes(locals.communityIdentity.role)) return unavailable();
 
   const { data: rawImage, error } = await locals.supabase
@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
   const image = mapCommunityImage(rawImage as Record<string, unknown>);
   if (image.audience !== "members" || image.bucket !== COMMUNITY_PRIVATE_BUCKET || image.state !== "ready") return unavailable();
 
-  const admin = await getCommunityStorageAdmin(locals);
+  const admin = await getCommunityStorageAdmin();
   if (!admin) return unavailable();
   const { data, error: downloadError } = await admin.storage.from(COMMUNITY_PRIVATE_BUCKET).download(image.objectPath).asStream();
   if (downloadError || !data) return unavailable();

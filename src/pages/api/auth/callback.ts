@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { completeCommunityProfile, getCurrentCommunityIdentity, getSafeNextPath } from "@/lib/community-auth";
+import { COMMUNITY_CSRF_COOKIE, completeCommunityProfile, getCurrentCommunityIdentity, getSafeNextPath } from "@/lib/community-auth";
 
 export const POST: APIRoute = async ({ request, locals, cookies, url }) => {
   if (!locals.supabase) {
@@ -45,7 +45,7 @@ export const POST: APIRoute = async ({ request, locals, cookies, url }) => {
     identity = await getCurrentCommunityIdentity(locals.supabase);
   }
 
-  cookies.set("gc_csrf", crypto.randomUUID(), {
+  cookies.set(COMMUNITY_CSRF_COOKIE, crypto.randomUUID(), {
     path: "/",
     httpOnly: true,
     sameSite: "strict",

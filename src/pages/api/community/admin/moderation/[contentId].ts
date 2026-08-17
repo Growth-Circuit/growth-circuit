@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
+import { isUuid } from "@/lib/community";
 import { adminJson, requireRecentAdmin } from "@/pages/api/community/admin/members/index";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const REQUEST_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CONTENT_TYPES = new Set(["post", "reply"]);
 const MODERATION_STATES = new Set(["visible", "hidden"]);
@@ -15,7 +15,7 @@ export const PATCH: APIRoute = async (context) => {
   if (!authorization.ok) return authorization.response;
 
   const contentId = context.params.contentId;
-  if (!contentId || !UUID.test(contentId)) return invalid("Choose valid community content.");
+  if (!isUuid(contentId)) return invalid("Choose valid community content.");
 
   let body: Record<string, unknown>;
   try {

@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
+import { isUuid } from "@/lib/community";
 import { adminJson, requireRecentAdmin } from "@/pages/api/community/admin/members/index";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const REQUEST_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MEMBERSHIP_STATES = new Set(["active", "suspended", "revoked"]);
 
@@ -14,7 +14,7 @@ export const PATCH: APIRoute = async (context) => {
   if (!authorization.ok) return authorization.response;
 
   const userId = context.params.userId;
-  if (!userId || !UUID.test(userId)) return invalid("Choose a valid contributor.");
+  if (!isUuid(userId)) return invalid("Choose a valid contributor.");
 
   let body: Record<string, unknown>;
   try {

@@ -167,29 +167,38 @@ export function mapCommunityImage(row: Record<string, unknown>): CommunityImageR
   };
 }
 
-export async function getRuntimeValue(locals: object, name: string): Promise<unknown> {
-  void locals;
-  const { env: cloudflareEnv } = await import("cloudflare:workers");
-  return Reflect.get(cloudflareEnv, name);
+let runtimeEnvPromise: Promise<object> | null = null;
+
+async function getRuntimeEnv() {
+  runtimeEnvPromise ||= import("cloudflare:workers").then(({ env }) => env as object);
+  return runtimeEnvPromise;
 }
 
-export async function getImagesBinding(locals: object): Promise<ImagesBinding | null> {
-  const value = await getRuntimeValue(locals, "IMAGES");
+export async function getRuntimeValue(name: string): Promise<unknown> {
+  return Reflect.get(await getRuntimeEnv(), name);
+}
+
+export async function getImagesBinding(): Promise<ImagesBinding | null> {
+  const value = await getRuntimeValue("IMAGES");
   if (!value || typeof value !== "object") return null;
   return typeof Reflect.get(value, "info") === "function" && typeof Reflect.get(value, "input") === "function"
     ? value as ImagesBinding
     : null;
 }
 
-async function runtimeString(locals: object, name: string) {
-  const value = await getRuntimeValue(locals, name);
+async function runtimeString(name: string) {
+  const value = await getRuntimeValue(name);
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
-export async function getCommunityStorageAdmin(locals: object) {
+export async function getCommunityStorageAdmin() {
+  const [url, serviceRoleKey] = await Promise.all([
+    runtimeString("PUBLIC_SUPABASE_URL"),
+    runtimeString("SUPABASE_SERVICE_ROLE_KEY"),
+  ]);
   return createPrivilegedSupabaseClient({
-    PUBLIC_SUPABASE_URL: await runtimeString(locals, "PUBLIC_SUPABASE_URL"),
-    SUPABASE_SERVICE_ROLE_KEY: await runtimeString(locals, "SUPABASE_SERVICE_ROLE_KEY"),
+    PUBLIC_SUPABASE_URL: url,
+    SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey,
   });
 }
 

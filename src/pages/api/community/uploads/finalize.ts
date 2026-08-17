@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { apiError, jsonCommunity, readJson } from "@/lib/community";
+import { apiError, isUuid, jsonCommunity, readJson } from "@/lib/community";
 import {
   COMMUNITY_IMAGE_SELECT,
   COMMUNITY_PRIVATE_BUCKET,
@@ -15,8 +15,6 @@ import {
 
 export const prerender = false;
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 export const POST: APIRoute = async ({ request, locals }) => {
   if (!locals.supabase || !locals.communityIdentity.user || !locals.communityIdentity.profile) {
     return apiError(401, "SIGN_IN_REQUIRED", "Sign in before finalizing an image.");
@@ -26,7 +24,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return apiError(400, "INVALID_JSON", "Submit a valid image ID.");
   }
   const source = body.value as Record<string, unknown>;
-  if (Object.keys(source).some((key) => key !== "imageId") || typeof source.imageId !== "string" || !UUID.test(source.imageId)) {
+  if (Object.keys(source).some((key) => key !== "imageId") || !isUuid(source.imageId)) {
     return apiError(422, "INVALID_IMAGE", "Choose a valid staged image.");
   }
 
@@ -43,8 +41,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return apiError(409, "IMAGE_UNAVAILABLE", "The image is no longer available for finalization.");
   }
 
-  const images = await getImagesBinding(locals);
-  const admin = await getCommunityStorageAdmin(locals);
+  const [images, admin] = await Promise.all([getImagesBinding(), getCommunityStorageAdmin()]);
   if (!images || !admin) return apiError(503, "IMAGE_SERVICE_UNAVAILABLE", "Image processing is temporarily unavailable. Please try again.");
 
   const { data: staged, error: downloadError } = await admin.storage.from(COMMUNITY_STAGING_BUCKET).download(image.objectPath);

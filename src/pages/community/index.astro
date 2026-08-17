@@ -8,12 +8,11 @@ import "@/styles/community.css";
 
 export const prerender = false;
 
-type FeedPost = CommunityPostView & { headerImageUrl?: string | null };
 const identity = Astro.locals.communityIdentity;
 const requestedAudience = Astro.url.searchParams.get("tab") === "members" ? "members" : "public";
 const canReadMembers = identity.role === "member" || identity.role === "admin";
 const audience = requestedAudience === "members" && canReadMembers ? "members" : requestedAudience;
-let posts: FeedPost[] = [];
+let posts: CommunityPostView[] = [];
 let nextCursor: string | null = null;
 let initialError = "";
 
@@ -24,18 +23,6 @@ if (Astro.locals.supabase && (audience === "public" || canReadMembers)) {
   } else {
     posts = feed.data.posts;
     nextCursor = feed.data.nextCursor;
-    const headerIds = posts.flatMap((post) => post.headerEnabled && post.headerImageId ? [post.headerImageId] : []);
-    if (headerIds.length > 0) {
-      const { data: images } = await Astro.locals.supabase.from("community_images")
-        .select("id,bucket_id,object_path,state").in("id", headerIds).eq("state", "ready");
-      const imageMap = new Map((images || []).flatMap((image) => {
-        if (image.bucket_id === "community-private") return [[image.id, `/api/community/media/${image.id}`]];
-        if (image.bucket_id !== "community-public") return [];
-        const { data } = Astro.locals.supabase!.storage.from("community-public").getPublicUrl(image.object_path);
-        return [[image.id, data.publicUrl]];
-      }));
-      posts = posts.map((post) => ({ ...post, headerImageUrl: post.headerImageId ? imageMap.get(post.headerImageId) || null : null }));
-    }
   }
 }
 
