@@ -1,5 +1,6 @@
 .community-page {
-  --community-blue: #1748b4;
+  --community-accent: var(--matcha);
+  --community-accent-ink: #53663c;
   --community-navy: #101418;
   --community-paper: #f7f8f3;
   --community-pink: #f5008f;
@@ -13,7 +14,7 @@
 
 .community-page::before {
   background:
-    radial-gradient(circle at 88% 5%, rgba(23, 72, 180, 0.22), transparent 29%),
+    radial-gradient(circle at 88% 5%, rgba(var(--matcha-rgb), 0.2), transparent 29%),
     linear-gradient(rgba(247, 248, 243, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(247, 248, 243, 0.025) 1px, transparent 1px),
     var(--community-navy);
@@ -126,9 +127,9 @@
 }
 
 .community-button--primary {
-  border-color: var(--community-blue);
-  background: var(--community-blue);
-  color: #fff;
+  border-color: var(--community-accent);
+  background: var(--community-accent);
+  color: var(--community-navy);
 }
 
 .community-button--danger {
@@ -201,7 +202,7 @@
 
 .community-tabs button[aria-selected="true"] {
   background: var(--community-paper);
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
 }
 
 .community-feed__status {
@@ -234,7 +235,7 @@
   border-right: 1px solid var(--community-line);
   padding-top: 18px;
   background: #eceeea;
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
   font-size: 13px;
 }
 
@@ -254,8 +255,8 @@
   justify-content: space-between;
   gap: 14px;
   padding: 5px 10px;
-  background: var(--community-blue);
-  color: #fff;
+  background: var(--community-accent);
+  color: var(--community-navy);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 11px;
   font-weight: 800;
@@ -287,7 +288,7 @@
 }
 
 .community-post-card h2 a:hover {
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -309,7 +310,7 @@
 }
 
 .community-post-card__meta a {
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -386,7 +387,7 @@
 }
 
 .community-rail__module a {
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
   font-size: 13px;
   font-weight: 750;
   text-decoration: underline;
@@ -450,7 +451,7 @@
   gap: 3px;
   border-color: #b9bfbb;
   background: var(--community-paper);
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
 }
 
 .community-vote__button[aria-pressed="true"] {
@@ -512,7 +513,7 @@
 }
 
 .community-markdown a {
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -557,7 +558,7 @@
 
 .community-github-card .community-script-label {
   grid-column: 1 / -1;
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
 }
 
 .community-github-card strong {
@@ -565,7 +566,7 @@
 }
 
 .community-github-card > span:last-child {
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
   font-size: 13px;
   font-weight: 750;
 }
@@ -741,15 +742,15 @@
 }
 
 .community-page .community-post-composer .eyebrow {
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
 }
 
 .community-page .community-post-composer .button.matcha {
   min-height: 44px;
   border-radius: 4px;
-  border-color: var(--community-blue);
-  background: var(--community-blue);
-  color: #fff;
+  border-color: var(--community-accent);
+  background: var(--community-accent);
+  color: var(--community-navy);
 }
 
 .community-submit__guide {
@@ -787,9 +788,9 @@
   min-height: 44px;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--community-blue);
+  border: 1px solid var(--community-accent-ink);
   padding: 8px 14px;
-  color: var(--community-blue);
+  color: var(--community-accent-ink);
   cursor: pointer;
   font-weight: 750;
 }
