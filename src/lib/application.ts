@@ -1,3 +1,8 @@
+import {
+  COMMUNICATION_PREFERENCES,
+  type CommunicationPreference,
+} from "./submission";
+
 export type ApplicationPayload = {
   full_name: string;
   email: string;
@@ -12,6 +17,7 @@ export type ApplicationPayload = {
   video_url: string;
   speciality_dish: string;
   consent_to_promotional_clips: boolean;
+  communication_preferences: CommunicationPreference[];
   auth_provider?: string;
   profile_source?: string;
   user_id?: string | null;
@@ -32,7 +38,19 @@ export const APPLICATION_TEXT_LIMITS = {
   },
 } as const;
 
-const textFields: Array<keyof Omit<ApplicationPayload, "consent_to_promotional_clips">> = [
+export const NYC_COMMUNICATION_PREFERENCES = [
+  "Community updates",
+  "Events",
+] as const satisfies readonly CommunicationPreference[];
+
+export const GLOBAL_WAITLIST_COMMUNICATION_PREFERENCES = [
+  "Cohort openings",
+] as const satisfies readonly CommunicationPreference[];
+
+const textFields: Array<keyof Omit<
+  ApplicationPayload,
+  "consent_to_promotional_clips" | "communication_preferences"
+>> = [
   "full_name",
   "email",
   "linkedin_url",
@@ -54,7 +72,10 @@ function clean(value: unknown) {
   return typeof value === "string" ? value.trim().slice(0, 2400) : "";
 }
 
-export function normalizeApplication(input: unknown): ApplicationPayload {
+export function normalizeApplication(
+  input: unknown,
+  allowedCommunicationPreferences: readonly CommunicationPreference[] = COMMUNICATION_PREFERENCES,
+): ApplicationPayload {
   const source = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const payload = {} as ApplicationPayload;
 
@@ -65,6 +86,10 @@ export function normalizeApplication(input: unknown): ApplicationPayload {
   payload.referral_source = payload.referral_source.slice(0, APPLICATION_TEXT_LIMITS.referral_source.max);
 
   payload.consent_to_promotional_clips = Boolean(source.consent_to_promotional_clips);
+  payload.communication_preferences = normalizeCommunicationPreferences(
+    source.communication_preferences,
+    allowedCommunicationPreferences,
+  );
   payload.build_interest ||= "Not collected in the announcement form.";
   payload.speciality_dish ||= "Not collected in the announcement form.";
   payload.profile_source ||= "self_reported";
@@ -72,6 +97,27 @@ export function normalizeApplication(input: unknown): ApplicationPayload {
   payload.user_id ||= null;
 
   return payload;
+}
+
+export function normalizeCommunicationPreferences(
+  value: unknown,
+  allowedPreferences: readonly CommunicationPreference[] = COMMUNICATION_PREFERENCES,
+): CommunicationPreference[] {
+  if (!Array.isArray(value)) return [];
+
+  const supported = new Set<string>(allowedPreferences);
+  return [...new Set(value.filter((item): item is CommunicationPreference => (
+    typeof item === "string" && supported.has(item)
+  )))];
+}
+
+export function validateCommunicationPreferences(
+  preferences: CommunicationPreference[],
+  path: "nyc" | "global",
+) {
+  if (path === "global" && !preferences.includes("Cohort openings")) {
+    return "Choose cohort-opening emails to join the waitlist.";
+  }
 }
 
 export function validateApplication(payload: ApplicationPayload) {

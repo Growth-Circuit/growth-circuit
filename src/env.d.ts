@@ -15,7 +15,8 @@ interface ImportMetaEnv {
   readonly COMMUNITY_KILL_SWITCH?: string;
   readonly COMMUNITY_ROLLOUT_ALLOWLIST?: string;
   readonly NOTION_API_TOKEN?: string;
-  readonly NOTION_DATABASE_ID?: string;
+  readonly NOTION_APPLICATIONS_DATA_SOURCE_ID?: string;
+  readonly NOTION_PEOPLE_DATA_SOURCE_ID?: string;
   readonly BUZZ_WEBHOOK_URL?: string;
   readonly BUZZ_WEBHOOK_SECRET?: string;
   readonly TURNSTILE_SECRET_KEY?: string;

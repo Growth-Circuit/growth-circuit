@@ -3,11 +3,13 @@
 interface __BaseEnv_Env {
 	BUZZ_DELIVERY_LEDGER: KVNamespace;
 	BUZZ_SUBMISSION_ALERTS: Queue;
+	IMAGES: ImagesBinding;
 	ASSETS: Fetcher;
 	EMAIL: SendEmail;
 	PUBLIC_SITE_URL: "https://growthcircuit.club";
-	BUZZ_WEBHOOK_URL: "https://growthcircuit.communities.buzz.xyz/hooks/587dad2b-49c0-4181-9315-2dd8d98cf931";
-	NOTION_DATABASE_ID: "3b0b74c7ad9180aaa030e4214f064382";
+	BUZZ_WEBHOOK_URL: "https://growth-circuit-buzz-relay.vercel.app/api/notify";
+	NOTION_APPLICATIONS_DATA_SOURCE_ID: "3b0b74c7ad91803fa41c000b268d883c";
+	NOTION_PEOPLE_DATA_SOURCE_ID: "51924dca353a4281a4624e48d02157fe";
 	PUBLIC_SUPABASE_URL: "https://twkvclxsynnbktppeozg.supabase.co";
 	PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_HtrWzzR4HB4Xu0rlSnLaXQ_mpKm0zun";
 	COMMUNITY_FEATURE_ENABLED?: string;
@@ -25,5 +27,5 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "PUBLIC_SITE_URL" | "BUZZ_WEBHOOK_URL" | "NOTION_DATABASE_ID" | "PUBLIC_SUPABASE_URL" | "PUBLIC_SUPABASE_PUBLISHABLE_KEY" | "COMMUNITY_FEATURE_ENABLED" | "COMMUNITY_KILL_SWITCH" | "COMMUNITY_ROLLOUT_ALLOWLIST">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "PUBLIC_SITE_URL" | "BUZZ_WEBHOOK_URL" | "NOTION_APPLICATIONS_DATA_SOURCE_ID" | "NOTION_PEOPLE_DATA_SOURCE_ID" | "PUBLIC_SUPABASE_URL" | "PUBLIC_SUPABASE_PUBLISHABLE_KEY" | "COMMUNITY_FEATURE_ENABLED" | "COMMUNITY_KILL_SWITCH" | "COMMUNITY_ROLLOUT_ALLOWLIST">> {}
 }

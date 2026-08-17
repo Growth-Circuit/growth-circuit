@@ -55,20 +55,21 @@ PUBLIC_SUPABASE_URL=""
 PUBLIC_SUPABASE_PUBLISHABLE_KEY=""
 SUPABASE_SERVICE_ROLE_KEY=""
 NOTION_API_TOKEN=""
-NOTION_DATABASE_ID="3b0b74c7ad9180aaa030e4214f064382"
+NOTION_APPLICATIONS_DATA_SOURCE_ID="3b0b74c7ad91803fa41c000b268d883c"
+NOTION_PEOPLE_DATA_SOURCE_ID="51924dca353a4281a4624e48d02157fe"
 TURNSTILE_SECRET_KEY=""
 ```
 
-The application APIs require `NOTION_API_TOKEN` and `NOTION_DATABASE_ID`. Keep the token in `.env` locally and as a Cloudflare secret in production. Supabase values remain optional for the parked authentication features.
+The application APIs require `NOTION_API_TOKEN`, `NOTION_APPLICATIONS_DATA_SOURCE_ID`, and `NOTION_PEOPLE_DATA_SOURCE_ID`. Keep the token in `.env` locally and as a Cloudflare secret in production. Supabase values remain optional for the parked authentication features.
 
 ## Notion Setup
 
 1. Create a Notion internal integration with permission to insert content.
-2. Connect the Growth Circuit Applications database to that integration.
+2. Connect the Growth Circuit Applications and People databases to that integration.
 3. Store the integration token as `NOTION_API_TOKEN`.
-4. Set `NOTION_DATABASE_ID` to the full-page database ID.
+4. Set `NOTION_APPLICATIONS_DATA_SOURCE_ID` and `NOTION_PEOPLE_DATA_SOURCE_ID` to their data-source IDs.
 
-The database properties used by the site are `Name`, `Application status`, `Email`, `Application type`, `LinkedIn profile`, `Proud build`, `Referral source`, `Location`, and `Submitted at`.
+The Applications properties used by the site are `Name`, `Application status`, `Email`, `Application type`, `LinkedIn profile`, `Proud build`, `Referral source`, `Location`, `Submitted at`, and `Person`. The People properties are documented in the CRM implementation plan in Notion.
 
 ## Supabase Setup
 
@@ -100,7 +101,7 @@ Required fields:
 - `proud_build`
 - `referral_source`
 
-`POST /api/waitlist` stores global waitlist entries in the same Notion database with `Application type` set to `Global waitlist`.
+`POST /api/waitlist` requires `full_name`, `email`, `linkedin_url`, and cohort-opening consent. It stores global waitlist entries in the same Notion database with `Application type` set to `Global waitlist`.
 
 ## Build
 
