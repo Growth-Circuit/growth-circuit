@@ -100,11 +100,23 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const requestUrl = new URL(context.request.url);
   const isAuth = pathStartsWith(requestUrl.pathname, AUTH_PATHS);
   const isCommunity = pathStartsWith(requestUrl.pathname, COMMUNITY_PATHS);
+  const isCommunityDiscovery = pathStartsWith(requestUrl.pathname, COMMUNITY_DISCOVERY_PATHS);
+
+  if (isAuth || isCommunity || isCommunityDiscovery) {
+    if (requestUrl.pathname.startsWith("/api/") || isCommunityDiscovery) return genericDenial();
+
+    const destination = new URL(isCommunity ? "/people" : "/", requestUrl);
+    const response = new Response(null, { status: 302, headers: { Location: destination.toString() } });
+    applySecurityHeaders(response, requestUrl, true);
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return response;
+  }
+
   const sensitive = isAuth || isCommunity;
   const privateResponse = isAuth
     || UNSAFE_METHODS.has(context.request.method.toUpperCase())
     || isPrivateCommunityRequest(requestUrl);
-  const needsCommunityContext = sensitive || pathStartsWith(requestUrl.pathname, COMMUNITY_DISCOVERY_PATHS);
+  const needsCommunityContext = sensitive || isCommunityDiscovery;
 
   if (!needsCommunityContext) {
     context.locals.supabase = null;

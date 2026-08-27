@@ -10,7 +10,9 @@ export default defineConfig({
     imageService: "passthrough",
     prerenderEnvironment: "node",
   }),
-  integrations: [react(), sitemap()],
+  integrations: [react(), sitemap({
+    filter: (page) => ![/\/auth(?:\/|$)/, /\/community(?:\/|$)/, /\/(?:apply|myspace|submit|builds|questions|tags|challenges)(?:\/|$)/].some((pattern) => pattern.test(new URL(page).pathname)),
+  })],
   session: {
     driver: sessionDrivers.memory(),
   },

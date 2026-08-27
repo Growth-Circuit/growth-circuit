@@ -17,7 +17,7 @@ type Props = {
 
 const {
   title = "Growth Circuit",
-  description = "A close-knit community for Marketing Engineers based in New York City.",
+  description = "An NYC-first community for people building growth systems.",
   path = Astro.url.pathname,
   noindex = false,
   jsonLd = [],
@@ -30,8 +30,8 @@ const {
 
 const fullTitle = title === "Growth Circuit" ? title : `${title} | Growth Circuit`;
 const canonicalUrl = canonical(path);
-const socialImageUrl = socialImage ? canonical(socialImage) : canonical("/growth-circuit-og-v2.png");
-const socialImageAlt = suppliedSocialImageAlt || "Growth Circuit: Make cool sh*t together. New York, September 2026.";
+const socialImageUrl = socialImage ? canonical(socialImage) : canonical("/growth-circuit-og-v3.png");
+const socialImageAlt = suppliedSocialImageAlt || "Growth Circuit, an NYC-first community for people building growth systems.";
 const allJsonLd = [organizationJsonLd(), ...jsonLd];
 const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
 ---
@@ -76,12 +76,11 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
               <img class="brand-logo" src="/growth-circuit-icon.svg" alt="" width="44" height="44" />
               <span>Growth Circuit</span>
             </a>
-            {path !== "/apply" && (
-              <div class="header-actions">
-                <a class="button button--community" href="/community">Community</a>
-                <a class="button matcha" href="/apply">Apply</a>
-              </div>
-            )}
+            <nav class="nav-links" aria-label="Main navigation">
+              <a href="/events">Events</a>
+              <a href="/people">People + projects</a>
+              <a href="/#join">WhatsApp</a>
+            </nav>
           </div>
         </header>
       )
@@ -91,7 +90,15 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
     </main>
     <footer class="footer">
       <div class="shell">
-        Growth Circuit is an independent community founded by
+        Growth Circuit is run by
+        <a
+          href="https://www.linkedin.com/in/nicklafferty/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Nick Lafferty
+        </a>
+        at Profound and
         <a
           href="https://www.linkedin.com/in/lucyjanehoyle"
           target="_blank"
@@ -99,14 +106,7 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
         >
           Lucy Hoyle
         </a>
-        and
-        <a
-          href="https://www.linkedin.com/in/nicklafferty/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Nick Lafferty
-        </a>.
+        at Carta.
       </div>
     </footer>
   </body>

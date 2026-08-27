@@ -17,9 +17,9 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: "Growth Circuit",
     url: siteUrl,
-    description: "A close-knit community for Marketing Engineers based in New York City.",
+    description: "An NYC-first community for people building growth systems, with public events and a global WhatsApp group.",
     foundingDate: "2026",
-    slogan: "Bring Your Own Build",
+    slogan: "Meet the people building growth systems",
     founder: [
       {
         "@type": "Person",
