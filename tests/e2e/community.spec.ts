@@ -7,7 +7,7 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
 
   expect(response?.ok()).toBe(true);
   await expect(page).toHaveTitle("Growth Circuit");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Meet the people building growth systems.");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Build with people who get what you do.");
 });
 
 test("the parked member login redirects home", async ({ page }) => {
