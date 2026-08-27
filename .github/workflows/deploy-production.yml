@@ -67,3 +67,12 @@ jobs:
             --retry-all-errors \
             "https://growthcircuit.club/community?deploy=${GITHUB_SHA}" \
             > /dev/null
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --retry 5 \
+            --retry-delay 5 \
+            --retry-all-errors \
+            "https://growthcircuit.club/people?deploy=${GITHUB_SHA}" \
+            > /dev/null

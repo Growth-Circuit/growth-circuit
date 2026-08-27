@@ -14,6 +14,7 @@ interface ImportMetaEnv {
   readonly COMMUNITY_FEATURE_ENABLED?: string;
   readonly COMMUNITY_KILL_SWITCH?: string;
   readonly COMMUNITY_ROLLOUT_ALLOWLIST?: string;
+  readonly PUBLIC_PROFILES_ENABLED?: string;
   readonly NOTION_API_TOKEN?: string;
   readonly NOTION_APPLICATIONS_DATA_SOURCE_ID?: string;
   readonly NOTION_PEOPLE_DATA_SOURCE_ID?: string;
@@ -33,6 +34,7 @@ declare namespace App {
     supabase: import("@supabase/supabase-js").SupabaseClient | null;
     communityIdentity: import("@/lib/community-auth").CommunityIdentity;
     communityRollout: import("@/lib/community-auth").CommunityRolloutConfig;
+    publicProfilesEnabled: boolean;
     csrfToken: string;
   }
 }

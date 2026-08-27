@@ -15,6 +15,7 @@ type CommunityRuntimeEnv = SupabaseRuntimeEnv & {
   COMMUNITY_FEATURE_ENABLED?: string;
   COMMUNITY_KILL_SWITCH?: string;
   COMMUNITY_ROLLOUT_ALLOWLIST?: string;
+  PUBLIC_PROFILES_ENABLED?: string;
 };
 
 async function getRuntimeEnv(): Promise<CommunityRuntimeEnv> {
@@ -31,6 +32,7 @@ async function getRuntimeEnv(): Promise<CommunityRuntimeEnv> {
         COMMUNITY_FEATURE_ENABLED: buildEnv.COMMUNITY_FEATURE_ENABLED,
         COMMUNITY_KILL_SWITCH: buildEnv.COMMUNITY_KILL_SWITCH,
         COMMUNITY_ROLLOUT_ALLOWLIST: buildEnv.COMMUNITY_ROLLOUT_ALLOWLIST,
+        PUBLIC_PROFILES_ENABLED: buildEnv.PUBLIC_PROFILES_ENABLED,
       };
     }
     return workerEnv;
@@ -42,6 +44,7 @@ async function getRuntimeEnv(): Promise<CommunityRuntimeEnv> {
 const AUTH_PATHS = ["/auth", "/api/auth"];
 const COMMUNITY_PATHS = ["/community", "/api/community", "/admin/community", "/media/community"];
 const COMMUNITY_DISCOVERY_PATHS = ["/rss.xml", "/sitemap-community.xml"];
+const PROFILE_PATHS = ["/people", "/api/profiles"];
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 function pathStartsWith(pathname: string, roots: string[]) {
@@ -101,27 +104,38 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isAuth = pathStartsWith(requestUrl.pathname, AUTH_PATHS);
   const isCommunity = pathStartsWith(requestUrl.pathname, COMMUNITY_PATHS);
   const isCommunityDiscovery = pathStartsWith(requestUrl.pathname, COMMUNITY_DISCOVERY_PATHS);
+  const isProfile = pathStartsWith(requestUrl.pathname, PROFILE_PATHS);
 
-  if (isAuth || isCommunity || isCommunityDiscovery) {
+  if (isCommunity || isCommunityDiscovery) {
     if (requestUrl.pathname.startsWith("/api/") || isCommunityDiscovery) return genericDenial();
 
-    const destination = new URL(isCommunity ? "/people" : "/", requestUrl);
+    const destination = new URL("/people", requestUrl);
     const response = new Response(null, { status: 302, headers: { Location: destination.toString() } });
     applySecurityHeaders(response, requestUrl, true);
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
     return response;
   }
 
-  const sensitive = isAuth || isCommunity;
-  const privateResponse = isAuth
+  const runtimeEnv = await getRuntimeEnv();
+  const publicProfilesEnabled = envFlag(runtimeEnv.PUBLIC_PROFILES_ENABLED);
+  if ((isAuth || isProfile) && !publicProfilesEnabled) {
+    if (requestUrl.pathname.startsWith("/api/")) return genericDenial();
+    const response = new Response(null, { status: 302, headers: { Location: new URL("/", requestUrl).toString() } });
+    applySecurityHeaders(response, requestUrl, true);
+    return response;
+  }
+
+  const sensitive = isAuth || isCommunity || requestUrl.pathname.startsWith("/api/profiles") || requestUrl.pathname === "/people/edit" || requestUrl.pathname === "/people/claim" || requestUrl.pathname === "/people/admin";
+  const privateResponse = sensitive
     || UNSAFE_METHODS.has(context.request.method.toUpperCase())
     || isPrivateCommunityRequest(requestUrl);
-  const needsCommunityContext = sensitive || isCommunityDiscovery;
+  const needsCommunityContext = sensitive || isCommunityDiscovery || isProfile;
 
   if (!needsCommunityContext) {
     context.locals.supabase = null;
     context.locals.communityIdentity = { role: "anonymous", user: null, profile: null };
     context.locals.communityRollout = { featureEnabled: false, killSwitch: true, allowlist: [] };
+    context.locals.publicProfilesEnabled = false;
     context.locals.csrfToken = "";
     const response = await next();
     applySecurityHeaders(response, requestUrl, false);
@@ -129,7 +143,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const pendingHeaders: Record<string, string> = {};
-  const runtimeEnv = await getRuntimeEnv();
   const rolloutConfig = {
     featureEnabled: envFlag(runtimeEnv.COMMUNITY_FEATURE_ENABLED),
     killSwitch: envKillSwitch(runtimeEnv.COMMUNITY_KILL_SWITCH),
@@ -161,6 +174,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.supabase = supabase;
   context.locals.communityIdentity = identity;
   context.locals.communityRollout = rolloutConfig;
+  context.locals.publicProfilesEnabled = publicProfilesEnabled;
   context.locals.csrfToken = csrfToken;
 
   if (sensitive && UNSAFE_METHODS.has(context.request.method.toUpperCase())) {

@@ -29,6 +29,7 @@
     // The member portal is parked while Growth Circuit shifts to public events, WhatsApp, and public profiles.
     "COMMUNITY_FEATURE_ENABLED": "false",
     "COMMUNITY_KILL_SWITCH": "true",
+    "PUBLIC_PROFILES_ENABLED": "true",
     "BUZZ_WEBHOOK_URL": "https://growth-circuit-buzz-relay.vercel.app/api/notify",
     "CRM_SYNC_ENABLED": "true",
     "LOOPS_COHORT_OPENINGS_LIST_ID": "cmsxf6xb520ym0izgfvm41c01",

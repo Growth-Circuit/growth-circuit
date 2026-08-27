@@ -1,0 +1,25 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ProfileEditor from "@/components/ProfileEditor";
+const userId = Astro.locals.communityIdentity.user?.id;
+if (!userId || !Astro.locals.supabase) return Astro.redirect("/people/claim", 303);
+const [profileResult, projectsResult] = await Promise.all([
+  Astro.locals.supabase.from("community_profiles").select("first_name,last_name,handle,headline,bio,location,website_url,profile_state,profile_moderation_state").eq("id", userId).maybeSingle(),
+  Astro.locals.supabase.from("community_projects").select("id,title,description,url,kind,position").eq("owner_id", userId).order("position"),
+]);
+const row = profileResult.data;
+const metadata = Astro.locals.communityIdentity.user;
+const initialProfile = {
+  firstName: row?.first_name || Astro.locals.communityIdentity.profile?.firstName || "",
+  lastName: row?.last_name || Astro.locals.communityIdentity.profile?.lastName || "",
+  handle: row?.handle || "", headline: row?.headline || "", bio: row?.bio || "", location: row?.location || "",
+  websiteUrl: row?.website_url || "", state: (row?.profile_state || "draft") as "draft" | "published",
+  moderationState: (row?.profile_moderation_state || "visible") as "visible" | "hidden",
+  projects: (projectsResult.data || []).map((project) => ({ id: project.id, title: project.title, description: project.description, url: project.url, kind: project.kind as "website" | "github" | "doorway" | "demo" })),
+};
+void metadata;
+---
+<BaseLayout title="Edit your profile" description="Edit your Growth Circuit profile and project shelf." path="/people/edit" noindex bodyClass="sky-page pivot-page">
+  <section class="shell profile-editor-hero"><p class="eyebrow">Your profile</p><h1>Show your work</h1><p>Add the projects, experiments, and templates that say something useful about how you build.</p></section>
+  <section class="shell profile-editor-shell"><ProfileEditor client:load csrfToken={Astro.locals.csrfToken} initialProfile={initialProfile} /></section>
+</BaseLayout>

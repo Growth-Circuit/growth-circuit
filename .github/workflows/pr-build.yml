@@ -46,6 +46,7 @@ jobs:
           echo "COMMUNITY_E2E_MODE=true" >> "$GITHUB_ENV"
           echo "COMMUNITY_FEATURE_ENABLED=true" >> "$GITHUB_ENV"
           echo "COMMUNITY_KILL_SWITCH=false" >> "$GITHUB_ENV"
+          echo "PUBLIC_PROFILES_ENABLED=true" >> "$GITHUB_ENV"
 
       - name: Run database policy tests
         run: npm run test:db

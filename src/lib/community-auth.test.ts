@@ -60,16 +60,15 @@ describe("current community identity", () => {
 
 describe("completeCommunityProfile", () => {
   it("idempotently saves only constrained profile fields for the current user", async () => {
-    const upsert = vi.fn().mockResolvedValue({ error: null });
-    const client = { from: vi.fn(() => ({ upsert })) } as unknown as SupabaseClient;
+    const rpc = vi.fn().mockResolvedValue({ error: null });
+    const client = { rpc } as unknown as SupabaseClient;
     await expect(completeCommunityProfile(client, "user-id", " Ada ", " Lovelace ")).resolves.toEqual({
       ok: true,
       profile: { firstName: "Ada", lastName: "Lovelace" },
     });
-    expect(upsert).toHaveBeenCalledWith(
-      { id: "user-id", first_name: "Ada", last_name: "Lovelace" },
-      { onConflict: "id" },
-    );
+    expect(rpc).toHaveBeenCalledWith("community_complete_profile", {
+      first_name_input: "Ada", last_name_input: "Lovelace",
+    });
   });
 });
 
