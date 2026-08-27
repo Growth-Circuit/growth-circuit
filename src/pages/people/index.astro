@@ -1,0 +1,40 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const globalWhatsApp = "https://chat.whatsapp.com/LurxSBSuEFF7jIlInK0CV6";
+---
+
+<BaseLayout title="People + projects" description="A coming public directory of Growth Circuit members and the things they have built." path="/people" bodyClass="sky-page pivot-page">
+  <section class="shell listing-hero people-hero">
+    <p class="eyebrow">Coming soon</p>
+    <h1>A public home for people and what they build.</h1>
+    <p>Growth Circuit profiles will help members claim their work, share useful projects, and find other builders through what they have shipped.</p>
+  </section>
+
+  <section class="shell directory-preview" aria-labelledby="directory-title">
+    <div class="directory-preview__intro">
+      <p class="eyebrow">Product direction</p>
+      <h2 id="directory-title">Your work becomes the profile.</h2>
+      <p>Each public profile can combine a short introduction with project pages, demos, repositories, and links. Doorway can provide the easiest path from a folder on your computer to a published project on your profile.</p>
+    </div>
+    <div class="directory-card-grid" aria-label="Planned directory features">
+      <article><span>01</span><h3>Claim your name</h3><p>Start with the profile foundation already connected to Growth Circuit.</p></article>
+      <article><span>02</span><h3>Add your projects</h3><p>Attach a live site, a repository, a demo, or a Doorway-published build.</p></article>
+      <article><span>03</span><h3>Share the useful part</h3><p>Curated WhatsApp ideas can become public highlights only after a human review.</p></article>
+    </div>
+  </section>
+
+  <section class="shell claim-preview" aria-labelledby="claim-title">
+    <div>
+      <p class="eyebrow">Profile preview</p>
+      <h2 id="claim-title">Claiming should feel simple.</h2>
+      <p>The member portal is parked while this new public profile model takes shape. Join the global WhatsApp group and tell us what you would want on your profile.</p>
+      <a class="button matcha" href={globalWhatsApp} target="_blank" rel="noopener noreferrer">Join the global group ↗</a>
+    </div>
+    <div class="claim-card">
+      <div class="claim-card__handle">growthcircuit.club/people/your-name</div>
+      <div class="claim-card__body"><div class="profile-preview__avatar">YN</div><div><span>Available to claim</span><h3>Your name</h3><p>Role, location, and the things you build.</p></div></div>
+      <div class="claim-card__slots"><span>Project 01</span><span>Project 02</span><span>Highlight 01</span></div>
+    </div>
+  </section>
+</BaseLayout>

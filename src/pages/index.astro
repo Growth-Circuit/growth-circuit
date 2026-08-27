@@ -1,110 +1,140 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import AnnouncementFaq from "@/components/AnnouncementFaq.astro";
+import { upcomingEvents } from "@/data/events";
+
+const featuredEvent = upcomingEvents[0];
+const nycWhatsApp = "https://chat.whatsapp.com/DrALA6m5IHa9XgMG1q4YkB";
+const globalWhatsApp = "https://chat.whatsapp.com/LurxSBSuEFF7jIlInK0CV6";
 ---
 
 <BaseLayout
   title="Growth Circuit"
-  description="A close-knit community for Marketing Engineers based in New York City."
+  description="Meet the people building growth systems through public NYC events, WhatsApp groups, and a growing directory of member projects."
   hideHeader
-  bodyClass="sky-page home-sky-page"
+  bodyClass="sky-page pivot-page"
 >
-  <div class="ink-hero">
-    <div class="ink-hero__grid" aria-hidden="true"></div>
-    <div class="ink-hero__glow" aria-hidden="true"></div>
-
-    <header class="ink-header">
-      <div class="shell ink-nav">
+  <div class="pivot-hero">
+    <header class="pivot-header">
+      <div class="shell pivot-nav">
         <a class="brand" href="/" aria-label="Growth Circuit home">
           <img class="brand-logo" src="/growth-circuit-icon.svg" alt="" width="44" height="44" />
-          <span class="brand-word">Growth Circuit</span>
+          <span>Growth Circuit</span>
         </a>
-        <div class="header-actions">
-          <a class="button matcha" href="/apply">Apply now</a>
-        </div>
+        <nav class="pivot-nav__links" aria-label="Main navigation">
+          <a href="/events">Events</a>
+          <a href="/people">People + projects</a>
+          <a href="#join">WhatsApp</a>
+        </nav>
       </div>
     </header>
 
-    <section class="shell ink-section">
-      <div class="sky-orbit sky-orbit--one" aria-hidden="true"></div>
-      <div class="sky-orbit sky-orbit--two" aria-hidden="true"></div>
-      <div class="ink-intro">
-        <p class="eyebrow eyebrow--live">New York, September 2026</p>
-        <h1 class="ink-title">
-          Build with people who <span>get what you do.</span>
-        </h1>
-        <p class="ink-lead">
-          Growth Circuit is a close-knit community for marketing engineers who want to share their work, sharpen their
-          craft, and <span class="ink-lead__closing">make cool sh*t together.</span>
-        </p>
-        <div class="hero-actions">
-          <a class="button matcha" href="/apply?path=nyc">Apply for New York</a>
-          <a class="text-link" href="/apply?path=global">Join the global waitlist <span>↗</span></a>
+    <section class="shell pivot-hero__inner">
+      <div class="pivot-hero__copy">
+        <p class="eyebrow eyebrow--live">NYC-first. Open to everyone.</p>
+        <h1>Meet the people <span>building growth systems.</span></h1>
+        <p class="pivot-lead">Growth Circuit is a community for engineers, marketers, and builders who work on growth. We started with in-person events in New York City and grew from there.</p>
+        <div class="pivot-actions">
+          <a class="button matcha" href={featuredEvent.partifulUrl} target="_blank" rel="noopener noreferrer">Come to the launch party ↗</a>
+          <a class="pivot-text-link" href="#join">Join WhatsApp ↓</a>
         </div>
       </div>
 
-      <div class="ink-ledger" aria-label="Community overview">
-        <div class="ink-stat"><strong>8</strong><span>spaces</span></div>
-        <div class="ink-stat"><strong>NYC</strong><span>in person</span></div>
-        <div class="ink-stat ink-stat--accent"><strong>Sept-Nov</strong><span>starting 2026</span></div>
+      <div class="circuit-map" aria-label="Growth Circuit connects NYC events, WhatsApp conversation, and public work">
+        <div class="circuit-map__line" aria-hidden="true"></div>
+        <a class="circuit-node circuit-node--event" href="/events">
+          <span>01</span><strong>Meet</strong><small>Public events in NYC</small>
+        </a>
+        <a class="circuit-node circuit-node--chat" href="#join">
+          <span>02</span><strong>Talk</strong><small>NYC + global WhatsApp</small>
+        </a>
+        <a class="circuit-node circuit-node--work" href="/people">
+          <span>03</span><strong>Show</strong><small>Profiles + projects</small>
+        </a>
       </div>
     </section>
   </div>
 
-  <section class="shell flow-section">
-    <div class="flow-copy">
-      <p class="eyebrow">How it works</p>
-      <h2>
-        <span>One theme per month.</span>
-        <span>Bring your own build.</span>
-        <span>Iterate together.</span>
-      </h2>
+  <section class="shell model-section" aria-labelledby="model-title">
+    <div class="section-intro">
+      <p class="eyebrow">How the circuit works</p>
+      <h2 id="model-title">Three ways in. One useful community.</h2>
     </div>
-    <div class="format-details" aria-label="Growth Circuit format">
-      <div>
-        <strong>Plan</strong>
-        <span>Every month we'll vote on the theme, whether it’s a problem, tool, or question for the group to explore.</span>
+    <div class="model-grid">
+      <article>
+        <span class="model-card__number">NYC</span>
+        <h3>Meet in New York</h3>
+        <p>Larger events, usually 30 to 100 people, are how most people find Growth Circuit. Expect people who work on growth and have real things to share.</p>
+        <a href="/events">See upcoming events →</a>
+      </article>
+      <article>
+        <span class="model-card__number">Chat</span>
+        <h3>Talk on WhatsApp</h3>
+        <p>Between events, share what you are working on, ask a question, or pass along something useful. Join the local NYC group or the broader global group.</p>
+        <a href="#join">Choose your group →</a>
+      </article>
+      <article>
+        <span class="model-card__number">Work</span>
+        <h3>Show what you built</h3>
+        <p>We are building a public directory of members and the things they have shipped. Claim a profile, add your projects, and let your work be findable.</p>
+        <a href="/people">Preview profiles →</a>
+      </article>
+    </div>
+    <p class="supper-note"><span>Small table, by invitation</span> Nick and Lucy also host smaller dinners for people they meet at larger events.</p>
+  </section>
+
+  <section class="event-feature" aria-labelledby="event-title">
+    <div class="shell event-feature__inner">
+      <div class="event-feature__image">
+        <img src={featuredEvent.image} alt={featuredEvent.imageAlt} width="1080" height="1080" loading="lazy" />
       </div>
-      <div>
-        <strong>Build</strong>
-        <span>Bring your ideas, MVPs, and half-baked projects.</span>
-      </div>
-      <div>
-        <strong>Meet</strong>
-        <span>Get together for demos and good food.</span>
+      <div class="event-feature__copy">
+        <p class="eyebrow">Next in New York</p>
+        <h2 id="event-title">{featuredEvent.title}</h2>
+        <dl class="event-facts">
+          <div><dt>When</dt><dd><time datetime={featuredEvent.dateTime}>{featuredEvent.dateLabel}<br />{featuredEvent.timeLabel}</time></dd></div>
+          <div><dt>Where</dt><dd>{featuredEvent.location}<br /><small>{featuredEvent.locationDetail}</small></dd></div>
+        </dl>
+        <p>{featuredEvent.description}</p>
+        <div class="pivot-actions">
+          <a class="button matcha" href={featuredEvent.partifulUrl} target="_blank" rel="noopener noreferrer">RSVP on Partiful ↗</a>
+          <a class="pivot-text-link" href="/events">All events →</a>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="show-us" aria-labelledby="show-us-title">
-    <div class="shell show-us__inner">
-      <p class="eyebrow">Applications open</p>
-      <h2 id="show-us-title">Show us what you’ve built.</h2>
-      <p class="show-us__lead">
-        Share the project you’re most proud of. Upload a video demo, a live link, or a GitHub repo.
-      </p>
-      <a class="button matcha" href="/apply">Start your application</a>
+  <section class="shell profiles-feature" aria-labelledby="profiles-title">
+    <div class="profiles-feature__copy">
+      <p class="eyebrow">Coming soon</p>
+      <h2 id="profiles-title">A public home for people and their work.</h2>
+      <p>Claim your Growth Circuit profile, add the projects you have shipped, and make your work findable by people who care about it. Doorway can make it easy to publish a project and attach it to your profile.</p>
+      <div class="profile-labels" aria-label="Planned profile features">
+        <span>Member profiles</span><span>Project pages</span><span>Curated highlights</span>
+      </div>
+      <a class="button matcha" href="/people">Preview the directory →</a>
+    </div>
+    <div class="profile-preview" aria-label="Example Growth Circuit profile">
+      <div class="profile-preview__top"><span>growthcircuit.club/people/you</span><span>Claimed ✓</span></div>
+      <div class="profile-preview__identity"><div class="profile-preview__avatar">YOU</div><div><p>Marketing engineer</p><h3>Your name</h3><span>New York City</span></div></div>
+      <div class="profile-preview__project"><span>Latest project</span><strong>The useful thing you shipped</strong><small>Published with Doorway ↗</small></div>
+      <p class="profile-preview__note">Useful WhatsApp conversations may become public highlights after review. Private conversation stays private.</p>
     </div>
   </section>
 
-  <section class="shell principles-section">
-    <div class="principles-copy">
-      <p class="eyebrow">Kept small on purpose</p>
-      <h2>How we’ll work</h2>
+  <section class="whatsapp-section" id="join" aria-labelledby="join-title">
+    <div class="shell whatsapp-section__inner">
+      <div>
+        <p class="eyebrow">Between events</p>
+        <h2 id="join-title">Keep the conversation going.</h2>
+      </div>
+      <div class="whatsapp-section__copy">
+        <p>There are two WhatsApp groups, one for New York City and one for the broader global community. Share builds, ask useful questions, and meet people working on similar problems.</p>
+        <div class="whatsapp-actions">
+          <a class="button matcha" href={nycWhatsApp} target="_blank" rel="noopener noreferrer">Join the NYC group ↗</a>
+          <a class="button" href={globalWhatsApp} target="_blank" rel="noopener noreferrer">Join the global group ↗</a>
+        </div>
+        <p class="privacy-note"><strong>Before you join:</strong> joining is explicit opt-in, and everyone in a WhatsApp group can see member phone numbers.</p>
+      </div>
     </div>
-    <div class="principles-list">
-      <p>No lectures or panels.</p>
-      <p>Everyone contributes: ideas, snacks, and expertise.</p>
-      <p>In-person meetups and an online forum</p>
-    </div>
-    <p class="home-founder-note">
-      Founded by
-      <a href="https://www.linkedin.com/in/lucyjanehoyle" target="_blank" rel="noopener noreferrer">Lucy Hoyle</a>
-      at Carta and
-      <a href="https://www.linkedin.com/in/nicklafferty/" target="_blank" rel="noopener noreferrer">Nick Lafferty</a>
-      at Profound.
-    </p>
   </section>
-
-  <AnnouncementFaq />
 </BaseLayout>

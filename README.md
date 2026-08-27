@@ -1,14 +1,14 @@
 # Growth Circuit
 
-A lightweight announcement site and application layer for Growth Circuit's cohort-based NYC build club.
+A public home for Growth Circuit's NYC events, WhatsApp communities, and coming member project directory.
 
 The product shape is:
 
-- Invite-only NYC build club application flow with no login required.
-- Hidden scaffolding for future public forum pages, builds, tags, and BYOB challenges.
-- Optional email/password authentication through Supabase Auth for later forum posting.
-- Notion-backed application and waitlist persistence.
-- Optional Supabase authentication for later community features.
+- Public NYC event listings backed by a small reusable event data source.
+- Direct entry into separate NYC and global WhatsApp groups with a visible privacy note.
+- A public preview of claimable member profiles and project pages.
+- Parked application, member login, forum, posting, and moderation surfaces. Their code and data foundation remain in the repository.
+- Existing Notion CRM, Loops sync, Supabase, and Cloudflare operations remain available for internal use.
 
 ## Current Status
 
@@ -16,17 +16,17 @@ The product shape is:
 - Supabase project has been created and `supabase/schema.sql` has been run.
 - Local `.env` contains the Supabase project URL and publishable key.
 - `.env.example` is kept as a safe placeholder file and should not contain real keys.
-- `/apply` applications and global waitlist entries are open to anyone and write to the Growth Circuit Applications database in Notion.
-- `/auth` exists for future email/password account flows, but applications do not require login.
+- `/events` lists public Growth Circuit events and links to Partiful for current RSVP details.
+- `/people` previews the public profile and project direction.
+- `/apply`, `/auth`, `/community`, and the legacy forum entrypoints redirect to the current public experience.
 
 ## Still To Do
 
-- Build an admin review view for Lucy and Nick: list, search, notes, status, accept, waitlist, decline.
-- Send a notification email or Slack message when a new application is submitted.
-- Wire the forum to Supabase for real thread posting, replies, voting, tags, and profiles.
-- Add moderation tools for reports, hidden posts, and trusted users.
+- Turn the public profile preview into a claim flow with project publishing.
+- Connect Doorway as an optional project publishing path.
+- Add a reviewed curation workflow for useful WhatsApp highlights. Private conversation must remain private unless a human approves publication.
+- Decide whether public event data should remain a small checked-in source or sync from Partiful.
 - Add Search Console, analytics, and production sitemap validation.
-- Open the global community layer with real launch threads, builds, and BYOB challenges.
 
 ## Stack
 
