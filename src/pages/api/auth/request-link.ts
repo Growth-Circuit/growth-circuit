@@ -15,7 +15,7 @@ export const POST: APIRoute = async ({ request, locals, url }) => {
 
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const mode = body.mode === "signup" ? "signup" : "signin";
-  if (mode === "signup" && !locals.communityRollout.featureEnabled) {
+  if (mode === "signup" && !locals.publicProfilesEnabled) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
   const nextPath = getSafeNextPath(typeof body.next === "string" ? body.next : null);

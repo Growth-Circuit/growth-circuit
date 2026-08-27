@@ -8,7 +8,7 @@ export type CommunityRole = "anonymous" | "contributor" | "member" | "admin";
 export type CommunityIdentity = {
   role: CommunityRole;
   user: Pick<User, "id" | "email"> | null;
-  profile: { firstName: string; lastName: string } | null;
+  profile: { firstName: string; lastName: string; handle?: string | null } | null;
   membershipStatus?: "active" | "suspended" | "revoked";
 };
 
@@ -110,13 +110,13 @@ export async function getCurrentCommunityIdentity(client: SupabaseClient): Promi
   if (!user) return { role: "anonymous", user: null, profile: null };
 
   const [profileResult, adminResult, membershipResult] = await Promise.all([
-    client.from("community_profiles").select("first_name,last_name").eq("id", user.id).maybeSingle(),
+    client.from("community_profiles").select("first_name,last_name,handle").eq("id", user.id).maybeSingle(),
     client.from("community_admins").select("user_id").eq("user_id", user.id).maybeSingle(),
     client.from("community_memberships").select("status").eq("user_id", user.id).maybeSingle(),
   ]);
 
   const profile = profileResult.data
-    ? { firstName: profileResult.data.first_name, lastName: profileResult.data.last_name }
+    ? { firstName: profileResult.data.first_name, lastName: profileResult.data.last_name, handle: profileResult.data.handle }
     : null;
   const membershipStatus = membershipResult.data?.status as CommunityIdentity["membershipStatus"];
   const role: CommunityRole = adminResult.data
@@ -147,11 +147,11 @@ export async function completeCommunityProfile(
     return { ok: false as const, error: "Enter your first and last name." };
   }
 
-  const { error } = await client.from("community_profiles").upsert({
-    id: userId,
-    first_name: firstName,
-    last_name: lastName,
-  }, { onConflict: "id" });
+  void userId;
+  const { error } = await client.rpc("community_complete_profile", {
+    first_name_input: firstName,
+    last_name_input: lastName,
+  });
 
   if (error) return { ok: false as const, error: "We could not save your profile. Please try again." };
   return { ok: true as const, profile: { firstName, lastName } };

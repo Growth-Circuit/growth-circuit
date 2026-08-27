@@ -20,12 +20,12 @@ if (Astro.locals.communityIdentity.profile && !needsProfile) {
 >
   <section class="shell auth-page">
     <div>
-      <p class="eyebrow">Community account</p>
-      <h1>{needsProfile ? "Tell us your name." : "Use your email to join in."}</h1>
+      <p class="eyebrow">Growth Circuit</p>
+      <h1>{needsProfile ? "Tell us your name." : "Claim your profile"}</h1>
       <p class="lead">
         {needsProfile
-          ? "Your first and last name will appear with the posts and replies you publish."
-          : "We will send a passwordless link. Opening it shows a confirmation step before signing you in."}
+          ? "Your name will appear on the public profile you choose to publish."
+          : "Sign in with your email. Once you are in, you can fill out your profile and add projects you have shipped."}
       </p>
     </div>
     <AuthForm
@@ -33,7 +33,7 @@ if (Astro.locals.communityIdentity.profile && !needsProfile) {
       csrfToken={Astro.locals.csrfToken}
       nextPath={nextPath}
       initialMode={needsProfile ? "profile" : "signin"}
-      signupEnabled={Astro.locals.communityRollout.featureEnabled}
+      signupEnabled={Astro.locals.publicProfilesEnabled}
     />
   </section>
 </BaseLayout>
