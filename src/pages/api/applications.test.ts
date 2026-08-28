@@ -53,7 +53,7 @@ beforeEach(() => {
 });
 
 describe("POST /api/applications", () => {
-  it("persists only the communication preferences presented by the NYC application form", async () => {
+  it("ignores deleted communication preferences on the NYC application form", async () => {
     const response = await post({
       ...validApplication,
       communication_preferences: ["Cohort openings", "Community updates", "Events"],
@@ -62,8 +62,8 @@ describe("POST /api/applications", () => {
     expect(response.status).toBe(201);
     expect(mocks.createNotionSubmission).toHaveBeenCalledWith(expect.objectContaining({
       submissionId,
-      communicationPreferences: ["Community updates", "Events"],
-      consentSource: "New York application form v2",
+      communicationPreferences: [],
+      consentSource: undefined,
     }));
     expect(mocks.enqueueCrmSync).toHaveBeenCalledWith("person-1");
   });

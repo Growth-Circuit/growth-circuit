@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildLoopsContactUpdate,
   findLoopsContact,
-  retainedCommunicationPreferences,
+  isContactOnMarketList,
+  sendMembershipApprovedEvent,
   updateLoopsContact,
 } from "./loops-server";
 
@@ -17,18 +18,15 @@ const person = {
   region: "",
   linkedInProfile: "https://www.linkedin.com/in/alex-example",
   referralSource: "Friend",
-  communicationPreferences: ["Cohort openings", "Events"] as const,
-  consentStatus: "Granted" as const,
-  consentSource: "Global waitlist form v2",
-  consentAt: "2026-08-17T12:00:00.000Z",
+  communicationPreferences: [] as const,
+  consentStatus: "Not asked" as const,
   syncStatus: "Pending" as const,
 };
 
 const loopsEnv = {
   LOOPS_API_KEY: "test-key",
-  LOOPS_COHORT_OPENINGS_LIST_ID: "list-cohorts",
-  LOOPS_COMMUNITY_UPDATES_LIST_ID: "list-community",
-  LOOPS_EVENTS_LIST_ID: "list-events",
+  LOOPS_NYC_LIST_ID: "list-nyc",
+  LOOPS_GLOBAL_LIST_ID: "list-global",
 };
 
 afterEach(() => {
@@ -37,18 +35,13 @@ afterEach(() => {
 });
 
 describe("Loops CRM sync", () => {
-  it("maps a consented Notion person to stable contact properties and list memberships", () => {
-    expect(buildLoopsContactUpdate(person, loopsEnv)).toEqual({
+  it("builds a contact-only upsert that leaves list membership unchanged", () => {
+    expect(buildLoopsContactUpdate(person, {})).toEqual({
       email: "alex@example.com",
       userId: "GC-42",
       crmId: "GC-42",
       firstName: "Alex",
       lastName: "Example",
-      mailingLists: {
-        "list-cohorts": true,
-        "list-community": false,
-        "list-events": true,
-      },
       notionPersonId: "person-1",
       lifecycle: "Waitlist",
       market: "Global",
@@ -56,15 +49,36 @@ describe("Loops CRM sync", () => {
       region: "",
       linkedInProfile: "https://www.linkedin.com/in/alex-example",
       referralSource: "Friend",
-      consentStatus: "Granted",
-      consentSource: "Global waitlist form v2",
-      consentAt: "2026-08-17T12:00:00.000Z",
+      consentStatus: "Not asked",
+      consentSource: "",
+      consentAt: "",
     });
+    expect(buildLoopsContactUpdate(person, {})).not.toHaveProperty("mailingLists");
   });
 
-  it("does not produce a contact update without explicit granted consent", () => {
-    expect(buildLoopsContactUpdate({ ...person, consentStatus: "Withdrawn" }, loopsEnv)).toBeNull();
-    expect(buildLoopsContactUpdate({ ...person, communicationPreferences: [] }, loopsEnv)).toBeNull();
+  it("upserts contacts without preferences and skips only a missing email", () => {
+    expect(buildLoopsContactUpdate({ ...person, communicationPreferences: [] }, {})).not.toBeNull();
+    expect(buildLoopsContactUpdate({ ...person, consentStatus: "Withdrawn" }, {})).not.toBeNull();
+    expect(buildLoopsContactUpdate({ ...person, email: "" }, {})).toBeNull();
+  });
+
+  it("adds only the matching market list during approval", () => {
+    expect(buildLoopsContactUpdate(person, loopsEnv, {
+      addToMarketList: "Global",
+      lifecycle: "Approved member",
+    })).toMatchObject({
+      lifecycle: "Approved member",
+      mailingLists: { "list-global": true },
+    });
+    expect(buildLoopsContactUpdate(person, loopsEnv, { addToMarketList: "Global" }))
+      .not.toHaveProperty("mailingLists.list-nyc");
+  });
+
+  it("fails closed when the approval list is not configured", () => {
+    expect(() => buildLoopsContactUpdate(person, {
+      ...loopsEnv,
+      LOOPS_GLOBAL_LIST_ID: undefined,
+    }, { addToMarketList: "Global" })).toThrow("LOOPS_LISTS_NOT_CONFIGURED");
   });
 
   it("retries a rate-limited upsert and returns the Loops contact id", async () => {
@@ -80,7 +94,7 @@ describe("Loops CRM sync", () => {
     await expect(updateLoopsContact(person, loopsEnv, { sleep })).resolves.toBe("loops-1");
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(sleep).toHaveBeenCalledWith(1200);
-    expect(fetchMock.mock.calls[0][0]).toBe("https://app.loops.so/api/v1/contacts/update");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).not.toHaveProperty("mailingLists");
   });
 
   it("stops immediately on a non-retryable Loops response", async () => {
@@ -102,19 +116,12 @@ describe("Loops CRM sync", () => {
     expect(sleep).toHaveBeenCalledTimes(3);
   });
 
-  it("fails closed when a selected preference has no configured mailing list", () => {
-    expect(() => buildLoopsContactUpdate(person, {
-      ...loopsEnv,
-      LOOPS_EVENTS_LIST_ID: undefined,
-    })).toThrow("LOOPS_LISTS_NOT_CONFIGURED");
-  });
-
   it("reads a Loops contact by stable CRM id", async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(Response.json([{
       id: "loops-1",
       userId: "GC-42",
       subscribed: true,
-      mailingLists: { "list-cohorts": true, "list-events": false },
+      mailingLists: { "list-global": true },
     }]));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -122,19 +129,23 @@ describe("Loops CRM sync", () => {
     expect(fetchMock.mock.calls[0][0]).toBe("https://app.loops.so/api/v1/contacts/find?userId=GC-42");
   });
 
-  it("maps Loops list removals back to retained Notion preferences", () => {
-    expect(retainedCommunicationPreferences({
-      subscribed: true,
-      mailingLists: { "list-cohorts": true, "list-community": false, "list-events": false },
-    }, loopsEnv)).toEqual(["Cohort openings"]);
-    expect(retainedCommunicationPreferences({
-      subscribed: false,
-      mailingLists: { "list-cohorts": true },
-    }, loopsEnv)).toEqual([]);
+  it("checks membership only against the Person market", () => {
+    expect(isContactOnMarketList({ mailingLists: { "list-global": true } }, "Global", loopsEnv)).toBe(true);
+    expect(isContactOnMarketList({ mailingLists: { "list-nyc": true } }, "Global", loopsEnv)).toBe(false);
   });
 
-  it("fails closed when a contact response omits mailing-list state", () => {
-    expect(() => retainedCommunicationPreferences({ subscribed: true }, loopsEnv))
-      .toThrow("LOOPS_INVALID_CONTACT");
+  it("sends the fallback approval event with a stable idempotency key", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({ success: true }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(sendMembershipApprovedEvent(person, "Global", loopsEnv)).resolves.toBe(true);
+    expect(fetchMock.mock.calls[0][0]).toBe("https://app.loops.so/api/v1/events/send");
+    expect(fetchMock.mock.calls[0][1].headers["Idempotency-Key"]).toBe("membership-approved-GC-42");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      email: "alex@example.com",
+      userId: "GC-42",
+      eventName: "membershipApproved",
+      eventProperties: { market: "Global" },
+    });
   });
 });

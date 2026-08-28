@@ -4,7 +4,6 @@ import { createNotionSubmission, isServerNotionConfigured, type NotionSubmission
 import {
   GLOBAL_WAITLIST_COMMUNICATION_PREFERENCES,
   normalizeCommunicationPreferences,
-  validateCommunicationPreferences,
 } from "@/lib/application";
 import { normalizeEmailKey } from "@/lib/crm";
 import { getSubmissionId } from "@/lib/submission-id";
@@ -50,11 +49,6 @@ export const POST: APIRoute = async ({ request }) => {
     }, 422);
   }
 
-  const preferenceError = validateCommunicationPreferences(communicationPreferences, "global");
-  if (preferenceError) {
-    return json({ ok: false, error: preferenceError }, 422);
-  }
-
   if (!isServerNotionConfigured()) {
     return json({ ok: false, error: "The waitlist is temporarily unavailable. Please try again shortly." }, 503);
   }
@@ -69,7 +63,7 @@ export const POST: APIRoute = async ({ request }) => {
       applicationType: "Global waitlist",
       location: "Outside New York",
       communicationPreferences,
-      consentSource: "Global waitlist form v2",
+      consentSource: undefined,
     };
     const page = await createNotionSubmission(submission);
 
