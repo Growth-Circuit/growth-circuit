@@ -7,8 +7,6 @@ import {
   type ApplicationPayload,
   type ApplicationResult,
 } from "@/lib/application";
-import { mergeCommunicationPreferences } from "@/lib/crm";
-import type { CommunicationPreference } from "@/lib/submission";
 
 type FormState = ApplicationPayload;
 type ApplicationPath = "nyc" | "global";
@@ -40,8 +38,7 @@ export default function ApplicationForm() {
     full_name: string;
     email: string;
     linkedin_url: string;
-    communication_preferences: CommunicationPreference[];
-  }>({ full_name: "", email: "", linkedin_url: "", communication_preferences: [] });
+  }>({ full_name: "", email: "", linkedin_url: "" });
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ApplicationPayload, string>>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -66,24 +63,6 @@ export default function ApplicationForm() {
   function updateField<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [field]: value }));
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
-    setMessage("");
-  }
-
-  function toggleApplicationPreference(preference: CommunicationPreference, checked: boolean) {
-    const current = form.communication_preferences;
-    updateField(
-      "communication_preferences",
-      checked ? mergeCommunicationPreferences(current, [preference]) : current.filter((item) => item !== preference),
-    );
-  }
-
-  function toggleWaitlistPreference(preference: CommunicationPreference, checked: boolean) {
-    setWaitlist((current) => ({
-      ...current,
-      communication_preferences: checked
-        ? mergeCommunicationPreferences(current.communication_preferences, [preference])
-        : current.communication_preferences.filter((item) => item !== preference),
-    }));
     setMessage("");
   }
 
@@ -145,12 +124,6 @@ export default function ApplicationForm() {
     if (!waitlist.full_name.trim() || !waitlist.email.includes("@") || !hasValidLinkedIn) {
       setStatus("error");
       setMessage("Add your name, a valid email, and your LinkedIn profile to join the waitlist.");
-      return;
-    }
-
-    if (!waitlist.communication_preferences.includes("Cohort openings")) {
-      setStatus("error");
-      setMessage("Choose cohort-opening emails to join the waitlist.");
       return;
     }
 
@@ -244,18 +217,6 @@ export default function ApplicationForm() {
                 placeholder="https://www.linkedin.com/in/..."
               />
             </Field>
-            <PreferenceOptions
-              legend="Email preference"
-              description="Required so we can contact you for the reason you joined."
-              preferences={[
-                {
-                  name: "Cohort openings",
-                  label: "Email me when a Growth Circuit cohort opens near me",
-                },
-              ]}
-              selected={waitlist.communication_preferences}
-              onChange={toggleWaitlistPreference}
-            />
             <button className="button matcha" type="submit" disabled={status === "submitting"}>
               {status === "submitting" ? <Loader2 size={17} aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}
               Join the global waitlist
@@ -335,17 +296,6 @@ export default function ApplicationForm() {
               />
             </Field>
 
-            <PreferenceOptions
-              legend="Keep me in the loop"
-              description="Optional. We will still contact you about your application."
-              preferences={[
-                { name: "Community updates", label: "Community updates" },
-                { name: "Events", label: "Events and meetups" },
-              ]}
-              selected={form.communication_preferences}
-              onChange={toggleApplicationPreference}
-            />
-
             <button className="button matcha" type="submit" disabled={status === "submitting"}>
               {status === "submitting" ? <Loader2 size={17} aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}
               Submit application
@@ -368,39 +318,6 @@ export default function ApplicationForm() {
         </div>
       )}
     </section>
-  );
-}
-
-function PreferenceOptions({
-  legend,
-  description,
-  preferences,
-  selected,
-  onChange,
-}: {
-  legend: string;
-  description: string;
-  preferences: Array<{ name: CommunicationPreference; label: string }>;
-  selected: CommunicationPreference[];
-  onChange: (preference: CommunicationPreference, checked: boolean) => void;
-}) {
-  return (
-    <fieldset className="preference-fieldset">
-      <legend>{legend}</legend>
-      <p>{description}</p>
-      <div className="preference-options">
-        {preferences.map((preference) => (
-          <label className="preference-option" key={preference.name}>
-            <input
-              type="checkbox"
-              checked={selected.includes(preference.name)}
-              onChange={(event) => onChange(preference.name, event.target.checked)}
-            />
-            <span>{preference.label}</span>
-          </label>
-        ))}
-      </div>
-    </fieldset>
   );
 }
 

@@ -11,6 +11,7 @@ import {
   reconcileCrmPeople,
   syncCrmPerson,
 } from "@/lib/crm-sync";
+import { handleNotionWebhook } from "@/lib/notion-webhook";
 
 export { CrmPersonLock } from "@/lib/crm-person-lock";
 
@@ -191,6 +192,9 @@ export async function consumeCrmSync(message: Message<unknown>, env: Env) {
 
 export default {
   async fetch(request, env, ctx) {
+    if (new URL(request.url).pathname === "/api/notion/webhook") {
+      return handleNotionWebhook(request, env);
+    }
     if (new URL(request.url).pathname === "/api/supabase/auth-email-hook") {
       return handleSupabaseAuthEmailHook(request, env);
     }

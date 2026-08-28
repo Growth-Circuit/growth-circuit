@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createNotionSubmission,
+  getApprovedApplicationPersonId,
   getNotionPersonForSync,
+  listNotionApprovedPeople,
   listNotionPeopleForSync,
   updateNotionPersonConsent,
   updateNotionPersonReconciledAt,
@@ -67,7 +69,7 @@ describe("Notion CRM submissions", () => {
     });
   });
 
-  it("marks a new person without preferences as not asked and not eligible", async () => {
+  it("marks a new person without preferences as pending for contact-only sync", async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(jsonResponse({ results: [] }))
       .mockResolvedValueOnce(jsonResponse({ results: [] }))
@@ -82,7 +84,7 @@ describe("Notion CRM submissions", () => {
 
     const createPerson = JSON.parse(fetchMock.mock.calls[2][1].body);
     expect(createPerson.properties["Consent status"]).toEqual({ select: { name: "Not asked" } });
-    expect(createPerson.properties["Sync status"]).toEqual({ select: { name: "Not eligible" } });
+    expect(createPerson.properties["Sync status"]).toEqual({ select: { name: "Pending" } });
   });
 
   it("updates an existing person without letting a public form re-grant consent", async () => {
@@ -216,6 +218,68 @@ describe("Notion CRM submissions", () => {
 });
 
 describe("Notion CRM sync records", () => {
+  it("resolves the related Person only when the Application is Approved", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({
+        id: "application-1",
+        properties: {
+          "Application status": { status: { name: "Approved" } },
+          Person: { relation: [{ id: "person-1" }] },
+        },
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        id: "application-2",
+        properties: {
+          "Application status": { status: { name: "Reviewing" } },
+          Person: { relation: [{ id: "person-2" }] },
+        },
+      }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getApprovedApplicationPersonId("application-1", notionEnv)).resolves.toBe("person-1");
+    await expect(getApprovedApplicationPersonId("application-2", notionEnv)).resolves.toBeNull();
+  });
+
+  it("finds approval candidates from either People lifecycle or Approved Applications", async () => {
+    const notionPerson = (id: string, lifecycle: string) => ({
+      id,
+      properties: {
+        "CRM ID": { unique_id: { prefix: "GC", number: id === "person-1" ? 1 : 2 } },
+        Name: { title: [{ plain_text: id }] },
+        Email: { email: `${id}@example.com` },
+        Lifecycle: { select: { name: lifecycle } },
+        Market: { select: { name: "Global" } },
+        "Communication preferences": { multi_select: [] },
+        "Loops ID": { rich_text: [{ plain_text: `loops-${id}` }] },
+        "Sync status": { select: { name: "Synced" } },
+      },
+    });
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({
+        results: [notionPerson("person-1", "Approved member")],
+        has_more: false,
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        results: [{ properties: { Person: { relation: [{ id: "person-2" }] } } }],
+        has_more: false,
+      }))
+      .mockResolvedValueOnce(jsonResponse(notionPerson("person-2", "Applicant")));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(listNotionApprovedPeople({}, notionEnv)).resolves.toEqual([
+      expect.objectContaining({ id: "person-1", lifecycle: "Approved member" }),
+      expect.objectContaining({ id: "person-2", lifecycle: "Applicant" }),
+    ]);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).filter).toEqual({
+      property: "Lifecycle",
+      select: { equals: "Approved member" },
+    });
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).filter).toEqual({
+      property: "Application status",
+      status: { equals: "Approved" },
+    });
+  });
+
   it("parses a People page into the Loops sync contract", async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({
       id: "person-1",
@@ -251,7 +315,10 @@ describe("Notion CRM sync records", () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ id: "person-1" }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await updateNotionPersonSyncState("person-1", { loopsId: "loops-1", status: "Synced" }, notionEnv);
+    await updateNotionPersonSyncState("person-1", {
+      loopsId: "loops-1",
+      status: "Synced",
+    }, notionEnv);
 
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
       properties: {

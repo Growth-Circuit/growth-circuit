@@ -127,7 +127,7 @@ export function buildPersonProperties(input: PersonPropertiesInput) {
     properties["Sync status"] = { select: { name: "Pending" } };
   } else if (input.isNew) {
     properties["Consent status"] = { select: { name: "Not asked" } };
-    properties["Sync status"] = { select: { name: "Not eligible" } };
+    properties["Sync status"] = { select: { name: "Pending" } };
   }
 
   return properties;

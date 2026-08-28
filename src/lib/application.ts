@@ -39,12 +39,9 @@ export const APPLICATION_TEXT_LIMITS = {
 } as const;
 
 export const NYC_COMMUNICATION_PREFERENCES = [
-  "Community updates",
-  "Events",
 ] as const satisfies readonly CommunicationPreference[];
 
 export const GLOBAL_WAITLIST_COMMUNICATION_PREFERENCES = [
-  "Cohort openings",
 ] as const satisfies readonly CommunicationPreference[];
 
 const textFields: Array<keyof Omit<
@@ -112,12 +109,10 @@ export function normalizeCommunicationPreferences(
 }
 
 export function validateCommunicationPreferences(
-  preferences: CommunicationPreference[],
-  path: "nyc" | "global",
+  _preferences: CommunicationPreference[],
+  _path: "nyc" | "global",
 ) {
-  if (path === "global" && !preferences.includes("Cohort openings")) {
-    return "Choose cohort-opening emails to join the waitlist.";
-  }
+  return undefined;
 }
 
 export function validateApplication(payload: ApplicationPayload) {

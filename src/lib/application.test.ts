@@ -33,10 +33,8 @@ describe("application communication preferences", () => {
     ).communication_preferences).toEqual(["Community updates", "Events"]);
   });
 
-  it("requires cohort-opening consent for the global waitlist", () => {
-    expect(validateCommunicationPreferences([], "global")).toBe(
-      "Choose cohort-opening emails to join the waitlist.",
-    );
+  it("does not require a deleted preference for the global waitlist", () => {
+    expect(validateCommunicationPreferences([], "global")).toBeUndefined();
     expect(validateCommunicationPreferences(["Cohort openings"], "global")).toBeUndefined();
   });
 

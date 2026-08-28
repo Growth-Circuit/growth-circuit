@@ -1,19 +1,21 @@
-import { COMMUNICATION_PREFERENCES, type CommunicationPreference } from "./submission";
-import type { CrmPerson } from "./crm";
+import type { CrmPerson, PersonMarket } from "./crm";
 
 const LOOPS_API_BASE = "https://app.loops.so/api";
 const MAX_ATTEMPTS = 4;
 
 export type LoopsRuntimeEnv = {
   LOOPS_API_KEY?: string;
-  LOOPS_COHORT_OPENINGS_LIST_ID?: string;
-  LOOPS_COMMUNITY_UPDATES_LIST_ID?: string;
-  LOOPS_EVENTS_LIST_ID?: string;
+  LOOPS_NYC_LIST_ID?: string;
+  LOOPS_GLOBAL_LIST_ID?: string;
 };
 
 type LoopsContactResponse = {
   success?: boolean;
   id?: string;
+};
+
+type LoopsEventResponse = {
+  success?: boolean;
 };
 
 export type LoopsContact = {
@@ -28,24 +30,17 @@ type LoopsRequestOptions = {
   sleep?: (milliseconds: number) => Promise<void>;
 };
 
+type LoopsContactUpdateOptions = LoopsRequestOptions & {
+  addToMarketList?: PersonMarket;
+  lifecycle?: string;
+};
+
 function splitName(fullName: string) {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
   return {
     firstName: parts[0] || "",
     lastName: parts.slice(1).join(" "),
   };
-}
-
-const MAILING_LIST_ENV_KEYS = {
-  "Cohort openings": "LOOPS_COHORT_OPENINGS_LIST_ID",
-  "Community updates": "LOOPS_COMMUNITY_UPDATES_LIST_ID",
-  Events: "LOOPS_EVENTS_LIST_ID",
-} as const satisfies Record<CommunicationPreference, keyof LoopsRuntimeEnv>;
-
-function mailingListIds(env: LoopsRuntimeEnv) {
-  return Object.fromEntries(
-    COMMUNICATION_PREFERENCES.map((preference) => [preference, env[MAILING_LIST_ENV_KEYS[preference]]]),
-  ) as Record<CommunicationPreference, string | undefined>;
 }
 
 function getLoopsUserId(person: CrmPerson) {
@@ -63,51 +58,54 @@ function retryDelayMilliseconds(response: Response, attempt: number) {
   return (100 * (2 ** (attempt - 1))) + Math.floor(Math.random() * 100);
 }
 
-export function buildLoopsContactUpdate(person: CrmPerson, env: LoopsRuntimeEnv) {
-  if (person.consentStatus !== "Granted" || person.communicationPreferences.length === 0) {
-    return null;
-  }
+export function getMarketMailingListId(market: PersonMarket, env: LoopsRuntimeEnv) {
+  const id = market === "New York City" ? env.LOOPS_NYC_LIST_ID : env.LOOPS_GLOBAL_LIST_ID;
+  if (!id) throw new Error("LOOPS_LISTS_NOT_CONFIGURED");
+  return id;
+}
 
-  const listIds = mailingListIds(env);
-  for (const preference of person.communicationPreferences) {
-    if (!listIds[preference]) {
-      throw new Error("LOOPS_LISTS_NOT_CONFIGURED");
-    }
-  }
+export function buildLoopsContactUpdate(
+  person: CrmPerson,
+  env: LoopsRuntimeEnv,
+  options: Pick<LoopsContactUpdateOptions, "addToMarketList" | "lifecycle"> = {},
+) {
+  if (!person.email) return null;
 
   const { firstName, lastName } = splitName(person.fullName);
-  const mailingLists = Object.fromEntries(COMMUNICATION_PREFERENCES
-    .map((preference) => [preference, listIds[preference]] as const)
-    .filter((entry): entry is readonly [CommunicationPreference, string] => Boolean(entry[1]))
-    .map(([preference, id]) => [id, person.communicationPreferences.includes(preference)]));
-
-  return {
+  const payload: Record<string, unknown> = {
     email: person.email,
     userId: getLoopsUserId(person),
     crmId: person.crmId,
     firstName,
     lastName,
-    mailingLists,
     notionPersonId: person.id,
-    lifecycle: person.lifecycle || "",
+    lifecycle: options.lifecycle || person.lifecycle || "",
     market: person.market || "",
     city: person.city || "",
     region: person.region || "",
     linkedInProfile: person.linkedInProfile || "",
     referralSource: person.referralSource || "",
-    consentStatus: person.consentStatus,
+    consentStatus: person.consentStatus || "",
     consentSource: person.consentSource || "",
     consentAt: person.consentAt || "",
   };
+
+  if (options.addToMarketList) {
+    payload.mailingLists = {
+      [getMarketMailingListId(options.addToMarketList, env)]: true,
+    };
+  }
+
+  return payload;
 }
 
 export async function updateLoopsContact(
   person: CrmPerson,
   env: LoopsRuntimeEnv,
-  options: LoopsRequestOptions = {},
+  options: LoopsContactUpdateOptions = {},
 ) {
   const apiKey = env.LOOPS_API_KEY;
-  const payload = buildLoopsContactUpdate(person, env);
+  const payload = buildLoopsContactUpdate(person, env, options);
   if (!payload) return null;
   if (!apiKey) throw new Error("LOOPS_NOT_CONFIGURED");
 
@@ -160,20 +158,60 @@ export async function findLoopsContact(person: CrmPerson, env: LoopsRuntimeEnv) 
   return contacts[0] || null;
 }
 
-export function retainedCommunicationPreferences(
-  contact: Pick<LoopsContact, "subscribed" | "mailingLists">,
+export function isContactOnMarketList(
+  contact: Pick<LoopsContact, "mailingLists">,
+  market: PersonMarket,
   env: LoopsRuntimeEnv,
 ) {
-  if (contact.subscribed === false) return [];
-  if (!contact.mailingLists || Array.isArray(contact.mailingLists)) {
-    throw new Error("LOOPS_INVALID_CONTACT");
+  return contact.mailingLists?.[getMarketMailingListId(market, env)] === true;
+}
+
+export async function sendMembershipApprovedEvent(
+  person: CrmPerson,
+  market: PersonMarket,
+  env: LoopsRuntimeEnv,
+  options: LoopsRequestOptions = {},
+) {
+  if (!person.email) return false;
+  if (!env.LOOPS_API_KEY) throw new Error("LOOPS_NOT_CONFIGURED");
+
+  const sleep = options.sleep || ((milliseconds: number) => new Promise<void>((resolve) => {
+    setTimeout(resolve, milliseconds);
+  }));
+  const idempotencyKey = `membership-approved-${getLoopsUserId(person)}`.slice(0, 100);
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    const response = await fetch(`${LOOPS_API_BASE}/v1/events/send`, {
+      method: "POST",
+      signal: AbortSignal.timeout(5000),
+      headers: {
+        Authorization: `Bearer ${env.LOOPS_API_KEY}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotencyKey,
+      },
+      body: JSON.stringify({
+        email: person.email,
+        userId: getLoopsUserId(person),
+        eventName: "membershipApproved",
+        eventProperties: { market: market === "New York City" ? "NYC" : "Global" },
+      }),
+    });
+
+    if (response.ok) {
+      const result = (await response.json()) as LoopsEventResponse;
+      if (!result.success) throw new Error("LOOPS_INVALID_RESPONSE");
+      return true;
+    }
+
+    if (response.status === 409) return true;
+    if ((response.status === 429 || response.status >= 500) && attempt < MAX_ATTEMPTS) {
+      await sleep(retryDelayMilliseconds(response, attempt));
+      continue;
+    }
+
+    console.error(`[loops] membership approval event failed with ${response.status}`);
+    throw new Error("LOOPS_REQUEST_FAILED");
   }
-  const listIds = mailingListIds(env);
-  if (Object.values(listIds).some((id) => !id)) {
-    throw new Error("LOOPS_LISTS_NOT_CONFIGURED");
-  }
-  return COMMUNICATION_PREFERENCES.filter((preference) => {
-    const id = listIds[preference];
-    return Boolean(id && contact.mailingLists?.[id]);
-  });
+
+  throw new Error("LOOPS_REQUEST_FAILED");
 }

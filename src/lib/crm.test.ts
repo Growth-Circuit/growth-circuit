@@ -36,21 +36,23 @@ describe("CRM person records", () => {
     expect(properties["Sync status"]).toEqual({ select: { name: "Pending" } });
   });
 
-  it("upgrades an existing Global person when they submit a New York application", () => {
+  it("upgrades an existing Global person's market without changing their sync state", () => {
     const properties = buildPersonProperties({
       fullName: "Alex Example",
       email: "alex@example.com",
       applicationType: "New York application",
-      communicationPreferences: [],
+      communicationPreferences: ["Community updates"],
       submittedAt: "2026-08-16T12:00:00.000Z",
       isNew: false,
       currentMarket: "Global",
+      currentPreferences: ["Cohort openings"],
     });
 
     expect(properties.Market).toEqual({ select: { name: "New York City" } });
+    expect(properties).not.toHaveProperty("Sync status");
   });
 
-  it("sets not asked and not eligible for a new person without preferences", () => {
+  it("queues a new person without preferences for a contact-only Loops upsert", () => {
     const properties = buildPersonProperties({
       fullName: "Alex Example",
       email: "alex@example.com",
@@ -61,7 +63,7 @@ describe("CRM person records", () => {
     });
 
     expect(properties["Consent status"]).toEqual({ select: { name: "Not asked" } });
-    expect(properties["Sync status"]).toEqual({ select: { name: "Not eligible" } });
+    expect(properties["Sync status"]).toEqual({ select: { name: "Pending" } });
   });
 
   it("does not overwrite consent state on an existing person without new preferences", () => {
