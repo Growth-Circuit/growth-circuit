@@ -46,7 +46,7 @@ beforeEach(() => {
 });
 
 describe("POST /api/waitlist", () => {
-  it("persists only the cohort-opening preference presented by the waitlist form", async () => {
+  it("ignores deleted preferences presented by an older waitlist form", async () => {
     const response = await post({
       full_name: "Alex Example",
       email: "alex@example.com",
@@ -57,26 +57,24 @@ describe("POST /api/waitlist", () => {
     expect(response.status).toBe(201);
     expect(mocks.createNotionSubmission).toHaveBeenCalledWith(expect.objectContaining({
       submissionId,
-      communicationPreferences: ["Cohort openings"],
+      communicationPreferences: [],
       linkedInProfile: "https://www.linkedin.com/in/alex-example",
-      consentSource: "Global waitlist form v2",
+      consentSource: undefined,
     }));
     expect(mocks.enqueueCrmSync).toHaveBeenCalledWith("person-1");
   });
 
-  it("rejects a waitlist submission without cohort-opening consent", async () => {
+  it("accepts a waitlist submission without deleted preference fields", async () => {
     const response = await post({
       full_name: "Alex Example",
       email: "alex@example.com",
       linkedin_url: "https://www.linkedin.com/in/alex-example",
     });
 
-    expect(response.status).toBe(422);
-    await expect(response.json()).resolves.toEqual({
-      ok: false,
-      error: "Choose cohort-opening emails to join the waitlist.",
-    });
-    expect(mocks.createNotionSubmission).not.toHaveBeenCalled();
+    expect(response.status).toBe(201);
+    expect(mocks.createNotionSubmission).toHaveBeenCalledWith(expect.objectContaining({
+      communicationPreferences: [],
+    }));
   });
 
   it("requires a LinkedIn profile for the global waitlist", async () => {

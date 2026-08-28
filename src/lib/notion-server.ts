@@ -41,6 +41,7 @@ export type NotionSubmissionResult = NotionPageResult & {
 
 type NotionProperty = {
   select?: { name?: string } | null;
+  status?: { name?: string } | null;
   multi_select?: Array<{ name?: string }>;
   relation?: Array<{ id?: string }>;
   title?: Array<{ plain_text?: string }>;
@@ -127,6 +128,10 @@ function getSelectName(page: NotionPage, property: string) {
   return page.properties?.[property]?.select?.name;
 }
 
+function getStatusName(page: NotionPage, property: string) {
+  return page.properties?.[property]?.status?.name;
+}
+
 function getMultiSelectNames(page: NotionPage, property: string) {
   return (page.properties?.[property]?.multi_select || [])
     .map((option) => option.name)
@@ -204,6 +209,21 @@ export async function getNotionPersonForSync(
     { method: "GET" },
   );
   return parseCrmPerson(page);
+}
+
+export async function getApprovedApplicationPersonId(
+  applicationId: string,
+  env: NotionRuntimeEnv = runtimeEnv,
+) {
+  const token = getNotionToken(env);
+  if (!token) throw new Error("NOTION_NOT_CONFIGURED");
+  const page = await notionRequest<NotionPage>(
+    `https://api.notion.com/v1/pages/${applicationId}`,
+    token,
+    { method: "GET" },
+  );
+  if (getStatusName(page, "Application status") !== "Approved") return null;
+  return page.properties?.Person?.relation?.[0]?.id || null;
 }
 
 export async function updateNotionPersonSyncState(
@@ -335,6 +355,72 @@ export async function listNotionPeopleForSync(
   } while (cursor && people.length < limit);
 
   return people.slice(0, limit);
+}
+
+export async function listNotionApprovedPeople(
+  options: { limit?: number } = {},
+  env: NotionRuntimeEnv = runtimeEnv,
+) {
+  const token = getNotionToken(env);
+  const applicationsDataSourceId = getApplicationsDataSourceId(env);
+  const peopleDataSourceId = getPeopleDataSourceId(env);
+  if (!token || !applicationsDataSourceId || !peopleDataSourceId) {
+    throw new Error("NOTION_NOT_CONFIGURED");
+  }
+
+  const limit = Math.min(Math.max(options.limit || 100, 1), 500);
+  const approvedPeople = new Map<string, CrmPerson>();
+  let peopleCursor: string | undefined;
+
+  do {
+    const response = await notionRequest<NotionQueryResponse>(
+      `https://api.notion.com/v1/data_sources/${peopleDataSourceId}/query`,
+      token,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          filter: { property: "Lifecycle", select: { equals: "Approved member" } },
+          page_size: Math.min(100, limit - approvedPeople.size),
+          ...(peopleCursor ? { start_cursor: peopleCursor } : {}),
+        }),
+      },
+    );
+    for (const page of response.results || []) {
+      const person = parseCrmPerson(page);
+      approvedPeople.set(person.id, person);
+    }
+    peopleCursor = response.has_more && response.next_cursor ? response.next_cursor : undefined;
+  } while (peopleCursor && approvedPeople.size < limit);
+
+  let applicationCursor: string | undefined;
+  const relatedPersonIds = new Set<string>();
+  do {
+    const response = await notionRequest<NotionQueryResponse>(
+      `https://api.notion.com/v1/data_sources/${applicationsDataSourceId}/query`,
+      token,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          filter: { property: "Application status", status: { equals: "Approved" } },
+          page_size: Math.min(100, limit),
+          ...(applicationCursor ? { start_cursor: applicationCursor } : {}),
+        }),
+      },
+    );
+    for (const page of response.results || []) {
+      const personId = page.properties?.Person?.relation?.[0]?.id;
+      if (personId && !approvedPeople.has(personId)) relatedPersonIds.add(personId);
+    }
+    applicationCursor = response.has_more && response.next_cursor ? response.next_cursor : undefined;
+  } while (applicationCursor && approvedPeople.size + relatedPersonIds.size < limit);
+
+  for (const personId of relatedPersonIds) {
+    if (approvedPeople.size >= limit) break;
+    const person = await getNotionPersonForSync(personId, env);
+    approvedPeople.set(person.id, person);
+  }
+
+  return [...approvedPeople.values()].slice(0, limit);
 }
 
 async function findPersonByEmail(email: string, token: string, peopleDataSourceId: string) {

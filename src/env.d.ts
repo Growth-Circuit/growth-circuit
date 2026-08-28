@@ -17,10 +17,10 @@ interface ImportMetaEnv {
   readonly NOTION_API_TOKEN?: string;
   readonly NOTION_APPLICATIONS_DATA_SOURCE_ID?: string;
   readonly NOTION_PEOPLE_DATA_SOURCE_ID?: string;
+  readonly NOTION_WEBHOOK_VERIFICATION_TOKEN?: string;
   readonly LOOPS_API_KEY?: string;
-  readonly LOOPS_COHORT_OPENINGS_LIST_ID?: string;
-  readonly LOOPS_COMMUNITY_UPDATES_LIST_ID?: string;
-  readonly LOOPS_EVENTS_LIST_ID?: string;
+  readonly LOOPS_NYC_LIST_ID?: string;
+  readonly LOOPS_GLOBAL_LIST_ID?: string;
   readonly CRM_SYNC_ENABLED?: string;
   readonly BUZZ_WEBHOOK_URL?: string;
   readonly BUZZ_WEBHOOK_SECRET?: string;
