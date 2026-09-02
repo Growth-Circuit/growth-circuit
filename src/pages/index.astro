@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import IsometricCity from "@/components/IsometricCity.astro";
 import { upcomingEvents } from "@/data/events";
 
 const featuredEvent = upcomingEvents[0];
@@ -31,26 +32,15 @@ const globalWhatsApp = "https://chat.whatsapp.com/LurxSBSuEFF7jIlInK0CV6";
     <section class="shell pivot-hero__inner">
       <div class="pivot-hero__copy">
         <p class="eyebrow eyebrow--live">NYC-first. Open to everyone.</p>
-        <h1>Build with people who <span>get what you do.</span></h1>
-        <p class="pivot-lead">Growth Circuit is a close-knit community for marketing engineers who want to share their work, sharpen their craft, and make cool sh*t together.</p>
+        <h1>Meet the people <span>building growth systems.</span></h1>
+        <p class="pivot-lead">Growth Circuit is a community for engineers, marketers, and builders who work on growth. We started with in-person events in New York City and grew from there.</p>
         <div class="pivot-actions">
           <a class="button matcha" href={featuredEvent.partifulUrl} target="_blank" rel="noopener noreferrer">Come to the launch party ↗</a>
           <a class="pivot-text-link" href="#join">Join WhatsApp ↓</a>
         </div>
       </div>
 
-      <div class="circuit-map" aria-label="Growth Circuit connects NYC events, WhatsApp conversation, and public work">
-        <div class="circuit-map__line" aria-hidden="true"></div>
-        <a class="circuit-node circuit-node--event" href="/events">
-          <span>01</span><strong>Meet</strong><small>Public events in NYC</small>
-        </a>
-        <a class="circuit-node circuit-node--chat" href="#join">
-          <span>02</span><strong>Talk</strong><small>NYC + global WhatsApp</small>
-        </a>
-        <a class="circuit-node circuit-node--work" href="/people">
-          <span>03</span><strong>Show</strong><small>Profiles + projects</small>
-        </a>
-      </div>
+      <IsometricCity featuredEventUrl={featuredEvent.partifulUrl} />
     </section>
   </div>
 
