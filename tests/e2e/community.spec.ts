@@ -10,6 +10,62 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Build with people who get what you do.");
 });
 
+test("the application form stays available from the public site", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Apply" }).first()).toHaveAttribute("href", "/apply?source=nav");
+
+  const response = await page.goto("/apply?source=nav");
+
+  expect(response?.ok()).toBe(true);
+  await expect(page).toHaveURL(/\/apply\?source=nav$/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Find your way into the Circuit.");
+  await expect(page.getByRole("button", { name: /New York, in person/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Somewhere else/ })).toBeVisible();
+});
+
+test("both application paths post to their CRM endpoints with idempotency", async ({ page }) => {
+  let nycRequest: { idempotencyKey?: string; body?: Record<string, unknown> } = {};
+  let globalRequest: { idempotencyKey?: string; body?: Record<string, unknown> } = {};
+
+  await page.route("**/api/applications", async (route) => {
+    const request = route.request();
+    nycRequest = {
+      idempotencyKey: request.headers()["idempotency-key"],
+      body: request.postDataJSON() as Record<string, unknown>,
+    };
+    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ ok: true, id: "application-1", mode: "notion" }) });
+  });
+
+  await page.goto("/apply?path=nyc&source=test");
+  await page.getByPlaceholder("Your name").fill("Grace Builder");
+  await page.getByPlaceholder("you@example.com").fill("grace@example.com");
+  await page.getByPlaceholder("https://www.linkedin.com/in/...").fill("https://www.linkedin.com/in/grace-builder");
+  await page.getByPlaceholder("Upload a video demo, a live link, or a GitHub repo.").fill("A working growth experiment with a live demo.");
+  await page.getByPlaceholder("Tell us where you found Growth Circuit").fill("A friend");
+  await page.getByRole("button", { name: "Submit application" }).click();
+  await expect(page.getByRole("status")).toContainText("Submission received");
+  expect(nycRequest.idempotencyKey).toBeTruthy();
+  expect(nycRequest.body).toMatchObject({ email: "grace@example.com", full_name: "Grace Builder" });
+
+  await page.route("**/api/waitlist", async (route) => {
+    const request = route.request();
+    globalRequest = {
+      idempotencyKey: request.headers()["idempotency-key"],
+      body: request.postDataJSON() as Record<string, unknown>,
+    };
+    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ ok: true, mode: "notion" }) });
+  });
+
+  await page.goto("/apply?path=global&source=test");
+  await page.getByPlaceholder("Your name").fill("Sam Builder");
+  await page.getByPlaceholder("you@example.com").fill("sam@example.com");
+  await page.getByPlaceholder("https://www.linkedin.com/in/...").fill("https://www.linkedin.com/in/sam-builder");
+  await page.getByRole("button", { name: "Join the global waitlist" }).click();
+  await expect(page.getByRole("status")).toContainText("You’re on the list");
+  expect(globalRequest.idempotencyKey).toBeTruthy();
+  expect(globalRequest.body).toMatchObject({ email: "sam@example.com", full_name: "Sam Builder" });
+});
+
 test("profile claiming is available without exposing an unsafe redirect", async ({ page }) => {
   const response = await page.goto(`${authBaseUrl}/people/claim?next=https%3A%2F%2Fattacker.example`);
   expect(response?.ok()).toBe(true);
