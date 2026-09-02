@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import IsometricCity from "@/components/IsometricCity.astro";
 import { upcomingEvents } from "@/data/events";
 
 const featuredEvent = upcomingEvents[0];
@@ -39,18 +40,7 @@ const globalWhatsApp = "https://chat.whatsapp.com/LurxSBSuEFF7jIlInK0CV6";
         </div>
       </div>
 
-      <div class="circuit-map" aria-label="Growth Circuit connects NYC events, WhatsApp conversation, and public work">
-        <div class="circuit-map__line" aria-hidden="true"></div>
-        <a class="circuit-node circuit-node--event" href="/events">
-          <span>01</span><strong>Meet</strong><small>Public events in NYC</small>
-        </a>
-        <a class="circuit-node circuit-node--chat" href="#join">
-          <span>02</span><strong>Talk</strong><small>NYC + global WhatsApp</small>
-        </a>
-        <a class="circuit-node circuit-node--work" href="/people">
-          <span>03</span><strong>Show</strong><small>Profiles + projects</small>
-        </a>
-      </div>
+      <IsometricCity featuredEventUrl={featuredEvent.partifulUrl} />
     </section>
   </div>
 

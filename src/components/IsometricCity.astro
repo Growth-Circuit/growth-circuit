@@ -1,0 +1,133 @@
+---
+const featuredEventUrl = Astro.props.featuredEventUrl as string;
+---
+
+<a
+  class="city-scene"
+  data-city-scene
+  href={featuredEventUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="See the next Growth Circuit event"
+>
+  <span class="city-scene__stage">
+    <img
+      src="/growth-circuit-park-slope-final.webp"
+      alt="A richly illustrated row of Park Slope brownstones beside the tree-lined entrance to Prospect Park"
+      width="1448"
+      height="1086"
+      loading="eager"
+      decoding="async"
+    />
+  </span>
+</a>
+
+<script>
+  const scenes = document.querySelectorAll<HTMLElement>("[data-city-scene]");
+
+  for (const scene of scenes) {
+    if (scene.dataset.bound === "true") continue;
+    scene.dataset.bound = "true";
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let pointerX = 0;
+    let pointerY = 0;
+    let targetX = 0;
+    let targetY = 0;
+    let frame = 0;
+
+    const render = (now: number) => {
+      const time = now / 1000;
+      pointerX += (targetX - pointerX) * 0.06;
+      pointerY += (targetY - pointerY) * 0.06;
+      scene.style.setProperty("--scene-rx", `${1.1 - pointerY * 2.1 + Math.cos(time * .34) * .28}deg`);
+      scene.style.setProperty("--scene-ry", `${-1.5 + pointerX * 3 + Math.sin(time * .4) * .42}deg`);
+      scene.style.setProperty("--scene-float", `${Math.sin(time * .72) * -1.5}px`);
+      frame = window.requestAnimationFrame(render);
+    };
+
+    const setPointer = (event: PointerEvent) => {
+      const bounds = scene.getBoundingClientRect();
+      targetX = ((event.clientX - bounds.left) / bounds.width - .5) * 2;
+      targetY = ((event.clientY - bounds.top) / bounds.height - .5) * 2;
+    };
+
+    const resetPointer = () => {
+      targetX = 0;
+      targetY = 0;
+    };
+
+    if (!reducedMotion) {
+      scene.addEventListener("pointermove", setPointer, { passive: true });
+      scene.addEventListener("pointerleave", resetPointer, { passive: true });
+      frame = window.requestAnimationFrame(render);
+    }
+
+    document.addEventListener("astro:before-swap", () => window.cancelAnimationFrame(frame), { once: true });
+  }
+</script>
+
+<style>
+  .city-scene {
+    --scene-rx: 1.1deg;
+    --scene-ry: -1.5deg;
+    --scene-float: 0px;
+    position: relative;
+    top: -76px;
+    z-index: 1;
+    display: block;
+    width: min(165%, 900px);
+    aspect-ratio: 4 / 3;
+    margin: -145px 0 -10px -50%;
+    perspective: 1300px;
+    text-decoration: none;
+  }
+
+  .city-scene__stage {
+    position: absolute;
+    inset: 0;
+    display: block;
+    transform: translate3d(0, var(--scene-float), 0) rotateX(var(--scene-rx)) rotateY(var(--scene-ry));
+    transform-origin: 48% 72%;
+    transform-style: preserve-3d;
+    transition: transform 180ms cubic-bezier(.2, .8, .2, 1), filter 180ms ease;
+    will-change: transform;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .city-scene:hover .city-scene__stage,
+  .city-scene:focus-visible .city-scene__stage {
+    filter: saturate(1.04) brightness(1.015);
+  }
+
+  .city-scene:focus-visible {
+    outline: 3px solid #17313a;
+    outline-offset: 8px;
+    border-radius: 22px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .city-scene__stage { transition: none; }
+  }
+
+  @media (max-width: 920px) {
+    .city-scene {
+      top: 0;
+      width: min(110%, 760px);
+      margin: -20px auto 0 -5%;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .city-scene {
+      width: 112%;
+      margin: -8px 0 -8px -6%;
+    }
+  }
+</style>
