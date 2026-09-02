@@ -8,7 +8,7 @@ import {
 import { enqueueBuzzSubmissionNotification } from "@/lib/buzz-server";
 import { createNotionSubmission, isServerNotionConfigured, type NotionSubmission } from "@/lib/notion-server";
 import { getSubmissionId } from "@/lib/submission-id";
-import { enqueueCrmSync } from "@/lib/crm-sync";
+import { enqueueCrmSyncAfterNotionSave } from "@/lib/crm-sync";
 
 export const prerender = false;
 
@@ -58,7 +58,7 @@ export const POST: APIRoute = async ({ request }) => {
     const page = await createNotionSubmission(submission);
 
     await Promise.all([
-      enqueueCrmSync(page.personId),
+      enqueueCrmSyncAfterNotionSave(page.personId),
       enqueueBuzzSubmissionNotification({
         ...submission,
         notionPageId: page.id,

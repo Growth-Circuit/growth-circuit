@@ -165,7 +165,6 @@ export default function ApplicationForm() {
             {path === "nyc" ? "Apply for New York" : path === "global" ? "Join the global waitlist" : "Do you live in New York City?"}
           </h2>
         </div>
-        {path === "nyc" && <span className="pill">8 spaces</span>}
       </div>
 
       {path === null && (

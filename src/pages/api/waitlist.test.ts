@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createNotionSubmission: vi.fn(),
   enqueueBuzzSubmissionNotification: vi.fn(),
-  enqueueCrmSync: vi.fn(),
+  enqueueCrmSyncAfterNotionSave: vi.fn(),
 }));
 
 vi.mock("@/lib/notion-server", () => ({
@@ -16,7 +16,7 @@ vi.mock("@/lib/buzz-server", () => ({
 }));
 
 vi.mock("@/lib/crm-sync", () => ({
-  enqueueCrmSync: mocks.enqueueCrmSync,
+  enqueueCrmSyncAfterNotionSave: mocks.enqueueCrmSyncAfterNotionSave,
 }));
 
 import { POST } from "./waitlist";
@@ -42,7 +42,7 @@ beforeEach(() => {
     duplicate: false,
   });
   mocks.enqueueBuzzSubmissionNotification.mockResolvedValue(undefined);
-  mocks.enqueueCrmSync.mockResolvedValue(undefined);
+  mocks.enqueueCrmSyncAfterNotionSave.mockResolvedValue(true);
 });
 
 describe("POST /api/waitlist", () => {
@@ -61,7 +61,7 @@ describe("POST /api/waitlist", () => {
       linkedInProfile: "https://www.linkedin.com/in/alex-example",
       consentSource: undefined,
     }));
-    expect(mocks.enqueueCrmSync).toHaveBeenCalledWith("person-1");
+    expect(mocks.enqueueCrmSyncAfterNotionSave).toHaveBeenCalledWith("person-1");
   });
 
   it("accepts a waitlist submission without deleted preference fields", async () => {
@@ -108,9 +108,30 @@ describe("POST /api/waitlist", () => {
     });
 
     expect(response.status).toBe(201);
-    expect(mocks.enqueueCrmSync).toHaveBeenCalledWith("person-1");
+    expect(mocks.enqueueCrmSyncAfterNotionSave).toHaveBeenCalledWith("person-1");
     expect(mocks.enqueueBuzzSubmissionNotification).toHaveBeenCalledWith(expect.objectContaining({
       notionPageId: "waitlist-1",
     }));
+  });
+
+  it("returns success when CRM enqueue fails after Notion saves", async () => {
+    mocks.enqueueCrmSyncAfterNotionSave.mockResolvedValueOnce(false);
+
+    const response = await post({
+      full_name: "Alex Example",
+      email: "alex@example.com",
+      linkedin_url: "https://www.linkedin.com/in/alex-example",
+    });
+
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      id: "waitlist-1",
+      mode: "notion",
+    });
+    expect(mocks.createNotionSubmission).toHaveBeenCalledOnce();
+    expect(mocks.enqueueCrmSyncAfterNotionSave).toHaveBeenCalledOnce();
+    expect(mocks.enqueueCrmSyncAfterNotionSave).toHaveBeenCalledWith("person-1");
+    expect(mocks.enqueueBuzzSubmissionNotification).toHaveBeenCalledOnce();
   });
 });
