@@ -35,6 +35,7 @@ import {
   approveCrmApplication,
   approveCrmPerson,
   enqueueCrmSync,
+  enqueueCrmSyncAfterNotionSave,
   reconcileCrmPeople,
   syncCrmPerson,
 } from "./crm-sync";
@@ -94,6 +95,31 @@ describe("CRM sync orchestration", () => {
       CRM_SYNC_QUEUE: { send },
     } as never)).resolves.toBe(true);
     expect(send).toHaveBeenCalledWith({ personId: "person-1" }, { contentType: "json" });
+  });
+
+  it("marks the person pending and resolves when the queue is unavailable", async () => {
+    const send = vi.fn().mockRejectedValue(new Error("QUEUE_UNAVAILABLE"));
+    const env = {
+      CRM_SYNC_ENABLED: "true",
+      CRM_SYNC_QUEUE: { send },
+    } as never;
+
+    await expect(enqueueCrmSyncAfterNotionSave("person-1", env)).resolves.toBe(false);
+    expect(mocks.updateNotionPersonSyncState).toHaveBeenCalledWith(
+      "person-1",
+      { status: "Pending" },
+      env,
+    );
+  });
+
+  it("still resolves when queue recovery cannot update Notion", async () => {
+    const send = vi.fn().mockRejectedValue(new Error("QUEUE_UNAVAILABLE"));
+    mocks.updateNotionPersonSyncState.mockRejectedValueOnce(new Error("NOTION_REQUEST_FAILED"));
+
+    await expect(enqueueCrmSyncAfterNotionSave("person-1", {
+      CRM_SYNC_ENABLED: "true",
+      CRM_SYNC_QUEUE: { send },
+    } as never)).resolves.toBe(false);
   });
 
   it("upserts contact properties without list options", async () => {

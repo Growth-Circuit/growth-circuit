@@ -62,6 +62,31 @@ export async function enqueueCrmSync(
   return true;
 }
 
+export async function enqueueCrmSyncAfterNotionSave(
+  personId: string,
+  env: CrmSyncQueueEnv & NotionRuntimeEnv = runtimeEnv,
+) {
+  try {
+    return await enqueueCrmSync(personId, env);
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "crm_sync_enqueue_failed",
+      personId,
+      reason: error instanceof Error ? error.message : String(error),
+    }));
+    try {
+      await updateNotionPersonSyncState(personId, { status: "Pending" }, env);
+    } catch (recoveryError) {
+      console.error(JSON.stringify({
+        event: "crm_sync_enqueue_recovery_failed",
+        personId,
+        reason: recoveryError instanceof Error ? recoveryError.message : String(recoveryError),
+      }));
+    }
+    return false;
+  }
+}
+
 export async function syncCrmPerson(personId: string, env: CrmSyncEnv = runtimeEnv) {
   const person = await getNotionPersonForSync(personId, env);
   return syncCrmPersonRecord(person, env);

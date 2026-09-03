@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createNotionSubmission: vi.fn(),
   enqueueBuzzSubmissionNotification: vi.fn(),
-  enqueueCrmSync: vi.fn(),
+  enqueueCrmSyncAfterNotionSave: vi.fn(),
 }));
 
 vi.mock("@/lib/notion-server", () => ({
@@ -16,7 +16,7 @@ vi.mock("@/lib/buzz-server", () => ({
 }));
 
 vi.mock("@/lib/crm-sync", () => ({
-  enqueueCrmSync: mocks.enqueueCrmSync,
+  enqueueCrmSyncAfterNotionSave: mocks.enqueueCrmSyncAfterNotionSave,
 }));
 
 import { POST } from "./applications";
@@ -49,7 +49,7 @@ beforeEach(() => {
     duplicate: false,
   });
   mocks.enqueueBuzzSubmissionNotification.mockResolvedValue(undefined);
-  mocks.enqueueCrmSync.mockResolvedValue(undefined);
+  mocks.enqueueCrmSyncAfterNotionSave.mockResolvedValue(true);
 });
 
 describe("POST /api/applications", () => {
@@ -65,7 +65,7 @@ describe("POST /api/applications", () => {
       communicationPreferences: [],
       consentSource: undefined,
     }));
-    expect(mocks.enqueueCrmSync).toHaveBeenCalledWith("person-1");
+    expect(mocks.enqueueCrmSyncAfterNotionSave).toHaveBeenCalledWith("person-1");
   });
 
   it("persists an NYC application without optional preferences", async () => {
@@ -89,7 +89,7 @@ describe("POST /api/applications", () => {
     const response = await post(validApplication);
 
     expect(response.status).toBe(201);
-    expect(mocks.enqueueCrmSync).toHaveBeenCalledWith("person-1");
+    expect(mocks.enqueueCrmSyncAfterNotionSave).toHaveBeenCalledWith("person-1");
     expect(mocks.enqueueBuzzSubmissionNotification).toHaveBeenCalledWith(expect.objectContaining({
       notionPageId: "application-1",
     }));
@@ -110,5 +110,22 @@ describe("POST /api/applications", () => {
 
     await expect(post(validApplication)).resolves.toMatchObject({ status: 201 });
     expect(mocks.enqueueBuzzSubmissionNotification).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns success when CRM enqueue fails after Notion saves", async () => {
+    mocks.enqueueCrmSyncAfterNotionSave.mockResolvedValueOnce(false);
+
+    const response = await post(validApplication);
+
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      id: "application-1",
+      mode: "notion",
+    });
+    expect(mocks.createNotionSubmission).toHaveBeenCalledOnce();
+    expect(mocks.enqueueCrmSyncAfterNotionSave).toHaveBeenCalledOnce();
+    expect(mocks.enqueueCrmSyncAfterNotionSave).toHaveBeenCalledWith("person-1");
+    expect(mocks.enqueueBuzzSubmissionNotification).toHaveBeenCalledOnce();
   });
 });

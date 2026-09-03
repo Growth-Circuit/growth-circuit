@@ -21,6 +21,11 @@ test("the application form stays available from the public site", async ({ page 
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Find your way into the Circuit.");
   await expect(page.getByRole("button", { name: /New York, in person/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Somewhere else/ })).toBeVisible();
+
+  await page.goto("/apply?path=nyc&source=test");
+  await expect(page.getByRole("heading", { name: "Apply for New York" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Submit application" })).toBeVisible();
+  await expect(page.getByText("8 spaces", { exact: true })).toHaveCount(0);
 });
 
 test("both application paths post to their CRM endpoints with idempotency", async ({ page }) => {
