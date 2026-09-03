@@ -129,8 +129,17 @@ async function clearApprovalWelcome(person: CrmPerson, env: CrmSyncEnv) {
   await env.BUZZ_DELIVERY_LEDGER?.delete(approvalWelcomeKey(person));
 }
 
-function logApprovalSkip(person: CrmPerson, reason: "missing_email" | "missing_market" | "missing_loops_id") {
+function logApprovalSkip(
+  person: CrmPerson,
+  reason: "missing_email" | "missing_market" | "missing_loops_id" | "consent_denied",
+) {
   console.log(JSON.stringify({ event: "crm_approval_membership_skipped", personId: person.id, reason }));
+}
+
+function approvedLifecycle(person: CrmPerson) {
+  return !person.lifecycle || person.lifecycle === "Applicant" || person.lifecycle === "Waitlist"
+    ? "Approved member" as const
+    : person.lifecycle;
 }
 
 export async function approveCrmPerson(personId: string, env: CrmSyncEnv = runtimeEnv) {
@@ -143,11 +152,19 @@ export async function approveCrmPerson(personId: string, env: CrmSyncEnv = runti
     logApprovalSkip(person, "missing_market");
     return { approved: false as const, reason: "missing_market" as const };
   }
+  if (person.consentStatus === "Declined" || person.consentStatus === "Withdrawn") {
+    logApprovalSkip(person, "consent_denied");
+    return { approved: false as const, reason: "consent_denied" as const };
+  }
 
-  const approvedPerson = { ...person, lifecycle: "Approved member" as const };
-  const loopsId = await updateLoopsContact(approvedPerson, env, { lifecycle: "Approved member" });
+  const approvedPerson = { ...person, lifecycle: approvedLifecycle(person) };
+  const loopsId = await updateLoopsContact(approvedPerson, env);
   if (!loopsId) throw new Error("LOOPS_INVALID_RESPONSE");
-  await updateNotionPersonSyncState(person.id, { loopsId, status: "Synced" }, env);
+  await updateNotionPersonSyncState(person.id, {
+    loopsId,
+    status: "Synced",
+    lifecycle: approvedPerson.lifecycle,
+  }, env);
 
   const contact = await findLoopsContact(approvedPerson, env);
   if (!contact) throw new Error("LOOPS_CONTACT_NOT_FOUND");
@@ -157,7 +174,6 @@ export async function approveCrmPerson(personId: string, env: CrmSyncEnv = runti
     try {
       await updateLoopsContact(approvedPerson, env, {
         addToMarketList: person.market,
-        lifecycle: "Approved member",
       });
     } catch (error) {
       await clearApprovalWelcome(person, env);
@@ -258,15 +274,30 @@ export async function reconcileCrmPeople(env: CrmSyncEnv = runtimeEnv) {
     }
 
     try {
-      const approvedPerson = { ...person, lifecycle: "Approved member" as const };
+      if (person.consentStatus === "Declined" || person.consentStatus === "Withdrawn") {
+        logApprovalSkip(person, "consent_denied");
+        continue;
+      }
+      const approvedPerson = { ...person, lifecycle: approvedLifecycle(person) };
       const contact = await findLoopsContact(approvedPerson, env);
-      if (contact && isContactOnMarketList(contact, person.market, env)) continue;
+      if (contact && isContactOnMarketList(contact, person.market, env)) {
+        await updateNotionPersonSyncState(person.id, {
+          loopsId: person.loopsId,
+          status: "Synced",
+          lifecycle: approvedPerson.lifecycle,
+        }, env);
+        continue;
+      }
       await recordApprovalWelcome(person, env);
       try {
         await updateLoopsContact(approvedPerson, env, {
           addToMarketList: person.market,
-          lifecycle: "Approved member",
         });
+        await updateNotionPersonSyncState(person.id, {
+          loopsId: person.loopsId,
+          status: "Synced",
+          lifecycle: approvedPerson.lifecycle,
+        }, env);
       } catch (error) {
         await clearApprovalWelcome(person, env);
         throw error;

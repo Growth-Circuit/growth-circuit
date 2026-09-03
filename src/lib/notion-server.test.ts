@@ -240,6 +240,192 @@ describe("Notion CRM sync records", () => {
     await expect(getApprovedApplicationPersonId("application-2", notionEnv)).resolves.toBeNull();
   });
 
+  it("creates and links a Person for an approved legacy Application without a relation", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({
+        id: "application-legacy",
+        properties: {
+          "Application status": { status: { name: "Approved" } },
+          "Application type": { select: { name: "New York application" } },
+          Name: { title: [{ plain_text: "Obie Odom" }] },
+          Email: { email: "Obie@Example.com" },
+          Location: { rich_text: [{ plain_text: "New York City" }] },
+          "LinkedIn profile": { url: "https://www.linkedin.com/in/obieodom/" },
+          "Referral source": { rich_text: [{ plain_text: "Nick's LinkedIn!" }] },
+          "Submitted at": { date: { start: "2026-08-17T03:03:00.000Z" } },
+        },
+      }))
+      .mockResolvedValueOnce(jsonResponse({ results: [] }))
+      .mockResolvedValueOnce(jsonResponse({ results: [] }))
+      .mockResolvedValueOnce(jsonResponse({
+        id: "person-legacy",
+        url: "https://notion.so/person-legacy",
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        id: "application-legacy",
+        url: "https://notion.so/application-legacy",
+      }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getApprovedApplicationPersonId("application-legacy", notionEnv))
+      .resolves.toBe("person-legacy");
+
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+    expect(fetchMock.mock.calls[1][0]).toBe("https://api.notion.com/v1/data_sources/people-source/query");
+    expect(JSON.parse(fetchMock.mock.calls[3][1].body)).toMatchObject({
+      parent: { type: "data_source_id", data_source_id: "people-source" },
+      properties: {
+        Name: { title: [{ type: "text", text: { content: "Obie Odom" } }] },
+        Email: { email: "obie@example.com" },
+        Market: { select: { name: "New York City" } },
+        "Consent status": { select: { name: "Not asked" } },
+      },
+    });
+    expect(JSON.parse(fetchMock.mock.calls[4][1].body)).toEqual({
+      properties: { Person: { relation: [{ id: "person-legacy" }] } },
+    });
+  });
+
+  it("routes legacy repair through the per-email lock", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({
+      id: "application-legacy",
+      properties: {
+        "Application status": { status: { name: "Approved" } },
+        Email: { email: "Obie@Example.com" },
+      },
+    }));
+    const lockFetch = vi.fn().mockResolvedValue(jsonResponse({ personId: "person-legacy" }));
+    const getByName = vi.fn().mockReturnValue({ fetch: lockFetch });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getApprovedApplicationPersonId("application-legacy", {
+      ...notionEnv,
+      CRM_PERSON_LOCK: { getByName },
+    })).resolves.toBe("person-legacy");
+
+    expect(getByName).toHaveBeenCalledWith("obie@example.com");
+    expect(lockFetch).toHaveBeenCalledWith(
+      "https://crm.internal/approved-applications",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ applicationId: "application-legacy" }),
+      }),
+    );
+  });
+
+  it("links an existing Person without changing canonical fields", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({
+        id: "application-legacy",
+        properties: {
+          "Application status": { status: { name: "Approved" } },
+          "Application type": { select: { name: "New York application" } },
+          Name: { title: [{ plain_text: "Existing Person" }] },
+          Email: { email: "existing@example.com" },
+          "Submitted at": { date: { start: "2026-08-17T03:03:00.000Z" } },
+        },
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        results: [{
+          id: "person-existing",
+          properties: {
+            Lifecycle: { select: { name: "Active member" } },
+            Market: { select: { name: "Global" } },
+            "Communication preferences": { multi_select: [{ name: "Events" }] },
+            "Consent status": { select: { name: "Withdrawn" } },
+          },
+        }],
+      }))
+      .mockResolvedValueOnce(jsonResponse({ id: "application-legacy" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getApprovedApplicationPersonId("application-legacy", notionEnv))
+      .resolves.toBe("person-existing");
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({
+      properties: { Person: { relation: [{ id: "person-existing" }] } },
+    });
+  });
+
+  it("fails closed when an approved legacy Application lacks identity fields", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({
+      id: "application-legacy",
+      properties: {
+        "Application status": { status: { name: "Approved" } },
+        "Application type": { select: { name: "New York application" } },
+        Name: { title: [{ plain_text: "Missing Email" }] },
+        Email: { email: null },
+      },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getApprovedApplicationPersonId("application-legacy", notionEnv)).resolves.toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ["a name", { Name: { title: [] }, Email: { email: "obie@example.com" } }],
+    ["a supported type", {
+      Name: { title: [{ plain_text: "Obie Odom" }] },
+      Email: { email: "obie@example.com" },
+      "Application type": { select: { name: "Unknown application" } },
+    }],
+  ])("fails closed when an approved legacy Application lacks %s", async (_field, properties) => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({
+      id: "application-legacy",
+      properties: {
+        "Application status": { status: { name: "Approved" } },
+        "Application type": { select: { name: "New York application" } },
+        ...properties,
+      },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getApprovedApplicationPersonId("application-legacy", notionEnv)).resolves.toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("reuses the Person when retrying after the Application relation update fails", async () => {
+    const application = {
+      id: "application-legacy",
+      properties: {
+        "Application status": { status: { name: "Approved" } },
+        "Application type": { select: { name: "New York application" } },
+        Name: { title: [{ plain_text: "Obie Odom" }] },
+        Email: { email: "obie@example.com" },
+      },
+    };
+    const existingPerson = {
+      id: "person-legacy",
+      properties: {
+        Lifecycle: { select: { name: "Applicant" } },
+        Market: { select: { name: "New York City" } },
+        "Communication preferences": { multi_select: [] },
+      },
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(application))
+      .mockResolvedValueOnce(jsonResponse({ results: [] }))
+      .mockResolvedValueOnce(jsonResponse({ results: [] }))
+      .mockResolvedValueOnce(jsonResponse({ id: "person-legacy" }))
+      .mockResolvedValueOnce(jsonResponse({ code: "service_unavailable" }, 503))
+      .mockResolvedValueOnce(jsonResponse(application))
+      .mockResolvedValueOnce(jsonResponse({ results: [existingPerson] }))
+      .mockResolvedValueOnce(jsonResponse({ id: "application-legacy" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getApprovedApplicationPersonId("application-legacy", notionEnv))
+      .rejects.toThrow("NOTION_REQUEST_FAILED");
+    await expect(getApprovedApplicationPersonId("application-legacy", notionEnv))
+      .resolves.toBe("person-legacy");
+
+    const createPersonCalls = fetchMock.mock.calls.filter(([url, init]) => (
+      url === "https://api.notion.com/v1/pages" && init.method === "POST"
+    ));
+    expect(createPersonCalls).toHaveLength(1);
+  });
+
   it("finds approval candidates from either People lifecycle or Approved Applications", async () => {
     const notionPerson = (id: string, lifecycle: string) => ({
       id,
@@ -277,6 +463,47 @@ describe("Notion CRM sync records", () => {
     expect(JSON.parse(fetchMock.mock.calls[1][1].body).filter).toEqual({
       property: "Application status",
       status: { equals: "Approved" },
+    });
+  });
+
+  it("repairs relationless approved Applications during reconciliation discovery", async () => {
+    const notionPerson = {
+      id: "person-legacy",
+      properties: {
+        "CRM ID": { unique_id: { prefix: "GC", number: 56 } },
+        Name: { title: [{ plain_text: "Obie Odom" }] },
+        Email: { email: "obie@example.com" },
+        Lifecycle: { select: { name: "Applicant" } },
+        Market: { select: { name: "New York City" } },
+        "Communication preferences": { multi_select: [] },
+        "Loops ID": { rich_text: [{ plain_text: "loops-obie" }] },
+        "Sync status": { select: { name: "Synced" } },
+      },
+    };
+    const application = {
+      id: "application-legacy",
+      properties: {
+        "Application status": { status: { name: "Approved" } },
+        "Application type": { select: { name: "New York application" } },
+        Name: { title: [{ plain_text: "Obie Odom" }] },
+        Email: { email: "obie@example.com" },
+        "Submitted at": { date: { start: "2026-08-17T03:03:00.000Z" } },
+      },
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ results: [], has_more: false }))
+      .mockResolvedValueOnce(jsonResponse({ results: [application], has_more: false }))
+      .mockResolvedValueOnce(jsonResponse(application))
+      .mockResolvedValueOnce(jsonResponse({ results: [notionPerson] }))
+      .mockResolvedValueOnce(jsonResponse({ id: "application-legacy" }))
+      .mockResolvedValueOnce(jsonResponse(notionPerson));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(listNotionApprovedPeople({}, notionEnv)).resolves.toEqual([
+      expect.objectContaining({ id: "person-legacy", lifecycle: "Applicant" }),
+    ]);
+    expect(JSON.parse(fetchMock.mock.calls[4][1].body)).toEqual({
+      properties: { Person: { relation: [{ id: "person-legacy" }] } },
     });
   });
 
@@ -318,10 +545,12 @@ describe("Notion CRM sync records", () => {
     await updateNotionPersonSyncState("person-1", {
       loopsId: "loops-1",
       status: "Synced",
+      lifecycle: "Approved member",
     }, notionEnv);
 
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
       properties: {
+        Lifecycle: { select: { name: "Approved member" } },
         "Loops ID": { rich_text: [{ type: "text", text: { content: "loops-1" } }] },
         "Sync status": { select: { name: "Synced" } },
       },
