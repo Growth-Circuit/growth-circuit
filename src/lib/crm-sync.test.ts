@@ -175,17 +175,55 @@ describe("CRM sync orchestration", () => {
       1,
       expect.objectContaining({ lifecycle: "Approved member" }),
       env,
-      { lifecycle: "Approved member" },
     );
     expect(mocks.updateLoopsContact).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({ lifecycle: "Approved member" }),
       env,
-      { addToMarketList: "Global", lifecycle: "Approved member" },
+      { addToMarketList: "Global" },
+    );
+    expect(mocks.updateNotionPersonSyncState).toHaveBeenCalledWith(
+      "person-1",
+      { loopsId: "loops-1", status: "Synced", lifecycle: "Approved member" },
+      env,
     );
     expect(mocks.sendMembershipApprovedEvent).not.toHaveBeenCalled();
     expect(env.BUZZ_DELIVERY_LEDGER.put).toHaveBeenCalledOnce();
   });
+
+  it("does not downgrade an active member while processing an approved Application", async () => {
+    const env = approvalEnv();
+    mocks.getNotionPersonForSync.mockResolvedValue({ ...person, lifecycle: "Active member" });
+
+    await expect(approveCrmPerson("person-1", env as never)).resolves.toMatchObject({
+      approved: true,
+      action: "subscribed",
+    });
+    expect(mocks.updateLoopsContact).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ lifecycle: "Active member" }),
+      env,
+    );
+    expect(mocks.updateNotionPersonSyncState).toHaveBeenCalledWith(
+      "person-1",
+      { loopsId: "loops-1", status: "Synced", lifecycle: "Active member" },
+      env,
+    );
+  });
+
+  it.each(["Declined", "Withdrawn"] as const)(
+    "does not subscribe a person whose consent is %s",
+    async (consentStatus) => {
+      mocks.getNotionPersonForSync.mockResolvedValue({ ...person, consentStatus });
+
+      await expect(approveCrmPerson("person-1", {} as never)).resolves.toEqual({
+        approved: false,
+        reason: "consent_denied",
+      });
+      expect(mocks.updateLoopsContact).not.toHaveBeenCalled();
+      expect(mocks.updateNotionPersonSyncState).not.toHaveBeenCalled();
+    },
+  );
 
   it("sends the fallback event once when the approved contact is already on the list", async () => {
     const env = approvalEnv();
@@ -271,9 +309,28 @@ describe("CRM sync orchestration", () => {
     expect(mocks.updateLoopsContact).toHaveBeenCalledWith(
       expect.objectContaining({ lifecycle: "Approved member" }),
       env,
-      { addToMarketList: "Global", lifecycle: "Approved member" },
+      { addToMarketList: "Global" },
+    );
+    expect(mocks.updateNotionPersonSyncState).toHaveBeenCalledWith(
+      "person-1",
+      { loopsId: "loops-1", status: "Synced", lifecycle: "Approved member" },
+      env,
     );
     expect(mocks.sendMembershipApprovedEvent).not.toHaveBeenCalled();
+  });
+
+  it("repairs Notion lifecycle when the approved contact is already on the market list", async () => {
+    const env = approvalEnv();
+    mocks.listNotionApprovedPeople.mockResolvedValue([person]);
+    mocks.isContactOnMarketList.mockReturnValue(true);
+
+    await expect(reconcileCrmPeople(env as never)).resolves.toMatchObject({ approved: 0, failed: 0 });
+    expect(mocks.updateLoopsContact).not.toHaveBeenCalled();
+    expect(mocks.updateNotionPersonSyncState).toHaveBeenCalledWith(
+      "person-1",
+      { loopsId: "loops-1", status: "Synced", lifecycle: "Approved member" },
+      env,
+    );
   });
 
   it("does not subscribe an approved record without a Loops ID during reconciliation", async () => {

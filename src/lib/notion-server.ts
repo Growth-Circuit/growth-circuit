@@ -9,6 +9,7 @@ import {
   type CrmConsentStatus,
   type CrmPerson,
   type CrmSyncStatus,
+  type PersonLifecycle,
 } from "@/lib/crm";
 import type { CommunicationPreference, SubmissionMetadata } from "@/lib/submission";
 
@@ -211,7 +212,7 @@ export async function getNotionPersonForSync(
   return parseCrmPerson(page);
 }
 
-export async function getApprovedApplicationPersonId(
+export async function getApprovedApplicationPersonIdUnlocked(
   applicationId: string,
   env: NotionRuntimeEnv = runtimeEnv,
 ) {
@@ -223,12 +224,105 @@ export async function getApprovedApplicationPersonId(
     { method: "GET" },
   );
   if (getStatusName(page, "Application status") !== "Approved") return null;
-  return page.properties?.Person?.relation?.[0]?.id || null;
+  const relatedPersonId = page.properties?.Person?.relation?.[0]?.id;
+  if (relatedPersonId) return relatedPersonId;
+
+  const peopleDataSourceId = getPeopleDataSourceId(env);
+  if (!peopleDataSourceId) throw new Error("NOTION_NOT_CONFIGURED");
+
+  const applicationType = getSelectName(page, "Application type");
+  const fullName = getPlainText(page, "Name", "title").trim();
+  const email = normalizeEmailKey(page.properties?.Email?.email || "");
+  if (
+    !fullName
+    || !email.includes("@")
+    || (applicationType !== "New York application" && applicationType !== "Global waitlist")
+  ) {
+    console.error(JSON.stringify({
+      event: "notion_approved_application_repair_skipped",
+      applicationId,
+      reason: "missing_identity",
+    }));
+    return null;
+  }
+
+  const existingPerson = await findPersonByEmail(email, token, peopleDataSourceId);
+  const person = existingPerson?.id
+    ? requirePage(existingPerson)
+    : await upsertPerson({
+      submissionId: getPlainText(page, "Submission ID", "rich_text") || `legacy-${applicationId}`,
+      submittedAt: page.properties?.["Submitted at"]?.date?.start || new Date().toISOString(),
+      fullName,
+      email,
+      applicationType,
+      location: getPlainText(page, "Location", "rich_text") || undefined,
+      linkedInProfile: page.properties?.["LinkedIn profile"]?.url || undefined,
+      referralSource: getPlainText(page, "Referral source", "rich_text") || undefined,
+      communicationPreferences: [],
+    }, token, peopleDataSourceId);
+
+  await notionRequest<NotionPage>(
+    `https://api.notion.com/v1/pages/${applicationId}`,
+    token,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        properties: { Person: { relation: [{ id: person.id }] } },
+      }),
+    },
+  );
+
+  console.log(JSON.stringify({
+    event: "notion_approved_application_repaired",
+    applicationId,
+    personId: person.id,
+  }));
+  return person.id;
+}
+
+export async function getApprovedApplicationPersonId(
+  applicationId: string,
+  env: NotionRuntimeEnv = runtimeEnv,
+) {
+  if (!env.CRM_PERSON_LOCK) {
+    return getApprovedApplicationPersonIdUnlocked(applicationId, env);
+  }
+
+  const token = getNotionToken(env);
+  if (!token) throw new Error("NOTION_NOT_CONFIGURED");
+  const page = await notionRequest<NotionPage>(
+    `https://api.notion.com/v1/pages/${applicationId}`,
+    token,
+    { method: "GET" },
+  );
+  if (getStatusName(page, "Application status") !== "Approved") return null;
+  const relatedPersonId = page.properties?.Person?.relation?.[0]?.id;
+  if (relatedPersonId) return relatedPersonId;
+
+  const email = normalizeEmailKey(page.properties?.Email?.email || "");
+  if (!email.includes("@")) {
+    return getApprovedApplicationPersonIdUnlocked(applicationId, env);
+  }
+
+  const response = await env.CRM_PERSON_LOCK
+    .getByName(email)
+    .fetch("https://crm.internal/approved-applications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ applicationId }),
+    });
+
+  if (!response.ok) {
+    throw new Error("CRM_PERSON_LOCK_FAILED");
+  }
+
+  const result = (await response.json()) as { personId: string | null };
+  return result.personId;
 }
 
 export async function updateNotionPersonSyncState(
   personId: string,
-  update: { loopsId?: string; status: CrmSyncStatus },
+  update: { loopsId?: string; status: CrmSyncStatus; lifecycle?: PersonLifecycle },
   env: NotionRuntimeEnv = runtimeEnv,
 ) {
   const token = getNotionToken(env);
@@ -238,6 +332,9 @@ export async function updateNotionPersonSyncState(
   };
   if (update.loopsId) {
     properties["Loops ID"] = { rich_text: notionRichText(update.loopsId) };
+  }
+  if (update.lifecycle) {
+    properties.Lifecycle = { select: { name: update.lifecycle } };
   }
   await notionRequest<NotionPage>(
     `https://api.notion.com/v1/pages/${personId}`,
@@ -394,6 +491,7 @@ export async function listNotionApprovedPeople(
 
   let applicationCursor: string | undefined;
   const relatedPersonIds = new Set<string>();
+  const relationlessApplicationIds = new Set<string>();
   do {
     const response = await notionRequest<NotionQueryResponse>(
       `https://api.notion.com/v1/data_sources/${applicationsDataSourceId}/query`,
@@ -409,10 +507,20 @@ export async function listNotionApprovedPeople(
     );
     for (const page of response.results || []) {
       const personId = page.properties?.Person?.relation?.[0]?.id;
-      if (personId && !approvedPeople.has(personId)) relatedPersonIds.add(personId);
+      if (personId && !approvedPeople.has(personId)) {
+        relatedPersonIds.add(personId);
+      } else if (!personId && page.id) {
+        relationlessApplicationIds.add(page.id);
+      }
     }
     applicationCursor = response.has_more && response.next_cursor ? response.next_cursor : undefined;
   } while (applicationCursor && approvedPeople.size + relatedPersonIds.size < limit);
+
+  for (const applicationId of relationlessApplicationIds) {
+    if (approvedPeople.size + relatedPersonIds.size >= limit) break;
+    const personId = await getApprovedApplicationPersonId(applicationId, env);
+    if (personId && !approvedPeople.has(personId)) relatedPersonIds.add(personId);
+  }
 
   for (const personId of relatedPersonIds) {
     if (approvedPeople.size >= limit) break;

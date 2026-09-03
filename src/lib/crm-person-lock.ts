@@ -1,4 +1,8 @@
-import { createNotionSubmissionUnlocked, type NotionSubmission } from "./notion-server";
+import {
+  createNotionSubmissionUnlocked,
+  getApprovedApplicationPersonIdUnlocked,
+  type NotionSubmission,
+} from "./notion-server";
 
 export class CrmPersonLock {
   private tail: Promise<void> = Promise.resolve();
@@ -15,6 +19,15 @@ export class CrmPersonLock {
       }
 
       try {
+        if (new URL(request.url).pathname === "/approved-applications") {
+          const { applicationId } = (await request.json()) as { applicationId?: string };
+          if (!applicationId) {
+            return Response.json({ error: "INVALID_APPLICATION_ID" }, { status: 400 });
+          }
+          const personId = await getApprovedApplicationPersonIdUnlocked(applicationId, this.env);
+          return Response.json({ personId });
+        }
+
         const submission = (await request.json()) as NotionSubmission;
         const result = await createNotionSubmissionUnlocked(submission, this.env);
         return Response.json(result);
