@@ -19,7 +19,7 @@ export const growthCircuitEvents: GrowthCircuitEvent[] = [
     title: "Growth Circuit Launch Party",
     dateLabel: "Sunday, September 13, 2026",
     dateTime: "2026-09-13T14:00:00-04:00",
-    timeLabel: "2:00 to 4:00pm ET",
+    timeLabel: "2:00pm onwards",
     location: "Prospect Park, Brooklyn",
     locationDetail: "Near 95 Prospect Park West",
     description: "A casual afternoon with balloons, food, and drinks. Bring yourself, bring friends, and something to eat or drink if you want.",

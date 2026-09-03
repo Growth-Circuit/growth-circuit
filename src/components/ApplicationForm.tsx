@@ -320,14 +320,10 @@ export default function ApplicationForm() {
   );
 }
 
-function CharacterCount({ id, count, min, max }: { id: string; count: number; min: number; max: number }) {
-  const remainingMinimum = Math.max(min - count, 0);
-  const isComplete = remainingMinimum === 0;
-
+function CharacterCount({ id, count, max }: { id: string; count: number; min: number; max: number }) {
   return (
-    <div className={`character-count ${isComplete ? "complete" : ""}`} id={id}>
+    <div className="character-count" id={id}>
       <span>{count.toLocaleString()} / {max.toLocaleString()} characters</span>
-      <span>{isComplete ? "Ready to share" : `${remainingMinimum} more to get started`}</span>
     </div>
   );
 }
