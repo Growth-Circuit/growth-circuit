@@ -1847,21 +1847,24 @@ h1 {
 }
 
 .pivot-hero {
-  min-height: 830px;
+  min-height: 780px;
   background:
-    radial-gradient(circle at 85% 10%, rgba(255, 255, 255, 0.9), transparent 22%),
+    linear-gradient(rgba(23, 49, 58, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 49, 58, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 88% 10%, rgba(255, 255, 255, 0.92), transparent 24%),
     linear-gradient(162deg, #b8deeb 0%, #e7f4f7 62%, var(--pivot-cloud) 100%);
+  background-size: 88px 88px, 88px 88px, auto, auto;
 }
 
 .pivot-hero__inner {
   position: relative;
   display: grid;
-  min-height: 750px;
-  grid-template-columns: minmax(0, 1.15fr) minmax(400px, 0.85fr);
-  gap: clamp(50px, 7vw, 110px);
+  min-height: 704px;
+  grid-template-columns: minmax(420px, 0.88fr) minmax(520px, 1.12fr);
+  gap: clamp(24px, 3vw, 46px);
   align-items: center;
-  padding-top: 72px;
-  padding-bottom: 90px;
+  padding-top: 64px;
+  padding-bottom: 72px;
 }
 
 .pivot-hero__copy {
@@ -1870,13 +1873,13 @@ h1 {
 }
 
 .pivot-hero h1 {
-  max-width: 900px;
+  max-width: 7.8ch;
   margin: 18px 0 28px;
   color: var(--pivot-navy);
-  font-size: clamp(62px, 7.2vw, 112px);
+  font-size: clamp(66px, 6.1vw, 92px);
   font-weight: 780;
-  line-height: 0.88;
-  letter-spacing: -0.066em;
+  line-height: 0.9;
+  letter-spacing: -0.062em;
 }
 
 .pivot-hero h1 span {
@@ -1885,7 +1888,7 @@ h1 {
 }
 
 .pivot-lead {
-  max-width: 650px;
+  max-width: 560px;
   color: rgba(23, 49, 58, 0.76);
   font-size: clamp(18px, 1.8vw, 22px);
   line-height: 1.55;
@@ -2465,6 +2468,17 @@ h1 {
   .circuit-node { transition: none; }
 }
 
+@media (max-width: 1000px) {
+  .pivot-hero__inner {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding-top: 58px;
+  }
+
+  .pivot-hero__copy { max-width: 760px; }
+  .pivot-hero h1 { max-width: 8.8ch; }
+}
+
 @media (max-width: 920px) {
   .pivot-hero__inner,
   .event-feature__inner,
@@ -2476,7 +2490,6 @@ h1 {
     grid-template-columns: 1fr;
   }
 
-  .pivot-hero__inner { padding-top: 58px; }
   .circuit-map { width: min(520px, 100%); margin: 0 auto; }
   .section-intro { grid-template-columns: 1fr; gap: 8px; }
   .model-grid { grid-template-columns: 1fr; }
@@ -2491,7 +2504,7 @@ h1 {
   .pivot-nav__links { gap: 0; }
   .pivot-nav__links a { padding: 9px 7px; font-size: 12px; }
   .pivot-nav .brand span { display: none; }
-  .pivot-hero h1 { font-size: clamp(52px, 16vw, 74px); }
+  .pivot-hero h1 { max-width: 8.2ch; font-size: clamp(50px, 15.4vw, 70px); }
   .pivot-hero__inner { min-height: auto; }
   .circuit-map { min-height: 430px; transform: scale(0.9); transform-origin: top center; }
   .circuit-node { width: 148px; height: 148px; padding: 23px; }
