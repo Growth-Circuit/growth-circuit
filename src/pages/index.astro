@@ -4,8 +4,6 @@ import IsometricCity from "@/components/IsometricCity.astro";
 import { upcomingEvents } from "@/data/events";
 
 const featuredEvent = upcomingEvents[0];
-const nycWhatsApp = "https://chat.whatsapp.com/DrALA6m5IHa9XgMG1q4YkB";
-const globalWhatsApp = "https://chat.whatsapp.com/LurxSBSuEFF7jIlInK0CV6";
 ---
 
 <BaseLayout
@@ -120,9 +118,10 @@ const globalWhatsApp = "https://chat.whatsapp.com/LurxSBSuEFF7jIlInK0CV6";
       <div class="whatsapp-section__copy">
         <p>There are two WhatsApp groups, one for New York City and one for the broader global community. Share builds, ask useful questions, and meet people working on similar problems.</p>
         <div class="whatsapp-actions">
-          <a class="button matcha" href={nycWhatsApp} target="_blank" rel="noopener noreferrer">Join the NYC group ↗</a>
-          <a class="button" href={globalWhatsApp} target="_blank" rel="noopener noreferrer">Join the global group ↗</a>
+          <a class="button matcha" href="/apply?path=nyc">Apply to the NYC group →</a>
+          <a class="button" href="/apply?path=global">Apply to the global group →</a>
         </div>
+        <p>After you’re approved, we’ll send the WhatsApp invite.</p>
         <p class="privacy-note"><strong>Before you join:</strong> joining is explicit opt-in, and everyone in a WhatsApp group can see member phone numbers.</p>
       </div>
     </div>
