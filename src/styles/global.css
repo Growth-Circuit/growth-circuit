@@ -3631,3 +3631,21 @@ h1 {
     font-size: 46px;
   }
 }
+
+.calendar-section {
+  padding-block: 48px;
+}
+
+.calendar-section .section-intro {
+  max-width: 720px;
+  margin-bottom: 28px;
+}
+
+.calendar-section .section-intro {
+  display: block;
+}
+
+.calendar-section .section-intro > p:last-child {
+  max-width: 60ch;
+  margin-top: 18px;
+}

@@ -1,30 +1,16 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { upcomingEvents } from "@/data/events";
+import LumaCalendar from "@/components/LumaCalendar.astro";
 ---
 
-<BaseLayout title="Events" description="Public Growth Circuit events in New York City." path="/events" bodyClass="sky-page pivot-page">
+<BaseLayout title="Events" description="Upcoming Growth Circuit events in New York City and online. Browse the calendar and RSVP on Luma." path="/events" bodyClass="sky-page pivot-page">
   <section class="shell listing-hero">
     <p class="eyebrow">Growth Circuit in New York</p>
     <h1>Come meet the people building growth systems.</h1>
-    <p>Larger public events are the front door to Growth Circuit. Come by yourself or bring someone who should be in the room.</p>
+    <p>Find our next meetup, apartment gathering, or online show &amp; tell. Come by yourself or bring someone who should be in the room.</p>
   </section>
-  <section class="shell event-list" aria-label="Upcoming Growth Circuit events">
-    {upcomingEvents.map((event) => (
-      <article class="event-listing">
-        <img src={event.image} alt={event.imageAlt} width="1080" height="1080" />
-        <div>
-          <p class="eyebrow">Upcoming</p>
-          <h2>{event.title}</h2>
-          <dl class="event-facts">
-            <div><dt>When</dt><dd><time datetime={event.dateTime}>{event.dateLabel}<br />{event.timeLabel}</time></dd></div>
-            <div><dt>Where</dt><dd>{event.location}<br /><small>{event.locationDetail}</small></dd></div>
-          </dl>
-          <p>{event.description}</p>
-          <a class="button matcha" href={event.partifulUrl} target="_blank" rel="noopener noreferrer">RSVP on Partiful ↗</a>
-        </div>
-      </article>
-    ))}
+  <section class="shell calendar-section" aria-label="Upcoming Growth Circuit events">
+    <LumaCalendar />
   </section>
   <section class="shell supper-banner">
     <p class="eyebrow">A smaller table</p>

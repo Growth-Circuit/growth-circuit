@@ -1,0 +1,25 @@
+---
+const calendarUrl = "https://luma.com/growth-circuit";
+const embedUrl = "https://luma.com/embed/calendar/cal-l48U97luvjJDet7/events";
+---
+
+<div class="luma-calendar">
+  <iframe
+    src={embedUrl}
+    title="Upcoming Growth Circuit events"
+    width="600"
+    height="540"
+    loading="lazy"
+    referrerpolicy="strict-origin-when-cross-origin"
+  ></iframe>
+  <p class="luma-calendar__link">
+    <a href={calendarUrl} target="_blank" rel="noopener noreferrer">View the calendar and subscribe on Luma ↗</a>
+  </p>
+</div>
+
+<style>
+  .luma-calendar { width: 100%; min-width: 0; }
+  iframe { display: block; width: 100%; border: 1px solid #bfcbda88; border-radius: 12px; background: #fff; color-scheme: light; }
+  .luma-calendar__link { margin-top: 16px; font-size: 0.95rem; }
+  .luma-calendar__link a { text-underline-offset: 4px; }
+</style>

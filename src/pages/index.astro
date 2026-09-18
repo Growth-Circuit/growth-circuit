@@ -1,9 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import IsometricCity from "@/components/IsometricCity.astro";
-import { upcomingEvents } from "@/data/events";
-
-const featuredEvent = upcomingEvents[0];
+import LumaCalendar from "@/components/LumaCalendar.astro";
 ---
 
 <BaseLayout
@@ -33,12 +31,12 @@ const featuredEvent = upcomingEvents[0];
         <h1>Build with people who <span>get what you do.</span></h1>
         <p class="pivot-lead">Growth Circuit is a close-knit community for marketing engineers who want to share their work, sharpen their craft, and make cool sh*t together.</p>
         <div class="pivot-actions">
-          <a class="button matcha" href={featuredEvent.partifulUrl} target="_blank" rel="noopener noreferrer">Come to the launch party ↗</a>
+          <a class="button matcha" href="/events">See upcoming events →</a>
           <a class="pivot-text-link" href="#join">Join WhatsApp ↓</a>
         </div>
       </div>
 
-      <IsometricCity featuredEventUrl={featuredEvent.partifulUrl} />
+      <IsometricCity featuredEventUrl="/events" />
     </section>
   </div>
 
@@ -70,25 +68,13 @@ const featuredEvent = upcomingEvents[0];
     <p class="supper-note"><span>Small table, by invitation</span> Nick and Lucy also host smaller dinners for people they meet at larger events.</p>
   </section>
 
-  <section class="event-feature" aria-labelledby="event-title">
-    <div class="shell event-feature__inner">
-      <div class="event-feature__image">
-        <img src={featuredEvent.image} alt={featuredEvent.imageAlt} width="1080" height="1080" loading="lazy" />
-      </div>
-      <div class="event-feature__copy">
-        <p class="eyebrow">Next in New York</p>
-        <h2 id="event-title">{featuredEvent.title}</h2>
-        <dl class="event-facts">
-          <div><dt>When</dt><dd><time datetime={featuredEvent.dateTime}>{featuredEvent.dateLabel}<br />{featuredEvent.timeLabel}</time></dd></div>
-          <div><dt>Where</dt><dd>{featuredEvent.location}<br /><small>{featuredEvent.locationDetail}</small></dd></div>
-        </dl>
-        <p>{featuredEvent.description}</p>
-        <div class="pivot-actions">
-          <a class="button matcha" href={featuredEvent.partifulUrl} target="_blank" rel="noopener noreferrer">RSVP on Partiful ↗</a>
-          <a class="pivot-text-link" href="/events">All events →</a>
-        </div>
-      </div>
+  <section class="shell calendar-section" aria-labelledby="event-title">
+    <div class="section-intro">
+      <p class="eyebrow">On the calendar</p>
+      <h2 id="event-title">Come to the next one.</h2>
+      <p>Meetups in New York, online show &amp; tells, and more ways to meet the people building growth systems.</p>
     </div>
+    <LumaCalendar />
   </section>
 
   <section class="shell profiles-feature" aria-labelledby="profiles-title">

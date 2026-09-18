@@ -26,8 +26,8 @@ export const growthCircuitEvents: GrowthCircuitEvent[] = [
     partifulUrl: "https://partiful.com/e/d93jqKwACf819w164lmr",
     image: "/growth-circuit-launch-party-2026-square.png",
     imageAlt: "Growth Circuit Launch Party at 493 3rd St in Brooklyn on September 13",
-    status: "upcoming",
+    status: "past",
   },
 ];
 
-export const upcomingEvents = growthCircuitEvents.filter((event) => event.status === "upcoming");
+// Historical archive only. Live upcoming events are managed in the Luma calendar.
