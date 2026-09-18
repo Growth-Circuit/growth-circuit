@@ -8,7 +8,7 @@ One welcome email after a confirmed signup. The progression is newsletter, then 
 - Sender: Nick & Lucy from Growth Circuit, `nick@mail.growthcircuit.club`
 - Reply-to: `nick@growthcircuit.club`
 - No follow-up timers, membership approval, or WhatsApp invite URLs
-- `01-welcome.lmx` is the editable source; `workflow.json` is the verified remote snapshot
+- `01-welcome.lmx` is a snapshot of the saved Loops draft; always fetch the latest email and use its revision ID before editing; `workflow.json` is the verified remote snapshot
 
 ## Signup flow
 
@@ -31,3 +31,13 @@ Review the email and sender in Loops, send a preview, and obtain approval before
 ## Luma MCP
 
 The global Codex configuration has `luma` pointing at `https://mcp.luma.com`. Authentication is blocked in Codex 0.153.4 and 0.155.0: Luma advertises issuer `https://api.luma.com` but a consent endpoint on `https://luma.com`, without issuer-bound callback support in its OAuth metadata. Retry official CIMD login after upstream compatibility is fixed. Do not bypass OAuth origin validation. The website's public Luma calendar embed works independently of MCP authentication.
+
+## Automatic welcome event
+
+The immediate welcome reads `welcomeEventTitle`, `welcomeEventDetails`, `welcomeEventUrl`, and `welcomeEventCta` contact properties. At verified website signup, `src/lib/newsletter-events.ts` fetches the public Growth Circuit Luma calendar feed, selects the earliest event that has not started, and formats the date in New York time. The properties are saved before a separate list update triggers the welcome. This snapshot is intended for the immediate welcome only. Do not add a delay or reuse these fields in later campaigns without refreshing them. Sent emails do not change when the calendar changes.
+
+Cancelled and non-public entries are excluded. An empty calendar uses “More good hangs soon” and “Nothing on the calendar just yet. We'll email you when the next event is ready.” with a Follow our calendar link. An unavailable, malformed, oversized, or unsupported feed uses a neutral Browse our calendar link. Fetches time out after three seconds and cannot prevent newsletter signup. Luma currently exports discrete UTC events; unsupported recurrence or floating times use the neutral fallback. All-day events show their date without a time.
+
+The Loops email also has all four neutral fallbacks configured (`event-fallbacks.json`), so a manually added contact with no snapshot still gets a complete message. The public calendar feed needs no API key or paid Luma plan. Only the published shared calendar is read, never Nick's private calendar. Publish events to that shared Luma calendar to include them here.
+
+Nick's September 18 rewrite was retained and the event paragraph appended after his sign-off. Loops normalizes trailing paragraph whitespace on import. No preview or audience email was sent for this change; Guardian returned no errors or warnings and the workflow remains Draft.

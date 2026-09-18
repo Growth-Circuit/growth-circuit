@@ -40,12 +40,25 @@ describe("newsletter confirmation", () => {
     const confirmed = await handleNewsletterObject(request("confirm", { token }), state, env);
     expect(confirmed.status).toBe(200);
     expect(upsertNewsletterPersonUnlocked).toHaveBeenCalledWith("reader@example.com", env);
-    const payload = JSON.parse(vi.mocked(fetch).mock.calls[1][1]!.body as string);
+    const properties = JSON.parse(vi.mocked(fetch).mock.calls[2][1]!.body as string);
+    expect(properties.welcomeEventUrl).toBe("https://luma.com/growth-circuit");
+    expect(properties).not.toHaveProperty("mailingLists");
+    const payload = JSON.parse(vi.mocked(fetch).mock.calls[3][1]!.body as string);
     expect(payload.mailingLists).toEqual({ [NEWSLETTER_LIST_ID]: true });
     expect(payload).not.toHaveProperty("subscribed");
     expect(updateNotionPersonSyncState).toHaveBeenCalledWith("person", { status: "Synced", loopsId: "contact" }, env);
     await handleNewsletterObject(request("confirm", { token }), state, env);
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenCalledTimes(4);
+  });
+  it("does not enroll before event properties have been saved", async () => {
+    const token = await signup();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(new Response("[]"))
+      .mockResolvedValueOnce(new Response("BEGIN:VCALENDAR\nVERSION:2.0\nEND:VCALENDAR"))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: false })));
+    await expect(handleNewsletterObject(request("confirm", { token }), state, env)).rejects.toThrow("NEWSLETTER_SYNC_FAILED");
+    expect(fetch).toHaveBeenCalledTimes(3);
+    expect((values.get("newsletter-pending") as { complete?: boolean }).complete).not.toBe(true);
   });
   it("rejects invalid and expired tokens before any CRM writes", async () => {
     const token = await signup();

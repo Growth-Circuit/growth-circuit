@@ -1,5 +1,6 @@
 import { upsertNewsletterPersonUnlocked, updateNotionPersonSyncState, isServerNotionConfigured } from "./notion-server";
 import { normalizeEmailKey } from "./crm";
+import { getWelcomeEventProperties } from "./newsletter-events";
 
 export const NEWSLETTER_LIST_ID = "cmu760ltt0xkz0jzq7xomfx3m";
 const TTL = 24 * 60 * 60 * 1000;
@@ -91,6 +92,12 @@ export async function handleNewsletterObject(request: Request, state: DurableObj
     return newsletterJson({ error: "This address has unsubscribed from Growth Circuit. Use the preferences link in a previous email, or contact nick@growthcircuit.club for help." }, 409);
   }
   const person = await upsertNewsletterPersonUnlocked(pending.email, env);
+  const eventProperties = await getWelcomeEventProperties();
+  // Persist the snapshot before the separate list update can trigger the immediate welcome.
+  const prepared = await (await loopsRequest("contacts/update", env, "PUT", {
+    email: person.email, ...eventProperties,
+  })).json() as { success?: boolean };
+  if (!prepared.success) throw new Error("NEWSLETTER_SYNC_FAILED");
   const result = await (await loopsRequest("contacts/update", env, "PUT", {
     email: person.email, userId: person.crmId, notionPersonId: person.id, crmId: person.crmId,
     ...(contacts.length ? {} : { source: "NYC newsletter confirmed signup" }),
