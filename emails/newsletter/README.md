@@ -1,11 +1,11 @@
 # NYC newsletter welcome
 
-One welcome email after a confirmed signup. The Loops workflow remains **Draft**.
+One welcome email after a confirmed signup. The progression is newsletter, then an optional WhatsApp application, then events. The Loops workflow remains **Draft**.
 
 - Loops: https://app.loops.so/workflows/cmu763oai02av0jzxjeassxch
 - Trigger: added to NYC newsletter list, once per contact
 - List: `cmu760ltt0xkz0jzq7xomfx3m`, separate from NYC and Global member lists
-- Sender: Nick & Lucy from Growth Circuit, `nick@growthcircuit.club`
+- Sender: Nick & Lucy from Growth Circuit, `nick@mail.growthcircuit.club`
 - Reply-to: `nick@growthcircuit.club`
 - No follow-up timers, membership approval, or WhatsApp invite URLs
 - `01-welcome.lmx` is the editable source; `workflow.json` is the verified remote snapshot

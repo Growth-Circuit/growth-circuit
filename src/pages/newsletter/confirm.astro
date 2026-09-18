@@ -10,11 +10,17 @@ const valid = /^[a-f0-9]{64}$/.test(id) && /^[a-f0-9]{64}$/.test(token);
 <BaseLayout title="Confirm your newsletter subscription" bodyClass="sky-page pivot-page">
   <section class="shell listing-hero">
     <p class="eyebrow">Growth Circuit newsletter</p>
-    <h1>One more step.</h1>
-    <p>Confirm your email to get our NYC event picks from Nick and Lucy. You can unsubscribe anytime.</p>
+    <h1 id="confirmation-title">One more step.</h1>
+    <p id="confirmation-intro">Confirm your email to get our NYC event picks from Nick and Lucy. You can unsubscribe anytime.</p>
     {valid ? <form method="post" action="/api/newsletter/confirm" id="confirm-newsletter"><input type="hidden" name="id" value={id} /><input type="hidden" name="token" value={token} /><button class="button matcha" type="submit">Confirm subscription</button></form> : <p>This link is incomplete. <a href="/#newsletter">Sign up for a new link</a>.</p>}
     <p id="confirmation-status" role="status" aria-live="polite"></p>
-    <p><a href="/events">Browse upcoming events</a></p>
+    <div id="newsletter-next-step" hidden>
+      <h2>Next, get to know the group.</h2>
+      <p>Apply to join our NYC WhatsApp community. Share what you’re building, meet people between events, and find someone to go with.</p>
+      <p><a class="button matcha" href="/apply?path=nyc&amp;source=newsletter-confirmed">Apply to join WhatsApp</a></p>
+      <p>After approval, we’ll send your invite. Members can see your phone number. Joining is optional.</p>
+    </div>
+    <p><a href="/events">Browse upcoming events</a>. Public events are open to you before joining WhatsApp, too.</p>
   </section>
 </BaseLayout>
 <script>
@@ -31,6 +37,9 @@ const valid = /^[a-f0-9]{64}$/.test(id) && /^[a-f0-9]{64}$/.test(token);
       if (!response.ok) throw new Error(result.error || "We couldn’t confirm your subscription. Please try again shortly.");
       status.textContent = "You’re subscribed! We’ll email you when our next NYC event list is ready.";
       form.hidden = true;
+      document.querySelector<HTMLElement>("#confirmation-title")!.textContent = "You’re on the list.";
+      document.querySelector<HTMLElement>("#confirmation-intro")!.hidden = true;
+      document.querySelector<HTMLElement>("#newsletter-next-step")!.hidden = false;
       history.replaceState(null, "", "/newsletter/confirm");
     } catch (error) { status.textContent = error instanceof Error ? error.message : "Please try again shortly."; button.disabled = false; }
   });
