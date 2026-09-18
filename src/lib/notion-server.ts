@@ -733,3 +733,36 @@ export async function createNotionSubmission(
 
   return (await response.json()) as NotionSubmissionResult;
 }
+
+// Called only after email verification, inside the existing same-email lock.
+export async function upsertNewsletterPersonUnlocked(email: string, env: NotionRuntimeEnv) {
+  const token = getNotionToken(env);
+  const dataSourceId = getPeopleDataSourceId(env);
+  if (!token || !dataSourceId) throw new Error("NOTION_NOT_CONFIGURED");
+  const existing = await findPersonByEmail(email, token, dataSourceId);
+  const existingStatus = getSelectName(existing || {}, "Consent status");
+  if (existingStatus === "Withdrawn" || existingStatus === "Declined") {
+    throw new Error("NEWSLETTER_CONSENT_WITHDRAWN");
+  }
+  const preferences = [...new Set([...(existingStatus === "Granted" ? getMultiSelectNames(existing || {}, "Communication preferences") : []), "NYC newsletter"])];
+  const properties: Record<string, unknown> = {
+    "Communication preferences": { multi_select: preferences.map((name) => ({ name })) },
+    "Consent status": { select: { name: "Granted" } },
+    "Consent source": { rich_text: notionRichText("Website NYC newsletter: email confirmed") },
+    "Consent at": { date: { start: new Date().toISOString() } },
+    "Sync status": { select: { name: "Pending" } },
+  };
+  if (!existing?.id) {
+    properties.Name = { title: [] };
+    properties.Email = { email: normalizeEmailKey(email) };
+    properties["Email key"] = { rich_text: notionRichText(normalizeEmailKey(email)) };
+    properties.Lifecycle = { select: { name: "Broader community" } };
+  }
+  const page = await notionRequest<NotionPage>(
+    existing?.id ? `https://api.notion.com/v1/pages/${existing.id}` : "https://api.notion.com/v1/pages", token,
+    { method: existing?.id ? "PATCH" : "POST", body: JSON.stringify({
+      ...(!existing?.id ? { parent: { type: "data_source_id", data_source_id: dataSourceId } } : {}), properties,
+    }) },
+  );
+  return parseCrmPerson(page);
+}

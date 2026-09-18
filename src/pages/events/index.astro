@@ -1,5 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import NewsletterSignup from "@/components/NewsletterSignup.astro";
+import NycEventPicks from "@/components/NycEventPicks.astro";
 import LumaCalendar from "@/components/LumaCalendar.astro";
 ---
 
@@ -9,7 +11,9 @@ import LumaCalendar from "@/components/LumaCalendar.astro";
     <h1>Come meet the people building growth systems.</h1>
     <p>Find our next meetup, apartment gathering, or online show &amp; tell. Come by yourself or bring someone who should be in the room.</p>
   </section>
+  <NycEventPicks />
   <section class="shell calendar-section" aria-label="Upcoming Growth Circuit events">
+    <div class="section-intro"><p class="eyebrow">Hosted by Growth Circuit</p><h2>Come to the next one.</h2></div>
     <LumaCalendar />
   </section>
   <section class="shell supper-banner">
@@ -17,4 +21,5 @@ import LumaCalendar from "@/components/LumaCalendar.astro";
     <h2>Supper clubs are invite-only.</h2>
     <p>Nick and Lucy curate smaller dinners by hand from people they meet at larger Growth Circuit events.</p>
   </section>
+  <NewsletterSignup />
 </BaseLayout>
