@@ -1,0 +1,37 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+export const prerender = false;
+Astro.response.headers.set("Cache-Control", "private, no-store");
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+const id = Astro.url.searchParams.get("id") || "";
+const token = Astro.url.searchParams.get("token") || "";
+const valid = /^[a-f0-9]{64}$/.test(id) && /^[a-f0-9]{64}$/.test(token);
+---
+<BaseLayout title="Confirm your newsletter subscription" bodyClass="sky-page pivot-page">
+  <section class="shell listing-hero">
+    <p class="eyebrow">Growth Circuit newsletter</p>
+    <h1>One more step.</h1>
+    <p>Confirm your email to get our NYC event picks from Nick and Lucy. You can unsubscribe anytime.</p>
+    {valid ? <form method="post" action="/api/newsletter/confirm" id="confirm-newsletter"><input type="hidden" name="id" value={id} /><input type="hidden" name="token" value={token} /><button class="button matcha" type="submit">Confirm subscription</button></form> : <p>This link is incomplete. <a href="/#newsletter">Sign up for a new link</a>.</p>}
+    <p id="confirmation-status" role="status" aria-live="polite"></p>
+    <p><a href="/events">Browse upcoming events</a></p>
+  </section>
+</BaseLayout>
+<script>
+  // Opening a link never changes consent. Confirmation requires this explicit action.
+  const form = document.querySelector<HTMLFormElement>("#confirm-newsletter");
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const button = form.querySelector<HTMLButtonElement>("button")!;
+    const status = document.querySelector<HTMLElement>("#confirmation-status")!;
+    button.disabled = true; status.textContent = "Confirming…";
+    try {
+      const response = await fetch("/api/newsletter/confirm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+      const result = await response.json().catch(() => ({ error: "This is temporarily unavailable. Please try again shortly." })) as { error?: string };
+      if (!response.ok) throw new Error(result.error || "We couldn’t confirm your subscription. Please try again shortly.");
+      status.textContent = "You’re subscribed! We’ll email you when our next NYC event list is ready.";
+      form.hidden = true;
+      history.replaceState(null, "", "/newsletter/confirm");
+    } catch (error) { status.textContent = error instanceof Error ? error.message : "Please try again shortly."; button.disabled = false; }
+  });
+</script>

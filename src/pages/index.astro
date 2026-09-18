@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import IsometricCity from "@/components/IsometricCity.astro";
+import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import LumaCalendar from "@/components/LumaCalendar.astro";
 ---
 
@@ -18,6 +19,7 @@ import LumaCalendar from "@/components/LumaCalendar.astro";
           <span>Growth Circuit</span>
         </a>
         <nav class="pivot-nav__links" aria-label="Main navigation">
+          <a href="#newsletter">Newsletter</a>
           <a href="/events">Events</a>
           <a href="/people">People + projects</a>
           <a href="/apply?source=nav">Apply</a>
@@ -39,6 +41,8 @@ import LumaCalendar from "@/components/LumaCalendar.astro";
       <IsometricCity featuredEventUrl="/events" />
     </section>
   </div>
+
+  <NewsletterSignup />
 
   <section class="shell model-section" aria-labelledby="model-title">
     <div class="section-intro">

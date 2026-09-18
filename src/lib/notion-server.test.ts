@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createNotionSubmission,
+  upsertNewsletterPersonUnlocked,
   getApprovedApplicationPersonId,
   getNotionPersonForSync,
   listNotionApprovedPeople,
@@ -607,5 +608,44 @@ describe("Notion CRM sync records", () => {
         "Last reconciled at": { date: { start: "2026-08-17T12:00:00.000Z" } },
       },
     });
+  });
+});
+
+
+describe("verified newsletter consent", () => {
+  it("creates an email-only person without an application, invented name, market, or membership", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ results: [] })).mockResolvedValueOnce(jsonResponse({ id: "person-1", properties: {} }));
+    vi.stubGlobal("fetch", fetchMock);
+    await upsertNewsletterPersonUnlocked("reader@example.com", notionEnv);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const properties = JSON.parse(fetchMock.mock.calls[1][1].body).properties;
+    expect(properties.Name).toEqual({ title: [] });
+    expect(properties.Lifecycle).toEqual({ select: { name: "Broader community" } });
+    expect(properties).not.toHaveProperty("Market");
+    expect(properties["Communication preferences"]).toEqual({ multi_select: [{ name: "NYC newsletter" }] });
+  });
+  it("preserves an existing member identity and granted preferences", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ results: [{ id: "person-1", properties: {
+      "Consent status": { select: { name: "Granted" } }, "Communication preferences": { multi_select: [{ name: "Events" }] },
+    } }] })).mockResolvedValueOnce(jsonResponse({ id: "person-1", properties: {} }));
+    vi.stubGlobal("fetch", fetchMock);
+    await upsertNewsletterPersonUnlocked("reader@example.com", notionEnv);
+    const properties = JSON.parse(fetchMock.mock.calls[1][1].body).properties;
+    expect(properties).not.toHaveProperty("Name"); expect(properties).not.toHaveProperty("Lifecycle"); expect(properties).not.toHaveProperty("Market");
+    expect(properties["Communication preferences"]).toEqual({ multi_select: [{ name: "Events" }, { name: "NYC newsletter" }] });
+  });
+  it("does not grant previously unconfirmed preferences", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ results: [{ id: "person-1", properties: {
+      "Consent status": { select: { name: "Not asked" } }, "Communication preferences": { multi_select: [{ name: "Events" }] },
+    } }] })).mockResolvedValueOnce(jsonResponse({ id: "person-1", properties: {} }));
+    vi.stubGlobal("fetch", fetchMock);
+    await upsertNewsletterPersonUnlocked("reader@example.com", notionEnv);
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).properties["Communication preferences"]).toEqual({ multi_select: [{ name: "NYC newsletter" }] });
+  });
+  it("does not reverse a canonical withdrawal", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ results: [{ id: "person-1", properties: { "Consent status": { select: { name: "Withdrawn" } } } }] }));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(upsertNewsletterPersonUnlocked("reader@example.com", notionEnv)).rejects.toThrow("NEWSLETTER_CONSENT_WITHDRAWN");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

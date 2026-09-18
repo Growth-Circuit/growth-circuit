@@ -1,0 +1,61 @@
+---
+interface Props { id?: string; }
+const { id = "newsletter" } = Astro.props;
+---
+<section class="shell newsletter-section" id={id} aria-labelledby={`${id}-title`}>
+  <div>
+    <p class="eyebrow">A few good reasons to leave the apartment</p>
+    <h2 id={`${id}-title`}>Get our NYC event picks.</h2>
+    <p>Public talks, demos, meetups, and Growth Circuit gatherings. A short list from Nick and Lucy for people building things in marketing, growth, and AI.</p>
+  </div>
+  <form method="post" action="/api/newsletter" class="newsletter-form" aria-label="Subscribe to the NYC newsletter">
+    <label for={`${id}-email`}>Email address</label>
+    <div class="newsletter-fields">
+      <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required />
+      <button class="button matcha" type="submit">Subscribe free</button>
+    </div>
+    <label class="newsletter-consent"><input name="consent" type="checkbox" required /> <span>I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.</span></label>
+    <div class="newsletter-trap" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
+    <p class="newsletter-status" role="status" aria-live="polite"></p>
+    <noscript>Please enable JavaScript to use this signup form.</noscript>
+    <p class="newsletter-note">Confirm your email to subscribe. Joining WhatsApp is optional.</p>
+  </form>
+</section>
+<script>
+  document.querySelectorAll<HTMLFormElement>(".newsletter-form").forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+      const status = form.querySelector<HTMLElement>(".newsletter-status")!;
+      const fields = new FormData(form);
+      button.disabled = true; status.textContent = "Sending your confirmation email…";
+      try {
+        const response = await fetch("/api/newsletter", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: fields.get("email"), consent: fields.get("consent") === "on", website: fields.get("website") }) });
+        const result = await response.json().catch(() => ({ error: "This is temporarily unavailable. Please try again shortly." })) as { error?: string };
+        if (!response.ok) throw new Error(result.error || "Signup is temporarily unavailable. Please try again shortly.");
+        status.textContent = "Check your inbox to confirm. If you already requested a link, use that email. The link is valid for 24 hours.";
+        form.reset();
+      } catch (error) { status.textContent = error instanceof Error ? error.message : "Please try again shortly."; }
+      finally { button.disabled = false; }
+    });
+  });
+</script>
+<style>
+  .newsletter-section { display:grid; grid-template-columns:1.1fr 1fr; gap:3rem; padding-top:4rem; padding-bottom:4rem; border-top:1px solid #b9c8c2; }
+  .newsletter-section h2 { font-size:clamp(2rem,4vw,3rem); line-height:1.1; margin:.7rem 0 1rem; }
+  .newsletter-section p { line-height:1.6; max-width:38rem; }
+  .newsletter-form { align-self:center; }
+  .newsletter-form > label { display:block; font-weight:600; margin-bottom:.6rem; }
+  .newsletter-fields { display:flex; gap:.6rem; }
+  .newsletter-fields input { min-width:0; width:100%; border:1px solid #7d9689; border-radius:8px; padding:.9rem; font:inherit; background:white; color:#20351f; }
+  .newsletter-fields button { white-space:nowrap; border:0; cursor:pointer; }
+  .newsletter-fields button:disabled { opacity:.65; cursor:wait; }
+  .newsletter-form .newsletter-consent { display:flex; align-items:flex-start; gap:.6rem; margin-top:1rem; font-size:.85rem; font-weight:400; line-height:1.5; }
+  .newsletter-consent input { margin-top:4px; flex-shrink:0; accent-color:#20351f; }
+  .newsletter-note { font-size:.8rem; color:#516358; }
+  .newsletter-status { font-size:.9rem; font-weight:600; }
+  .newsletter-status:empty { display:none; }
+  .newsletter-trap { position:absolute; left:-10000px; width:1px; height:1px; overflow:hidden; }
+  @media(max-width:760px) { .newsletter-section { grid-template-columns:1fr; gap:1.5rem; } }
+  @media(max-width:420px) { .newsletter-fields { flex-direction:column; } }
+</style>

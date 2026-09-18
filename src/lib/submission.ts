@@ -4,6 +4,7 @@ export const COMMUNICATION_PREFERENCES = [
   "Cohort openings",
   "Community updates",
   "Events",
+  "NYC newsletter",
 ] as const;
 
 export type CommunicationPreference = (typeof COMMUNICATION_PREFERENCES)[number];

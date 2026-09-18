@@ -126,8 +126,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return response;
   }
 
+  const isNewsletter = requestUrl.pathname.startsWith("/newsletter/confirm") || requestUrl.pathname.startsWith("/api/newsletter");
   const sensitive = isAuth || isCommunity || requestUrl.pathname.startsWith("/api/profiles") || requestUrl.pathname === "/people/edit" || requestUrl.pathname === "/people/claim" || requestUrl.pathname === "/people/admin";
-  const privateResponse = sensitive
+  const privateResponse = sensitive || isNewsletter
     || UNSAFE_METHODS.has(context.request.method.toUpperCase())
     || isPrivateCommunityRequest(requestUrl);
   const needsCommunityContext = sensitive || isCommunityDiscovery || isProfile;
@@ -139,7 +140,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.locals.publicProfilesEnabled = false;
     context.locals.csrfToken = "";
     const response = await next();
-    applySecurityHeaders(response, requestUrl, false);
+    applySecurityHeaders(response, requestUrl, privateResponse);
     return response;
   }
 

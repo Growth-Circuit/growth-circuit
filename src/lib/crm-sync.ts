@@ -1,3 +1,4 @@
+import { NEWSLETTER_LIST_ID } from "./newsletter";
 import { env as cloudflareEnv } from "cloudflare:workers";
 import {
   findLoopsContact,
@@ -245,6 +246,14 @@ export async function reconcileCrmPeople(env: CrmSyncEnv = runtimeEnv) {
         }, env);
         reconciled += 1;
         withdrawn += 1;
+      }
+      if (contact.subscribed !== false && contact.mailingLists?.[NEWSLETTER_LIST_ID] === false && person.communicationPreferences.includes("NYC newsletter")) {
+        await updateNotionPersonConsent(person.id, {
+          status: person.consentStatus || "Not asked",
+          preferences: person.communicationPreferences.filter((preference) => preference !== "NYC newsletter"),
+          syncStatus: "Synced",
+        }, env);
+        reconciled += 1;
       }
       await updateNotionPersonReconciledAt(person.id, reconciledAt, env);
     } catch {

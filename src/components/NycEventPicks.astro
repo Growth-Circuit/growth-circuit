@@ -1,0 +1,23 @@
+---
+import { upcomingNycEvents } from "@/data/nyc-events";
+const events = upcomingNycEvents();
+---
+<section class="shell picks-section" aria-labelledby="nyc-picks-title">
+  <div class="section-intro"><p class="eyebrow">Around the city</p><h2 id="nyc-picks-title">NYC events on our radar.</h2><p>Public events from other organizers, starting with places you can hear Nick speak. Registration and approval are handled by each host.</p></div>
+  {events.length ? <div class="picks-grid">{events.map((event) => <article class:list={["event-pick", {"event-pick--featured": event.nickSpeaking}]}>
+    <p class="eyebrow">{event.nickSpeaking ? "Nick is speaking" : "NYC event pick"}</p>
+    <h3>{event.name}</h3><p class="pick-date">{event.when}</p><p class="pick-location">{event.location}</p><p>{event.description}</p><p class="pick-registration">{event.registration}</p><a href={event.url} target="_blank" rel="noopener noreferrer">View event and registration <span aria-hidden="true">↗</span></a>
+  </article>)}</div> : <p>We’re putting together the next shortlist. Subscribe below to get it in your inbox.</p>}
+</section>
+<style>
+  .picks-section { padding-top:3rem; padding-bottom:3rem; }
+  .picks-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; }
+  .event-pick { display:flex; flex-direction:column; border:1px solid #becdc5; border-radius:18px; padding:1.6rem; background:rgba(255,255,255,.6); }
+  .event-pick--featured { border-color:#5c7a62; background:#e9f0dd; }
+  .event-pick h3 { font-size:1.65rem; line-height:1.15; margin:.7rem 0; }
+  .event-pick p { line-height:1.55; font-size:.95rem; }
+  .event-pick .pick-date { font-weight:700; }
+  .event-pick .pick-location,.event-pick .pick-registration { font-size:.8rem; color:#4c6355; }
+  .event-pick a { margin-top:auto; padding-top:1rem; font-weight:700; text-underline-offset:4px; }
+  @media(max-width:850px) { .picks-grid { grid-template-columns:1fr; } }
+</style>

@@ -1,0 +1,32 @@
+{
+  "id": "cmu763oai02av0jzxjeassxch",
+  "url": "https://app.loops.so/workflows/cmu763oai02av0jzxjeassxch",
+  "workflowRevisionId": "cmu76dp8917zr0j2a6r6t6jiv",
+  "status": "Draft",
+  "name": "NYC newsletter welcome (draft)",
+  "description": "DRAFT. One welcome email after confirmed newsletter opt-in. No follow-up sequence. Review before starting.",
+  "mailingListId": "cmu760ltt0xkz0jzq7xomfx3m",
+  "rootNodeId": "n1",
+  "nodes": {
+    "n1": {
+      "typeName": "AddToListTrigger",
+      "nextNodeIds": [
+        "n3"
+      ],
+      "mailingListId": "cmu760ltt0xkz0jzq7xomfx3m",
+      "reEligible": false
+    },
+    "n2": {
+      "typeName": "ExitAction",
+      "nextNodeIds": []
+    },
+    "n3": {
+      "typeName": "SendEmailAction",
+      "nextNodeIds": [
+        "n2"
+      ],
+      "emailMessageId": "cmu763opr02cp0jzjuye2yz9r",
+      "subject": "A few good reasons to leave the apartment"
+    }
+  }
+}
