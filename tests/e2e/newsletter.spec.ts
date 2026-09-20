@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("the newsletter archive stays public with signup and an honest empty state", async ({ page }) => {
-  const response = await page.goto("/newsletter");
+  const response = await page.goto("/newsletter/");
 
   expect(response?.ok()).toBe(true);
   await expect(page).toHaveTitle(/Newsletter/);
@@ -17,6 +17,6 @@ test("newsletter confirmation is unchanged and unpublished slugs stay unpublishe
   await expect(page.getByRole("heading", { level: 1 })).toContainText("One more step.");
   await expect(page.getByText("This link is incomplete.")).toBeVisible();
 
-  const missing = await page.goto("/newsletter/2026-09-21");
+  const missing = await page.goto("/newsletter/2026-09-21/");
   expect(missing?.status()).toBe(404);
 });
