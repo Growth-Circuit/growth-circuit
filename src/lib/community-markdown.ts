@@ -80,7 +80,7 @@ function rejectUnsafeMarkdown() {
   };
 }
 
-function hardenExternalLinks() {
+function hardenExternalLinks(rel: string[]) {
   return (tree: HtmlNode) => {
     walk(tree, (node) => {
       if (node.type !== "element" || node.tagName !== "a") return;
@@ -88,37 +88,55 @@ function hardenExternalLinks() {
       if (typeof href !== "string" || !/^https?:\/\//i.test(href)) return;
       node.properties = {
         ...node.properties,
-        rel: ["ugc", "nofollow", "noopener", "noreferrer"],
+        rel,
       };
     });
   };
 }
 
-const communitySchema = {
-  ...defaultSchema,
-  clobberPrefix: "community-content-",
-  attributes: {
-    ...defaultSchema.attributes,
-    a: [...(defaultSchema.attributes?.a ?? []), "rel"],
-  },
-  protocols: {
-    ...defaultSchema.protocols,
-    href: ["http", "https", "mailto"],
-    src: [],
-  },
-};
+function markdownSchema(clobberPrefix: string) {
+  return {
+    ...defaultSchema,
+    clobberPrefix,
+    attributes: {
+      ...defaultSchema.attributes,
+      a: [...(defaultSchema.attributes?.a ?? []), "rel"],
+    },
+    protocols: {
+      ...defaultSchema.protocols,
+      href: ["http", "https", "mailto"],
+      src: [],
+    },
+  };
+}
 
-const processor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(rejectUnsafeMarkdown)
-  .use(remarkRehype)
-  .use(rehypeSanitize, communitySchema)
-  .use(hardenExternalLinks)
-  .use(rehypeStringify);
+function createMarkdownProcessor(clobberPrefix: string, rel: string[]) {
+  return unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(rejectUnsafeMarkdown)
+    .use(remarkRehype)
+    .use(rehypeSanitize, markdownSchema(clobberPrefix))
+    .use(hardenExternalLinks, rel)
+    .use(rehypeStringify);
+}
+
+const communityProcessor = createMarkdownProcessor("community-content-", [
+  "ugc",
+  "nofollow",
+  "noopener",
+  "noreferrer",
+]);
+
+const newsletterProcessor = createMarkdownProcessor("newsletter-content-", ["noopener", "noreferrer"]);
 
 /** The only Markdown-to-HTML entrypoint for community previews and published content. */
 export async function renderCommunityMarkdown(source: string): Promise<string> {
-  return String(await processor.process(source));
+  return String(await communityProcessor.process(source));
+}
+
+/** Sanitized Markdown for public newsletter issues. Editorial http(s) links are allowed. */
+export async function renderNewsletterMarkdown(source: string): Promise<string> {
+  return String(await newsletterProcessor.process(source));
 }
 
