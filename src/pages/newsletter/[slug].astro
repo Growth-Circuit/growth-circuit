@@ -1,0 +1,46 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NewsletterSignup from "@/components/NewsletterSignup.astro";
+import {
+  formatNewsletterIssueDate,
+  getPublishedNewsletterIssue,
+  listPublishedNewsletterIssues,
+} from "@/lib/newsletter-issues";
+import { breadcrumbJsonLd, newsletterIssueJsonLd } from "@/lib/seo";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  return (await listPublishedNewsletterIssues()).map((issue) => ({ params: { slug: issue.slug } }));
+}
+
+const slug = String(Astro.params.slug || "");
+const issue = await getPublishedNewsletterIssue(slug);
+if (!issue) return new Response("Not found", { status: 404 });
+---
+
+<BaseLayout
+  title={issue.title}
+  description={issue.description}
+  path={issue.path}
+  bodyClass="sky-page pivot-page"
+  socialType="article"
+  jsonLd={[
+    breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Newsletter", path: "/newsletter" },
+      { name: issue.title, path: issue.path },
+    ]),
+    newsletterIssueJsonLd(issue),
+  ]}
+>
+  <article class="shell listing-hero">
+    <p class="eyebrow">NYC newsletter · {formatNewsletterIssueDate(issue.publishedAt)}</p>
+    <h1>{issue.title}</h1>
+    <p>{issue.description}</p>
+    <p class="newsletter-issue-byline">From Nick and Lucy</p>
+  </article>
+  <div class="shell newsletter-issue-body" set:html={issue.html} />
+  <p class="shell newsletter-issue-back"><a href="/newsletter">All issues →</a></p>
+  <NewsletterSignup />
+</BaseLayout>

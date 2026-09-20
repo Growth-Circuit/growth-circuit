@@ -10,6 +10,18 @@ One welcome email after a confirmed signup. The progression is newsletter, then 
 - No follow-up timers, membership approval, or WhatsApp invite URLs
 - `01-welcome.lmx` is a snapshot of the saved Loops draft; always fetch the latest email and use its revision ID before editing; `workflow.json` is the verified remote snapshot
 
+## Public archive
+
+After a send, publish that issue on the website:
+
+1. Copy `issue-template.md` to `src/content/newsletter/YYYY-MM-DD.md`.
+2. Match `slug` and the filename to the send date, for example `2026-09-21`.
+3. Write the four sections in the body: Growth Circuit, NYC Events, Coming up, Best thing I read this week.
+4. Leave `draft: true` while you edit. Remove it after the email goes out, then deploy. The issue appears at `/newsletter/YYYY-MM-DD` and on `/newsletter`.
+5. Publish only public details. Do not check in guest lists, private Luma or meeting links, hidden addresses, or subscriber emails.
+
+`/newsletter/confirm` is the existing signup confirmation page and is not part of the archive.
+
 ## Signup flow
 
 The homepage and events page collect email plus explicit newsletter consent. The existing Cloudflare email binding sends an operational confirmation from `auth@growthcircuit.club`. No Loops membership or Notion consent changes occur before email verification. A GET displays the confirmation page; its button submits the confirmation POST, so email link scanners cannot subscribe people by opening a URL.

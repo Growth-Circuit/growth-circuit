@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CommunityMarkdownError,
   renderCommunityMarkdown,
+  renderNewsletterMarkdown,
 } from "@/lib/community-markdown";
 import { publishCommunityPost } from "@/components/community/PostComposer";
 import type { CommunityPost } from "@/types/community";
@@ -66,6 +67,24 @@ describe("renderCommunityMarkdown", () => {
       '<a href="https://example.com/path" rel="ugc nofollow noopener noreferrer">external</a>',
     );
     expect(html).toContain('<a href="/community">local</a>');
+  });
+
+  it("keeps editorial newsletter links followable after sanitizing HTML", async () => {
+    const html = await renderNewsletterMarkdown(
+      "## NYC Events\n\n[Public registration](https://luma.com/public-event)",
+    );
+
+    expect(html).toContain(
+      '<a href="https://luma.com/public-event" rel="noopener noreferrer">Public registration</a>',
+    );
+    expect(html).not.toContain("ugc");
+    expect(html).not.toContain("nofollow");
+  });
+
+  it("rejects raw HTML in newsletter issues", async () => {
+    await expect(renderNewsletterMarkdown("Hello <em>there</em>")).rejects.toMatchObject({
+      code: "raw-html",
+    });
   });
 
   it("returns identical output when the same helper is used for preview and publication", async () => {

@@ -1,0 +1,67 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NewsletterSignup from "@/components/NewsletterSignup.astro";
+import { formatNewsletterIssueDate, listPublishedNewsletterIssues } from "@/lib/newsletter-issues";
+import { breadcrumbJsonLd } from "@/lib/seo";
+
+export const prerender = true;
+
+const issues = await listPublishedNewsletterIssues();
+const description =
+  "A public archive of Growth Circuit’s weekly NYC events newsletter. Five public talks, demos, meetups, and gatherings worth leaving the apartment for.";
+---
+
+<BaseLayout
+  title="Newsletter"
+  description={description}
+  path="/newsletter"
+  bodyClass="sky-page pivot-page"
+  jsonLd={[breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Newsletter", path: "/newsletter" }])]}
+>
+  <section class="shell listing-hero">
+    <p class="eyebrow">Growth Circuit newsletter</p>
+    <h1>The NYC shortlist, saved here.</h1>
+    {
+      issues.length ? (
+        <p>
+          Each week I send five NYC events worth leaving the apartment for — talks, demos, meetups, and Growth Circuit
+          gatherings. Lucy and I pick them, write why they made the cut, and keep the list short on purpose. Issues live
+          here after we send them, so you can share a week or catch up if you missed one.
+        </p>
+      ) : (
+        <p>
+          Each week I send five NYC events worth leaving the apartment for — talks, demos, meetups, and Growth Circuit
+          gatherings. Lucy and I pick them, write why they made the cut, and keep the list short on purpose. Past issues
+          will live on this page after we send them. We haven’t published the first one here yet. Subscribe below and
+          you’ll get it in your inbox.
+        </p>
+      )
+    }
+  </section>
+
+  <section class="shell newsletter-archive" aria-label="Newsletter issues">
+    {
+      issues.length ? (
+        <ol class="newsletter-issue-list">
+          {issues.map((issue) => (
+            <li>
+              <a class="newsletter-issue-card" href={issue.path}>
+                <p class="eyebrow">{formatNewsletterIssueDate(issue.publishedAt)}</p>
+                <h2>{issue.title}</h2>
+                <p>{issue.description}</p>
+                <span>Read this issue →</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <div class="directory-empty">
+          <p>No issues in the archive yet. The weekly shortlist starts in your inbox.</p>
+          <a href="#newsletter">Subscribe free →</a>
+        </div>
+      )
+    }
+  </section>
+
+  <NewsletterSignup />
+</BaseLayout>
