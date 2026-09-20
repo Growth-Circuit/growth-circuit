@@ -8,6 +8,9 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
   expect(response?.ok()).toBe(true);
   await expect(page).toHaveTitle("Growth Circuit");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Build with people who get what you do.");
+  await expect(page.getByRole("link", { name: "Get the NYC shortlist" })).toHaveAttribute("href", "#newsletter");
+  await expect(page.getByRole("link", { name: "See upcoming events" })).toHaveAttribute("href", "/events");
+  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Newsletter" })).toHaveAttribute("href", "/newsletter");
 });
 
 test("the application form stays available from the public site", async ({ page }) => {
