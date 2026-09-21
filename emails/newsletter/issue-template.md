@@ -6,11 +6,11 @@ description: "Nick and Lucy’s shortlist of public talks, demos, meetups, and G
 draft: true
 ---
 
-## Growth Circuit
+## Upcoming Growth Circuit Events
 
 Two sentences on what looks interesting this week. Mention a Growth Circuit event here only when the public listing is live.
 
-## NYC Events
+## NYC Events This Week
 
 Five public picks for the next 7–14 days. Each line should include date, neighborhood or online, price, who it suits, and one honest sentence about why it made the cut. Link the public registration page.
 
