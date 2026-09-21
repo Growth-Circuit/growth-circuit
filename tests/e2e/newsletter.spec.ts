@@ -25,7 +25,7 @@ test("published issues render and unpublished slugs stay unpublished", async ({ 
   await expect(page.getByRole("heading", { name: "Upcoming Growth Circuit Events" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC Events This Week" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Show & Tell" })).toHaveAttribute("href", "https://luma.com/8byybca1");
-  await expect(page.getByText("From Nick and Lucy")).toBeVisible();
+  await expect(page.getByText("From Nick and Lucy", { exact: true })).toBeVisible();
 
   const missing = await page.goto("/newsletter/2099-01-01/");
   expect(missing?.status()).toBe(404);
