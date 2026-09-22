@@ -11,7 +11,7 @@ export default defineConfig({
     prerenderEnvironment: "node",
   }),
   integrations: [react(), sitemap({
-    filter: (page) => ![/\/auth(?:\/|$)/, /\/newsletter\/confirm(?:\/|$)/, /\/community(?:\/|$)/, /\/people\/(?:claim|edit|admin)(?:\/|$)/, /\/(?:apply|myspace|submit|builds|questions|tags|challenges)(?:\/|$)/].some((pattern) => pattern.test(new URL(page).pathname)),
+    filter: (page) => ![/\/homepage-preview(?:\/|$)/, /\/auth(?:\/|$)/, /\/newsletter\/confirm(?:\/|$)/, /\/community(?:\/|$)/, /\/people\/(?:claim|edit|admin)(?:\/|$)/, /\/(?:apply|myspace|submit|builds|questions|tags|challenges)(?:\/|$)/].some((pattern) => pattern.test(new URL(page).pathname)),
   })],
   session: {
     driver: sessionDrivers.memory(),
