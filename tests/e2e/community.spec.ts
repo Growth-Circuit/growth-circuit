@@ -7,16 +7,22 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
 
   expect(response?.ok()).toBe(true);
   await expect(page).toHaveTitle("Growth Circuit");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Build with people who get what you do.");
-  await expect(page.getByRole("link", { name: "Get free NYC event picks" })).toHaveAttribute("href", "#newsletter");
-  await expect(page.getByRole("link", { name: "See upcoming events" })).toHaveAttribute("href", "/events");
-  await expect(page.locator(".pivot-actions")).toContainText("A short weekly email from Nick and Lucy — five events worth leaving the apartment for.");
-  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Newsletter" })).toHaveAttribute("href", "/newsletter");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Growth is better\s*in good company/);
+  await expect(page.getByRole("link", { name: "Get the best NYC events", exact: true })).toHaveAttribute("href", "#newsletter");
+  await expect(page.getByRole("link", { name: "Explore upcoming events", exact: true })).toHaveAttribute("href", "#events");
+  await expect(page.locator("#events")).toBeVisible();
+  await page.getByRole("link", { name: "Get the best NYC events", exact: true }).click();
+  await expect(page).toHaveURL(/\/#newsletter$/);
+  await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Read the latest newsletter" })).toHaveAttribute("href", "/newsletter");
 });
 
 test("the application form stays available from the public site", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Apply" }).first()).toHaveAttribute("href", "/apply?source=nav");
+  await expect(page.getByRole("link", { name: "Apply to join NYC", exact: true })).toHaveAttribute("href", "/apply?path=nyc");
+  await expect(page.getByRole("link", { name: "Apply to join global", exact: true })).toHaveAttribute("href", "/apply?path=global");
+  await page.getByRole("link", { name: "Apply to join NYC", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Apply for New York" })).toBeVisible();
 
   const response = await page.goto("/apply?source=nav");
 
@@ -129,13 +135,16 @@ test("legacy forum entrypoints point to the public profile direction", async ({ 
   }
 });
 
-test("public event and profile navigation is keyboard reachable", async ({ page }) => {
+test("public event and newsletter navigation is keyboard reachable", async ({ page }) => {
   await page.goto("/");
-  const events = page.getByRole("link", { name: "Events" }).first();
+  const navigation = page.getByRole("navigation", { name: "Main navigation" });
+  const events = navigation.getByRole("link", { name: "Events", exact: true });
   await events.focus();
   await expect(events).toBeFocused();
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "People + projects" }).first()).toBeFocused();
+  await expect(navigation.getByRole("link", { name: "Subscribe free", exact: true })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/#newsletter$/);
 });
 
 test("a verified person can claim, publish, and view a profile", async ({ page, request }) => {
