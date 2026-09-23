@@ -11,7 +11,7 @@ const valid = /^[a-f0-9]{64}$/.test(id) && /^[a-f0-9]{64}$/.test(token);
   <section class="shell listing-hero">
     <p class="eyebrow">Growth Circuit newsletter</p>
     <h1 id="confirmation-title">One more step.</h1>
-    <p id="confirmation-intro">Confirm your email to get the best NYC events for marketers, chosen by Nick and Lucy. You can unsubscribe anytime.</p>
+    <p id="confirmation-intro">Confirm your email to get our NYC event picks from Nick and Lucy. You can unsubscribe anytime.</p>
     {valid ? <form method="post" action="/api/newsletter/confirm" id="confirm-newsletter"><input type="hidden" name="id" value={id} /><input type="hidden" name="token" value={token} /><button class="button matcha" type="submit">Confirm subscription</button></form> : <p>This link is incomplete. <a href="/#newsletter">Sign up for a new link</a>.</p>}
     <p id="confirmation-status" role="status" aria-live="polite"></p>
     <div id="newsletter-next-step" hidden>

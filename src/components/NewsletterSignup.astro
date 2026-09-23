@@ -5,8 +5,8 @@ const { id = "newsletter" } = Astro.props;
 <section class="shell newsletter-section" id={id} aria-labelledby={`${id}-title`}>
   <div>
     <p class="eyebrow">A few good reasons to leave the apartment</p>
-    <h2 id={`${id}-title`}>The best NYC events for marketers</h2>
-    <p>Talks, demos, meetups, and Growth Circuit gatherings. Chosen by Nick and Lucy, emailed to you every week.</p>
+    <h2 id={`${id}-title`}>Get our NYC event picks.</h2>
+    <p>Public talks, demos, meetups, and Growth Circuit gatherings. A short list from Nick and Lucy for people building things in marketing, growth, and AI.</p>
   </div>
   <form method="post" action="/api/newsletter" class="newsletter-form" aria-label="Subscribe to the NYC newsletter">
     <label for={`${id}-email`}>Email address</label>
