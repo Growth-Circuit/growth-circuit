@@ -5,14 +5,14 @@ const { id = "newsletter" } = Astro.props;
 <section class="shell newsletter-section" id={id} aria-labelledby={`${id}-title`}>
   <div>
     <p class="eyebrow">A few good reasons to leave the apartment</p>
-    <h2 id={`${id}-title`}>Get our NYC event picks.</h2>
-    <p>Public talks, demos, meetups, and Growth Circuit gatherings. A short list from Nick and Lucy for people building things in marketing, growth, and AI.</p>
+    <h2 id={`${id}-title`}>The best NYC events for marketers</h2>
+    <p>Talks, demos, meetups, and Growth Circuit gatherings. Chosen by Nick and Lucy, emailed to you every week.</p>
   </div>
   <form method="post" action="/api/newsletter" class="newsletter-form" aria-label="Subscribe to the NYC newsletter">
     <label for={`${id}-email`}>Email address</label>
     <div class="newsletter-fields">
       <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required />
-      <button class="button matcha" type="submit">Subscribe free</button>
+      <button class="button matcha" type="submit">Email me the events</button>
     </div>
     <label class="newsletter-consent"><input name="consent" type="checkbox" required /> <span>I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.</span></label>
     <div class="newsletter-trap" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
