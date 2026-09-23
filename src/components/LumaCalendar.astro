@@ -1,4 +1,6 @@
 ---
+interface Props { loading?: "lazy" | "eager"; }
+const { loading = "lazy" } = Astro.props;
 const calendarUrl = "https://luma.com/growth-circuit";
 const embedUrl = "https://luma.com/embed/calendar/cal-l48U97luvjJDet7/events";
 ---
@@ -9,7 +11,7 @@ const embedUrl = "https://luma.com/embed/calendar/cal-l48U97luvjJDet7/events";
     title="Upcoming Growth Circuit events"
     width="600"
     height="540"
-    loading="lazy"
+    loading={loading}
     referrerpolicy="strict-origin-when-cross-origin"
   ></iframe>
   <p class="luma-calendar__link">

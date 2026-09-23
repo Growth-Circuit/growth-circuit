@@ -64,7 +64,7 @@ function applySecurityHeaders(response: Response, requestUrl: URL, noStore: bool
     "default-src 'self'",
     "base-uri 'self'",
     "frame-ancestors 'none'",
-    `frame-src 'self'${["/", "/events", "/events/"].includes(requestUrl.pathname) ? " https://luma.com" : ""}`,
+    `frame-src 'self'${["/", "/events", "/events/", "/homepage-preview", "/homepage-preview/"].includes(requestUrl.pathname) ? " https://luma.com" : ""}`,
     "form-action 'self'",
     "object-src 'none'",
     "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com",
