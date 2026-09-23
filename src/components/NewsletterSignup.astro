@@ -12,7 +12,7 @@ const { id = "newsletter" } = Astro.props;
     <label for={`${id}-email`}>Email address</label>
     <div class="newsletter-fields">
       <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required />
-      <button class="button matcha" type="submit">Subscribe free</button>
+      <button class="button matcha" type="submit">Email me the events</button>
     </div>
     <label class="newsletter-consent"><input name="consent" type="checkbox" required /> <span>I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.</span></label>
     <div class="newsletter-trap" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
