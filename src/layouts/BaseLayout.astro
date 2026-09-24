@@ -4,6 +4,7 @@ import { canonical, organizationJsonLd, serializeJsonLd } from "@/lib/seo";
 
 type Props = {
   title?: string;
+  appendSiteName?: boolean;
   description?: string;
   path?: string;
   noindex?: boolean;
@@ -17,6 +18,7 @@ type Props = {
 
 const {
   title = "Growth Circuit",
+  appendSiteName = true,
   description = "An NYC-first community for people building growth systems.",
   path = Astro.url.pathname,
   noindex = false,
@@ -28,7 +30,7 @@ const {
   socialType = "website",
 } = Astro.props;
 
-const fullTitle = title === "Growth Circuit" ? title : `${title} | Growth Circuit`;
+const fullTitle = !appendSiteName || title === "Growth Circuit" ? title : `${title} | Growth Circuit`;
 const canonicalUrl = canonical(path);
 const socialImageUrl = socialImage ? canonical(socialImage) : canonical("/growth-circuit-og-v4.png");
 const socialImageAlt = suppliedSocialImageAlt || "Growth Circuit: Build with people who get what you do. New York City skyline framed by trees and a sunlit park.";
