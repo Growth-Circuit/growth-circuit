@@ -30,8 +30,8 @@ const {
 
 const fullTitle = title === "Growth Circuit" ? title : `${title} | Growth Circuit`;
 const canonicalUrl = canonical(path);
-const socialImageUrl = socialImage ? canonical(socialImage) : canonical("/growth-circuit-og-v3.png");
-const socialImageAlt = suppliedSocialImageAlt || "Growth Circuit, an NYC-first community for people building growth systems.";
+const socialImageUrl = socialImage ? canonical(socialImage) : canonical("/growth-circuit-og-v4.png");
+const socialImageAlt = suppliedSocialImageAlt || "Growth Circuit: Build with people who get what you do. New York City skyline framed by trees and a sunlit park.";
 const allJsonLd = [organizationJsonLd(), ...jsonLd];
 const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
 ---
@@ -58,7 +58,7 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
     <meta property="og:image:secure_url" content={socialImageUrl} />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:height" content={socialImage ? "630" : "628"} />
     <meta property="og:image:alt" content={socialImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
