@@ -6,7 +6,7 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
   const response = await page.goto("/");
 
   expect(response?.ok()).toBe(true);
-  await expect(page).toHaveTitle("Growth Circuit");
+  await expect(page).toHaveTitle("Growth Circuit | A Global Community Of Marketing Engineers");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Growth is better\s*in good company/);
   await expect(page.getByRole("link", { name: "Get the best NYC events", exact: true })).toHaveAttribute("href", "#newsletter");
   await expect(page.getByRole("link", { name: "Explore upcoming events", exact: true })).toHaveAttribute("href", "#events");
