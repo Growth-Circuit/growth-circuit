@@ -40,7 +40,7 @@ test("published issues render and unpublished slugs stay unpublished", async ({ 
     "href",
     "https://partiful.com/e/jYUQe3gneYdU6RlIpO0B",
   );
-  await expect(page.getByRole("link", { name: "Nick Lafferty" })).toHaveAttribute(
+  await expect(page.locator(".newsletter-issue-body").getByRole("link", { name: "Nick Lafferty" })).toHaveAttribute(
     "href",
     "https://www.linkedin.com/in/nicklafferty/",
   );
