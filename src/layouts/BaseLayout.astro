@@ -1,5 +1,6 @@
 ---
 import "@/styles/global.css";
+import SiteHeader from "@/components/SiteHeader.astro";
 import { canonical, organizationJsonLd, serializeJsonLd } from "@/lib/seo";
 
 type Props = {
@@ -70,24 +71,7 @@ const themeColor = bodyClass?.includes("sky-page") ? "#dceef5" : "#101418";
     {allJsonLd.map((entry) => <script is:inline type="application/ld+json" set:html={serializeJsonLd(entry)} />)}
   </head>
   <body class={bodyClass}>
-    {
-      !hideHeader && (
-        <header class="site-header">
-          <div class="shell nav">
-            <a class="brand" href="/" aria-label="Growth Circuit home">
-              <img class="brand-logo" src="/growth-circuit-icon.svg" alt="" width="44" height="44" />
-              <span>Growth Circuit</span>
-            </a>
-            <nav class="nav-links" aria-label="Main navigation">
-              <a href="/newsletter">Newsletter</a>
-              <a href="/events">Events</a>
-              <a href="/people">People + projects</a>
-              <a href="/apply?source=nav">Apply</a>
-            </nav>
-          </div>
-        </header>
-      )
-    }
+    {!hideHeader && <SiteHeader />}
     <main>
       <slot />
     </main>
