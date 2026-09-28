@@ -15,7 +15,7 @@ const { id = "newsletter", showArchiveLink = false, formOnly = false } = Astro.p
       <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="254" placeholder={formOnly ? "your email address" : "you@example.com"} required />
       <button class="button matcha" type="submit">Email me the events</button>
     </div>
-    <label class="newsletter-consent"><input name="consent" type="checkbox" required /> <span>I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.</span></label>
+    <label class="newsletter-consent"><input name="consent" type="checkbox" checked required /> <span>I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.</span></label>
     <div class="newsletter-trap" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
     <p class="newsletter-status" role="status" aria-live="polite"></p>
     <noscript>Please enable JavaScript to use this signup form.</noscript>
