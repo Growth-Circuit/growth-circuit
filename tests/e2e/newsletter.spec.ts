@@ -71,6 +71,8 @@ for (const width of [1440, 390]) {
     });
     await page.goto("/");
     const form = page.locator(".gc-hero .newsletter-form");
+    await expect(form.getByRole("checkbox")).toBeChecked();
+    await form.getByRole("checkbox").uncheck();
     await form.getByLabel("Email address", { exact: true }).fill("reader@example.com");
     await form.getByRole("button", { name: "Email me the events" }).click();
     expect(submissions).toBe(0);
