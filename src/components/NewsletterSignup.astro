@@ -1,12 +1,13 @@
 ---
-interface Props { id?: string; }
-const { id = "newsletter" } = Astro.props;
+interface Props { id?: string; showArchiveLink?: boolean; }
+const { id = "newsletter", showArchiveLink = false } = Astro.props;
 ---
 <section class="shell newsletter-section" id={id} aria-labelledby={`${id}-title`}>
   <div>
     <p class="eyebrow">A few good reasons to leave the apartment</p>
     <h2 id={`${id}-title`}>Find the best NYC events for marketers</h2>
     <p>Public talks, demos, meetups, and Growth Circuit gatherings. A short list from Nick and Lucy for people building things in marketing, growth, and AI.</p>
+    {showArchiveLink && <p><a class="newsletter-archive-link" href="/newsletter">Read past newsletters →</a></p>}
   </div>
   <form method="post" action="/api/newsletter" class="newsletter-form" aria-label="Subscribe to the NYC newsletter">
     <label for={`${id}-email`}>Email address</label>
@@ -44,6 +45,7 @@ const { id = "newsletter" } = Astro.props;
   .newsletter-section { display:grid; grid-template-columns:1.1fr 1fr; gap:3rem; padding-top:4rem; padding-bottom:4rem; border-top:1px solid #b9c8c2; }
   .newsletter-section h2 { font-size:clamp(2rem,4vw,3rem); line-height:1.1; margin:.7rem 0 1rem; }
   .newsletter-section p { line-height:1.6; max-width:38rem; }
+  .newsletter-archive-link { font-weight:600; text-decoration:underline; text-underline-offset:4px; }
   .newsletter-form { align-self:center; }
   .newsletter-form > label { display:block; font-weight:600; margin-bottom:.6rem; }
   .newsletter-fields { display:flex; gap:.6rem; }
