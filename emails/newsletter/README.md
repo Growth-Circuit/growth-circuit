@@ -16,7 +16,7 @@ After a send, publish that issue on the website:
 
 1. Copy `issue-template.md` to `src/content/newsletter/YYYY-MM-DD.md`.
 2. Match `slug` and the filename to the send date, for example `2026-09-21`.
-3. Write the four sections in the body: Upcoming Growth Circuit Events, NYC Events This Week, Coming up, Best thing I read this week.
+3. Write the four sections in the body: Upcoming Growth Circuit Events (link Growth Circuit), Cool NYC Events This Week, Coming up, Best thing I read this week.
 4. Leave `draft: true` while you edit. Remove it after the email goes out, then deploy. The issue appears at `/newsletter/YYYY-MM-DD` and on `/newsletter`.
 5. Publish only public details. Do not check in guest lists, private Luma or meeting links, hidden addresses, or subscriber emails.
 
