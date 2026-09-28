@@ -39,6 +39,7 @@ if (!issue) return new Response("Not found", { status: 404 });
     <h1>{issue.title}</h1>
     <p>{issue.description}</p>
     <p class="newsletter-issue-byline">From Nick and Lucy</p>
+    <p class="newsletter-issue-signup"><a href="#newsletter">Get free NYC event picks →</a></p>
   </article>
   <div class="shell newsletter-issue-body" set:html={issue.html} />
   <p class="shell newsletter-issue-back"><a href="/newsletter">All issues →</a></p>

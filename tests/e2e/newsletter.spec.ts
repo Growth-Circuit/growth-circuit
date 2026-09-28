@@ -44,6 +44,13 @@ test("published issues render and unpublished slugs stay unpublished", async ({ 
     "href",
     "https://www.linkedin.com/in/nicklafferty/",
   );
+  const heroSignup = page.locator(".listing-hero").getByRole("link", { name: "Get free NYC event picks →" });
+  await expect(heroSignup).toBeVisible();
+  await expect(heroSignup).toHaveAttribute("href", "#newsletter");
+  await heroSignup.click();
+  await expect(page).toHaveURL(/\/newsletter\/2026-09-28\/#newsletter$/);
+  await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toHaveCount(1);
+  await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
 
   const missing = await page.goto("/newsletter/2099-01-01/");
   expect(missing?.status()).toBe(404);
