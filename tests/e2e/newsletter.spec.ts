@@ -55,3 +55,32 @@ test("published issues render and unpublished slugs stay unpublished", async ({ 
   const missing = await page.goto("/newsletter/2099-01-01/");
   expect(missing?.status()).toBe(404);
 });
+
+for (const width of [1440, 390]) {
+  test(`hero signup keeps consent and supports retry at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    let submissions = 0;
+    await page.route("**/api/newsletter", async (route) => {
+      submissions += 1;
+      expect(route.request().postDataJSON()).toEqual({ email: "reader@example.com", consent: true, website: "" });
+      await route.fulfill({
+        status: submissions === 1 ? 503 : 200,
+        contentType: "application/json",
+        body: JSON.stringify(submissions === 1 ? { error: "Please try again shortly." } : { ok: true }),
+      });
+    });
+    await page.goto("/");
+    const form = page.locator(".gc-hero .newsletter-form");
+    await form.getByLabel("Email address", { exact: true }).fill("reader@example.com");
+    await form.getByRole("button", { name: "Email me the events" }).click();
+    expect(submissions).toBe(0);
+    await form.getByRole("checkbox").check();
+    await form.getByRole("button", { name: "Email me the events" }).click();
+    await expect(form.getByRole("status")).toHaveText("Please try again shortly.");
+    await form.getByRole("button", { name: "Email me the events" }).click();
+    await expect(form.getByRole("status")).toContainText("Check your inbox to confirm.");
+    expect(submissions).toBe(2);
+    await expect(form.getByLabel("Email address", { exact: true })).toBeEmpty();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+}
