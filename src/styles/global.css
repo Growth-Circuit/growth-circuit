@@ -2417,6 +2417,18 @@ h1 {
   font-weight: 650;
 }
 
+.listing-hero > p.newsletter-issue-signup {
+  margin-top: 14px;
+  font-size: 15px;
+}
+
+.newsletter-issue-signup a {
+  color: var(--pivot-navy);
+  font-weight: 760;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .newsletter-issue-body {
   max-width: min(760px, calc(100% - 32px));
   padding-bottom: 48px;
