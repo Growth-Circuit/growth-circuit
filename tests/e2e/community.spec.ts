@@ -138,6 +138,9 @@ test("legacy forum entrypoints point to the public profile direction", async ({ 
 test("public event and newsletter navigation is keyboard reachable", async ({ page }) => {
   await page.goto("/");
   const navigation = page.getByRole("navigation", { name: "Main navigation" });
+  const newsletter = navigation.getByRole("link", { name: "Newsletter", exact: true });
+  await expect(newsletter).toBeVisible();
+  await expect(newsletter).toHaveAttribute("href", "/newsletter");
   const events = navigation.getByRole("link", { name: "Events", exact: true });
   await events.focus();
   await expect(events).toBeFocused();
@@ -145,6 +148,11 @@ test("public event and newsletter navigation is keyboard reachable", async ({ pa
   await expect(navigation.getByRole("link", { name: "Subscribe free", exact: true })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/#newsletter$/);
+
+  await page.goto("/");
+  await navigation.getByRole("link", { name: "Newsletter", exact: true }).click();
+  await expect(page).toHaveURL(/\/newsletter\/?$/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("The NYC shortlist, saved here.");
 });
 
 test("a verified person can claim, publish, and view a profile", async ({ page, request }) => {
