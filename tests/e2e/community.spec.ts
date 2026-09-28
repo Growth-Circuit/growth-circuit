@@ -19,9 +19,9 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
 
 test("the application form stays available from the public site", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Apply to join NYC", exact: true })).toHaveAttribute("href", "/apply?path=nyc");
+  await expect(page.getByRole("link", { name: "Join the Growth Circuit WhatsApp Community", exact: true })).toHaveAttribute("href", "/apply?path=nyc");
   await expect(page.getByRole("link", { name: "Apply to join global", exact: true })).toHaveCount(0);
-  await page.getByRole("link", { name: "Apply to join NYC", exact: true }).click();
+  await page.getByRole("link", { name: "Join the Growth Circuit WhatsApp Community", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Apply for New York" })).toBeVisible();
 
   const response = await page.goto("/apply?source=nav");
