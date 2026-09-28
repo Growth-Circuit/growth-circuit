@@ -1,25 +1,37 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
-import NycEventPicks from "@/components/NycEventPicks.astro";
 import LumaCalendar from "@/components/LumaCalendar.astro";
+import { formatNewsletterIssueDate, listPublishedNewsletterIssues } from "@/lib/newsletter-issues";
+
+const issues = await listPublishedNewsletterIssues();
 ---
 
-<BaseLayout title="Events" description="Upcoming Growth Circuit events in New York City and online. Browse the calendar and RSVP on Luma." path="/events" bodyClass="sky-page pivot-page">
+<BaseLayout title="Events" description="Read past NYC event newsletters, then find upcoming Growth Circuit events and RSVP on Luma." path="/events" bodyClass="sky-page pivot-page">
   <section class="shell listing-hero">
     <p class="eyebrow">Growth Circuit in New York</p>
-    <h1>Come meet the people building growth systems.</h1>
-    <p>Find our next meetup, apartment gathering, or online show &amp; tell. Come by yourself or bring someone who should be in the room.</p>
+    <h1>Past event newsletters.</h1>
+    <p>Our weekly shortlist of NYC talks, demos, meetups, and gatherings. Pick an issue to see what made the list.</p>
   </section>
-  <NycEventPicks />
+  <section class="shell newsletter-archive" aria-label="Past event newsletters">
+    {issues.length ? (
+      <ol class="newsletter-issue-list">
+        {issues.map((issue) => (
+          <li>
+            <a class="newsletter-issue-card" href={issue.path}>
+              <p class="eyebrow"><time datetime={issue.publishedAt}>{formatNewsletterIssueDate(issue.publishedAt)}</time></p>
+              <h2>{issue.title}</h2>
+              <p>{issue.description}</p>
+              <span>Read this issue →</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    ) : <p>No newsletters published yet. Subscribe below to get the next shortlist.</p>}
+  </section>
   <section class="shell calendar-section" aria-label="Upcoming Growth Circuit events">
-    <div class="section-intro"><p class="eyebrow">Hosted by Growth Circuit</p><h2>Come to the next one.</h2></div>
+    <div class="section-intro"><p class="eyebrow">Hosted by Growth Circuit</p><h2>Upcoming Growth Circuit events.</h2><p>Find our next meetup, apartment gathering, or online show &amp; tell. Come by yourself or bring someone who should be in the room.</p></div>
     <LumaCalendar />
   </section>
-  <section class="shell supper-banner">
-    <p class="eyebrow">A smaller table</p>
-    <h2>Supper clubs are invite-only.</h2>
-    <p>Nick and Lucy curate smaller dinners by hand from people they meet at larger Growth Circuit events.</p>
-  </section>
-  <NewsletterSignup showArchiveLink />
+  <NewsletterSignup />
 </BaseLayout>
