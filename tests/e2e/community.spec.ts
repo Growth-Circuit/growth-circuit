@@ -7,11 +7,11 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
 
   expect(response?.ok()).toBe(true);
   await expect(page).toHaveTitle("Growth Circuit | A Global Community Of Marketing Engineers");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Growth is better\s*in good company/);
-  await expect(page.getByRole("link", { name: "Get the best NYC events", exact: true })).toHaveAttribute("href", "#newsletter");
-  await expect(page.getByRole("link", { name: "Explore upcoming events", exact: true })).toHaveAttribute("href", "#events");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Find the best NYC events for marketers");
+  await expect(page.locator(".gc-hero .newsletter-form")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: /Growth is better\s*in good company/ })).toBeVisible();
   await expect(page.locator("#events")).toBeVisible();
-  await page.getByRole("link", { name: "Get the best NYC events", exact: true }).click();
+  await page.getByRole("link", { name: "Subscribe free", exact: true }).click();
   await expect(page).toHaveURL(/\/#newsletter$/);
   await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Read the latest newsletter" })).toHaveAttribute("href", "/newsletter");
@@ -20,7 +20,7 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
 test("the application form stays available from the public site", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("link", { name: "Apply to join NYC", exact: true })).toHaveAttribute("href", "/apply?path=nyc");
-  await expect(page.getByRole("link", { name: "Apply to join global", exact: true })).toHaveAttribute("href", "/apply?path=global");
+  await expect(page.getByRole("link", { name: "Apply to join global", exact: true })).toHaveCount(0);
   await page.getByRole("link", { name: "Apply to join NYC", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Apply for New York" })).toBeVisible();
 
