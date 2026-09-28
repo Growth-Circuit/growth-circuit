@@ -7,7 +7,7 @@ test("the newsletter archive lists published issues and signup", async ({ page }
   await expect(page).toHaveTitle(/Newsletter/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("The NYC shortlist, saved here.");
   await expect(page.getByRole("heading", { name: "NYC marketing events 9/28" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "NYC marketing events this week" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NYC marketing events 9/21" })).toBeVisible();
   const issueLinks = page.getByRole("link", { name: /Read this issue/ });
   await expect(issueLinks).toHaveCount(2);
   await expect(issueLinks.nth(0)).toHaveAttribute("href", "/newsletter/2026-09-28");
@@ -25,7 +25,7 @@ test("published issues render and unpublished slugs stay unpublished", async ({ 
 
   const issue = await page.goto("/newsletter/2026-09-21/");
   expect(issue?.ok()).toBe(true);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("NYC marketing events this week");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("NYC marketing events 9/21");
   await expect(page.getByRole("heading", { name: "Upcoming Growth Circuit Events" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC Events This Week" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Show & Tell" })).toHaveAttribute("href", "https://luma.com/8byybca1");
