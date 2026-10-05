@@ -59,6 +59,22 @@ body::before {
   z-index: -1;
 }
 
+/* Typography: see docs/design-system.md. Avoid short trailing lines. */
+:where(h1, h2, h3, h4, h5, h6),
+.text-balance {
+  text-wrap: balance;
+}
+
+:where(p, li, figcaption, blockquote),
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* Keep short closing phrases intact when wrapping alone is insufficient. */
+.keep-together {
+  white-space: nowrap;
+}
+
 a {
   color: inherit;
   text-decoration: none;
