@@ -25,6 +25,10 @@ for (const width of [320, 390, 768, 1440]) {
       return [...rows.values()];
     });
     expect(lines.at(-1)!.length, JSON.stringify(lines)).toBeGreaterThanOrEqual(3);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const layout = await page.evaluate(() => ({
+      fits: document.documentElement.scrollWidth <= innerWidth,
+      overflowing: [...document.querySelectorAll("body *")].filter(el => el.getBoundingClientRect().right > innerWidth + 1).map(el => ({ tag: el.tagName, class: el.className, text: el.textContent?.trim().slice(0, 80) })),
+    }));
+    expect(layout.fits, JSON.stringify(layout.overflowing)).toBe(true);
   });
 }
