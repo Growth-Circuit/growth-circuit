@@ -18,3 +18,5 @@ export const featuredMembers = [
   { name: "Cheryl Wolf", initials: "CW", company: "Vercel", detail: "Enterprise marketing", linkedin: "https://www.linkedin.com/in/wolf-cheryl/", photo: "/community/members/cheryl-wolf.png" },
   { name: "Steven Male", initials: "SM", company: "Clay", detail: "AI education & community", linkedin: "https://www.linkedin.com/in/stevenmale/", photo: "/community/members/steven-male.jpeg" },
 ];
+
+export const memberAnchor = (name: string) => `member-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;

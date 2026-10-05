@@ -1,27 +1,102 @@
 ---
-import { communityCompanies } from "@/data/featured-community";
+import { communityCompanies, featuredMembers, memberAnchor } from "@/data/featured-community";
 ---
 <section class="community-companies" aria-labelledby="companies-title">
   <div class="shell">
     <h2 id="companies-title">Growth Circuit members <span class="keep-together">include marketers from</span></h2>
     <ul class="company-wall" role="list">
-      {communityCompanies.map((company) => <li title={`${company.name}: ${company.connection}`}>
-        <div class:list={["company-logo", { "company-logo-mark": company.mark }]}>
+      {communityCompanies.map((company) => {
+        const member = featuredMembers.find((person) => company.connection.startsWith(person.name));
+        const Logo = <div class:list={["company-logo", { "company-logo-mark": company.mark }]}>
           <img src={`/community/logos/${company.logo}`} alt={company.mark ? "" : company.name} width={company.mark ? 42 : 150} height="36" loading="lazy" />
           {company.mark && <span>{company.name}</span>}
-        </div>
-      </li>)}
+        </div>;
+        return <li>
+          {member ? <a class="company-link" href={`#${memberAnchor(member.name)}`} aria-label={`Meet ${member.name}, ${member.detail}${company.name === "Block" ? ", previously at Block" : ""}`}>
+            {Logo}
+            <span class="member-reveal" aria-hidden="true">
+              <span class="reveal-portrait"><img src={member.photo} alt="" width="52" height="52" loading="lazy" /></span>
+              <span class="reveal-copy"><strong>{member.name}</strong><span class="reveal-role">{member.detail}</span><span class="reveal-invitation">{company.name === "Block" ? "Previously at Block · Meet Andy" : `Meet ${member.name.split(" ")[0]}`}</span></span>
+              <svg class="reveal-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m-5-5 5 5 5-5" /></svg>
+            </span>
+          </a> : <div class="company-static" title={`${company.name}: ${company.connection}`}>{Logo}</div>}
+        </li>;
+      })}
     </ul>
   </div>
 </section>
+<script>
+  const links = document.querySelectorAll<HTMLAnchorElement>(".company-link");
+  function closeReveals() { links.forEach((link) => delete link.dataset.open); }
+  function positionReveal(link: HTMLAnchorElement) {
+    const panel = link.querySelector<HTMLElement>(".member-reveal")!;
+    panel.style.setProperty("--shift", "0px");
+    const anchor = link.getBoundingClientRect();
+    const left = anchor.left + anchor.width / 2 - panel.offsetWidth / 2;
+    const shift = Math.max(16 - left, Math.min(0, window.innerWidth - 16 - left - panel.offsetWidth));
+    panel.style.setProperty("--shift", `${shift}px`);
+  }
+  links.forEach((link) => {
+    positionReveal(link);
+    let touch = false;
+    link.addEventListener("pointerenter", (event) => {
+      delete link.dataset.dismissed;
+      positionReveal(link);
+      if (event.pointerType !== "touch") { closeReveals(); link.dataset.open = "true"; }
+    });
+    link.addEventListener("pointerleave", (event) => { if (event.pointerType !== "touch") delete link.dataset.open; });
+    link.addEventListener("focus", () => { if (touch) return; delete link.dataset.dismissed; closeReveals(); positionReveal(link); link.dataset.open = "true"; });
+    link.addEventListener("blur", () => delete link.dataset.open);
+    link.addEventListener("pointerdown", (event) => { touch = event.pointerType === "touch"; });
+    link.addEventListener("click", (event) => {
+      if (touch && !link.dataset.open) {
+        event.preventDefault(); closeReveals(); positionReveal(link); link.dataset.open = "true"; touch = false; return;
+      }
+      closeReveals();
+      const target = document.querySelector<HTMLElement>(link.hash);
+      if (target) {
+        event.preventDefault();
+        history.pushState(null, "", link.hash);
+        target.focus({ preventScroll: true });
+        target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "center" });
+      }
+      touch = false;
+    });
+  });
+  document.addEventListener("pointerdown", (event) => { if (!(event.target as Element).closest(".company-link")) closeReveals(); });
+  document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeReveals(); });
+  window.addEventListener("resize", () => links.forEach(positionReveal));
+  window.addEventListener("load", () => links.forEach(positionReveal));
+</script>
 <style>
-  .community-companies{background:#e9f3f6;border-bottom:1px solid #d4e5eb;color:#17313a;padding:36px 0 40px;}
+  .community-companies{position:relative;z-index:2;background:#e9f3f6;border-bottom:1px solid #d4e5eb;color:#17313a;padding:36px 0 40px;}
   h2{font-size:14px;font-weight:500;text-align:center;color:#4d6570;line-height:1.6;margin:0 0 28px;}
   .company-wall{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:28px 40px;padding:0;margin:0 auto;max-width:900px;list-style:none;}
   li{display:flex;justify-content:center;align-items:center;min-height:40px;}
-  .company-logo{display:flex;align-items:center;justify-content:center;gap:10px;}
-  img{width:125px;height:30px;object-fit:contain;filter:grayscale(1);}
+  .company-link,.company-static{position:relative;display:flex;align-items:center;justify-content:center;min-height:48px;text-decoration:none;color:inherit;}
+  .company-link{isolation:isolate;outline-offset:7px;border-radius:8px;}
+  .company-link:focus-visible{outline:2px solid #287f91;}
+  .company-link::before{content:"";position:absolute;inset:-12px -18px;border-radius:18px;background:#d9eae8;opacity:0;transform:scale(.88);transition:opacity .3s,transform .45s cubic-bezier(.2,.8,.2,1);z-index:-1;}
+  .company-logo{display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .45s cubic-bezier(.2,.8,.2,1),filter .3s;}
+  .company-logo img{width:125px;height:30px;object-fit:contain;filter:grayscale(1);}
   .company-logo-mark img{width:32px;height:32px;}
   .company-logo-mark span{font-size:19px;line-height:1.2;font-weight:700;letter-spacing:-.035em;max-width:95px;}
-  @media(max-width:700px){.community-companies{padding:28px 0;}h2{max-width:280px;margin:0 auto 25px;font-size:13px;}.company-wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 14px;}.company-logo{width:100%;}img{width:100%;max-width:95px;height:28px;}.company-logo-mark{flex-direction:column;gap:6px;}.company-logo-mark span{font-size:13px;text-align:center;max-width:none;}.company-logo-mark img{width:26px;height:26px;}}
+  .company-link[data-open]::before{opacity:1;transform:scale(1);}
+  .company-link[data-open] .company-logo{transform:translateY(-3px);}
+  .company-link[data-open]{z-index:4;}
+  .member-reveal{--shift:0px;position:absolute;top:calc(100% + 15px);left:calc(50% + var(--shift));display:flex;align-items:center;gap:14px;width:340px;max-width:calc(100vw - 32px);padding:20px;border-radius:18px;background:#fffefb;color:#17313a;border:1px solid #d4e5df;box-shadow:0 20px 42px -16px #17313a40,0 4px 12px -4px #17313a12;opacity:0;visibility:hidden;transform:translate(-50%,8px) scale(.96);transform-origin:50% 0;transition:opacity .2s,transform .4s cubic-bezier(.16,1,.3,1),visibility .2s;pointer-events:none;}
+  .member-reveal::before{content:"";position:absolute;top:-7px;left:calc(50% - var(--shift));width:12px;height:12px;background:#fffefb;border-left:1px solid #d4e5df;border-top:1px solid #d4e5df;transform:translateX(-50%) rotate(45deg);}
+  .company-link[data-open] .member-reveal{opacity:1;visibility:visible;transform:translate(-50%,0) scale(1);pointer-events:auto;}
+  .member-reveal::after{content:"";position:absolute;bottom:100%;left:0;right:0;height:20px;}
+  .reveal-portrait{display:block;flex-shrink:0;width:52px;height:52px;border-radius:50%;padding:3px;border:1px solid #b9d2c2;}
+  .reveal-portrait img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 20%;border-radius:50%;}
+  .reveal-copy{display:flex;flex-direction:column;min-width:0;gap:4px;}
+  .reveal-copy strong{font-size:15px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;}
+  .reveal-role{font-size:12px;line-height:1.5;color:#4d6570;text-wrap:balance;}
+  .reveal-invitation{font-size:11px;line-height:1.5;color:#355e49;margin-top:5px;}
+  .reveal-arrow{margin-left:auto;flex-shrink:0;color:#355e49;transition:transform .4s cubic-bezier(.16,1,.3,1);}
+  .company-link[data-open] .reveal-arrow{transform:translateY(2px);}
+  @media(max-width:700px){.community-companies{padding:28px 0;}h2{max-width:280px;margin:0 auto 25px;font-size:13px;}.company-wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 14px;}.company-link,.company-static,.company-logo{width:100%;}.company-logo img{width:100%;max-width:95px;height:28px;}.company-logo-mark{flex-direction:column;gap:6px;}.company-logo-mark span{font-size:13px;text-align:center;max-width:none;}.company-logo-mark img{width:26px;height:26px;}.company-link::before{inset:-8px;}.member-reveal{padding:17px;gap:12px;}}
+  @media(max-width:370px){.reveal-arrow{display:none;}}
+  @media(prefers-reduced-motion:reduce){.company-logo,.company-link::before,.member-reveal,.reveal-arrow{transition:none;}}
 </style>
