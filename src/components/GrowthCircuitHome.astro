@@ -3,6 +3,8 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import SiteHeader from "@/components/SiteHeader.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import LumaCalendar from "@/components/LumaCalendar.astro";
+import CommunityLogoWall from "@/components/CommunityLogoWall.astro";
+import FeaturedMembers from "@/components/FeaturedMembers.astro";
 
 interface Props { preview?: boolean; }
 const { preview = false } = Astro.props;
@@ -27,6 +29,8 @@ const { preview = false } = Astro.props;
     </div>
   </section>
 
+  <CommunityLogoWall />
+
   <section class="gc-in-person" id="events" aria-labelledby="events-title"><div class="shell gc-events-inner"><div class="gc-events-intro"><h2 id="events-title">Make room for a hello.</h2><p>Find our next NYC gathering or online show &amp; tell. Come solo, bring a friend, and meet the people behind the work.</p></div><p class="gc-events-archive"><a class="gc-link" href="/newsletter">Read the latest newsletter</a></p><LumaCalendar loading="eager" /></div></section>
 
   <section class="shell gc-community" id="how-it-works" aria-labelledby="community-title">
@@ -38,6 +42,8 @@ const { preview = false } = Astro.props;
     </div>
     <div class="gc-community-next" id="join"><a class="gc-link" href="/apply?path=nyc">Join the Growth Circuit WhatsApp Community</a><p>Subscribe to get the latest event list. A few days later, we’ll send an invitation to join the conversation on WhatsApp.</p><p class="gc-privacy">WhatsApp is optional. Other members of the group can see your phone number. We review community applications before sharing an invite.</p></div>
   </section>
+
+  <FeaturedMembers />
 
   <section class="gc-hosts" aria-label="Meet your hosts"><div class="shell gc-hosts-inner">
     <div class="gc-host-intro"><h2>Built by people<br />doing the work.</h2><p>We’re Nick and Lucy. We started Growth Circuit to meet more people building things in marketing, growth, and AI. Come say hello.</p></div>
