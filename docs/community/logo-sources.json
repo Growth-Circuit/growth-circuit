@@ -1,0 +1,38 @@
+[
+  {
+    "file": "block.svg",
+    "source": "https://block.xyz"
+  },
+  {
+    "file": "carta.svg",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Carta-logo.svg"
+  },
+  {
+    "file": "clay.avif",
+    "source": "https://cdn.prod.website-files.com/61477f2c24a826836f969afe/6778506d788ebf16fef48551_Clay%20primary%20logo.avif"
+  },
+  {
+    "file": "figma.svg",
+    "source": "https://www.figma.com"
+  },
+  {
+    "file": "infinite-machine.svg",
+    "source": "https://www.infinitemachine.com"
+  },
+  {
+    "file": "mutiny.svg",
+    "source": "https://framerusercontent.com/images/nvUQEnQpxHWc1WSbIF3k1J6VJ4.svg"
+  },
+  {
+    "file": "profound.svg",
+    "source": "https://www.tryprofound.com/spritesheet.svg#profound-logotype"
+  },
+  {
+    "file": "toast.svg",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Toast_logo.svg"
+  },
+  {
+    "file": "vercel.svg",
+    "source": "https://vercel.com"
+  }
+]

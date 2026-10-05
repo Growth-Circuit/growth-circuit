@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import FeaturedMembers from "@/components/FeaturedMembers.astro";
 import { profileInitials } from "@/lib/public-profile";
 
 const { data } = Astro.locals.supabase
@@ -17,8 +18,10 @@ const signedIn = Boolean(Astro.locals.communityIdentity.user);
     <div class="profile-hero-actions"><a class="button matcha" href={signedIn ? "/people/edit" : "/people/claim"}>{signedIn ? "Edit your profile" : "Claim your profile"}</a>{Astro.locals.communityIdentity.role === "admin" && <a class="pivot-text-link" href="/people/admin">Moderate profiles →</a>}</div>
   </section>
 
+  <FeaturedMembers directory />
+
   <section class="shell public-directory" aria-label="People and projects">
-    {profiles.length === 0 ? <div class="directory-empty"><p>Nobody here yet. Claim the first profile.</p><a href="/people/claim">Claim your profile →</a></div> : <div class="public-profile-grid">
+    {profiles.length === 0 ? <div class="directory-empty"><p>Have something to share? Add your own profile and projects.</p><a href="/people/claim">Claim your profile →</a></div> : <div class="public-profile-grid">
       {profiles.map((profile) => <a class="public-profile-card" href={`/people/${profile.handle}`}>
         <div class="public-profile-card__top"><span>@{profile.handle}</span><span>{profile.location || "Growth Circuit"}</span></div>
         <div class="public-profile-card__identity"><div class="profile-preview__avatar">{profileInitials(profile.first_name, profile.last_name)}</div><div><h2>{profile.first_name} {profile.last_name}</h2><p>{profile.headline}</p></div></div>

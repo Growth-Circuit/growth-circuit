@@ -1,0 +1,27 @@
+---
+import { communityCompanies } from "@/data/featured-community";
+---
+<section class="community-companies" aria-labelledby="companies-title">
+  <div class="shell">
+    <h2 id="companies-title">Our community includes people who work or have worked at</h2>
+    <ul class="company-wall" role="list">
+      {communityCompanies.map((company) => <li title={`${company.name}: ${company.connection}`}>
+        <div class:list={["company-logo", { "company-logo-mark": company.mark }]}>
+          <img src={`/community/logos/${company.logo}`} alt={company.mark ? "" : company.name} width={company.mark ? 42 : 150} height="36" loading="lazy" />
+          {company.mark && <span>{company.name}</span>}
+        </div>
+      </li>)}
+    </ul>
+  </div>
+</section>
+<style>
+  .community-companies{background:#e9f3f6;border-bottom:1px solid #d4e5eb;color:#17313a;padding:36px 0 40px;}
+  h2{font-size:14px;font-weight:500;text-align:center;color:#4d6570;line-height:1.6;margin:0 0 28px;}
+  .company-wall{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:28px 40px;padding:0;margin:0 auto;max-width:900px;list-style:none;}
+  li{display:flex;justify-content:center;align-items:center;min-height:40px;}
+  .company-logo{display:flex;align-items:center;justify-content:center;gap:10px;}
+  img{width:125px;height:30px;object-fit:contain;filter:grayscale(1);}
+  .company-logo-mark img{width:32px;height:32px;}
+  .company-logo-mark span{font-size:19px;line-height:1.2;font-weight:700;letter-spacing:-.035em;max-width:95px;}
+  @media(max-width:700px){.community-companies{padding:28px 0;}h2{max-width:280px;margin:0 auto 25px;font-size:13px;}.company-wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 14px;}.company-logo{width:100%;}img{width:100%;max-width:95px;height:28px;}.company-logo-mark{flex-direction:column;gap:6px;}.company-logo-mark span{font-size:13px;text-align:center;max-width:none;}.company-logo-mark img{width:26px;height:26px;}}
+</style>
