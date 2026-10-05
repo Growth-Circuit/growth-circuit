@@ -30,6 +30,19 @@ for (const width of [320, 390, 768, 1440]) {
       await expect(link.locator(".member-reveal")).toBeVisible();
       await page.waitForTimeout(450);
       const bounds = await link.locator(".member-reveal").boundingBox();
+      const lines = await link.locator(".reveal-role").evaluate(el => {
+        const text = el.firstChild!;
+        const rows = new Map<number, string[]>();
+        for (const match of text.textContent!.matchAll(/\S+/g)) {
+          const range = document.createRange();
+          range.setStart(text, match.index!);
+          range.setEnd(text, match.index! + match[0].length);
+          const top = Math.round(range.getBoundingClientRect().top);
+          rows.set(top, [...(rows.get(top) || []), match[0]]);
+        }
+        return [...rows.values()];
+      });
+      if (lines.length > 1) expect(lines.at(-1)!.length, JSON.stringify(lines)).toBeGreaterThanOrEqual(3);
       expect(bounds!.x).toBeGreaterThanOrEqual(15);
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width - 15);
     }
