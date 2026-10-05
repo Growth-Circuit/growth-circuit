@@ -76,17 +76,17 @@ import { communityCompanies, featuredMembers, memberAnchor } from "@/data/featur
   .company-link,.company-static{position:relative;display:flex;align-items:center;justify-content:center;min-height:48px;text-decoration:none;color:inherit;}
   .company-link{isolation:isolate;outline-offset:7px;border-radius:8px;}
   .company-link:focus-visible{outline:2px solid #287f91;}
-  .company-link::before{content:"";position:absolute;inset:-12px -18px;border-radius:18px;background:#d9eae8;opacity:0;transform:scale(.88);transition:opacity .3s,transform .45s cubic-bezier(.2,.8,.2,1);z-index:-1;}
-  .company-logo{display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .45s cubic-bezier(.2,.8,.2,1),filter .3s;}
+  .company-link::before{content:"";position:absolute;inset:-12px -18px;border-radius:18px;background:#d9eae8;opacity:0;transform:scale(.98);transition:opacity .4s ease,transform .55s cubic-bezier(.22,.61,.36,1);z-index:-1;}
+  .company-logo{display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .55s cubic-bezier(.22,.61,.36,1),filter .4s;}
   .company-logo img{width:125px;height:30px;object-fit:contain;filter:grayscale(1);}
   .company-logo-mark img{width:32px;height:32px;}
   .company-logo-mark span{font-size:19px;line-height:1.2;font-weight:700;letter-spacing:-.035em;max-width:95px;}
   .company-link[data-open]::before{opacity:1;transform:scale(1);}
-  .company-link[data-open] .company-logo{transform:translateY(-3px);}
+  .company-link[data-open] .company-logo{transform:translateY(-2px);}
   .company-link[data-open]{z-index:4;}
-  .member-reveal{--shift:0px;position:absolute;top:calc(100% + 15px);left:calc(50% + var(--shift));display:flex;align-items:center;gap:14px;width:340px;max-width:calc(100vw - 32px);padding:20px;border-radius:18px;background:#fffefb;color:#17313a;border:1px solid #d4e5df;box-shadow:0 20px 42px -16px #17313a40,0 4px 12px -4px #17313a12;opacity:0;visibility:hidden;transform:translate(-50%,8px) scale(.96);transform-origin:50% 0;transition:opacity .2s,transform .4s cubic-bezier(.16,1,.3,1),visibility .2s;pointer-events:none;}
+  .member-reveal{--shift:0px;position:absolute;top:calc(100% + 15px);left:calc(50% + var(--shift));display:flex;align-items:center;gap:14px;width:340px;max-width:calc(100vw - 32px);padding:20px;border-radius:18px;background:#fffefb;color:#17313a;border:1px solid #d4e5df;box-shadow:0 20px 42px -16px #17313a40,0 4px 12px -4px #17313a12;opacity:0;visibility:hidden;transform:translate(-50%,4px) scale(.99);transform-origin:50% 0;transition:opacity .28s ease,transform .5s cubic-bezier(.22,.61,.36,1),visibility 0s linear .28s;pointer-events:none;}
   .member-reveal::before{content:"";position:absolute;top:-7px;left:calc(50% - var(--shift));width:12px;height:12px;background:#fffefb;border-left:1px solid #d4e5df;border-top:1px solid #d4e5df;transform:translateX(-50%) rotate(45deg);}
-  .company-link[data-open] .member-reveal{opacity:1;visibility:visible;transform:translate(-50%,0) scale(1);pointer-events:auto;}
+  .company-link[data-open] .member-reveal{opacity:1;visibility:visible;transform:translate(-50%,0) scale(1);pointer-events:auto;transition-duration:.42s,.6s,0s;transition-delay:.06s,.06s,0s;}
   .member-reveal::after{content:"";position:absolute;bottom:100%;left:0;right:0;height:20px;}
   .reveal-portrait{display:block;flex-shrink:0;width:52px;height:52px;border-radius:50%;padding:3px;border:1px solid #b9d2c2;}
   .reveal-portrait img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 20%;border-radius:50%;}
@@ -94,9 +94,9 @@ import { communityCompanies, featuredMembers, memberAnchor } from "@/data/featur
   .reveal-copy strong{font-size:15px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;}
   .reveal-role{font-size:12px;line-height:1.5;color:#4d6570;text-wrap:balance;}
   .reveal-invitation{font-size:11px;line-height:1.5;color:#355e49;margin-top:5px;}
-  .reveal-arrow{margin-left:auto;flex-shrink:0;color:#355e49;transition:transform .4s cubic-bezier(.16,1,.3,1);}
+  .reveal-arrow{margin-left:auto;flex-shrink:0;color:#355e49;transition:transform .55s cubic-bezier(.22,.61,.36,1);}
   .company-link[data-open] .reveal-arrow{transform:translateY(2px);}
   @media(max-width:700px){.community-companies{padding:28px 0;}h2{max-width:280px;margin:0 auto 25px;font-size:13px;}.company-wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 14px;}.company-link,.company-static,.company-logo{width:100%;}.company-logo img{width:100%;max-width:95px;height:28px;}.company-logo-mark{flex-direction:column;gap:6px;}.company-logo-mark span{font-size:13px;text-align:center;max-width:none;}.company-logo-mark img{width:26px;height:26px;}.company-link::before{inset:-8px;}.member-reveal{padding:17px;gap:12px;}}
   @media(max-width:370px){.reveal-arrow{display:none;}}
-  @media(prefers-reduced-motion:reduce){.company-logo,.company-link::before,.member-reveal,.reveal-arrow{transition:none;}}
+  @media(prefers-reduced-motion:reduce){.company-logo,.company-link::before,.member-reveal,.company-link[data-open] .member-reveal,.reveal-arrow{transition:none;}}
 </style>

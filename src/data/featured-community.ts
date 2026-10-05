@@ -17,6 +17,8 @@ export const featuredMembers = [
   { name: "Andy McCutcheon", initials: "AM", company: "Toast", detail: "Previously at Block", linkedin: "https://www.linkedin.com/in/andysmccutcheon/", photo: "/community/members/andy-mccutcheon.jpeg" },
   { name: "Cheryl Wolf", initials: "CW", company: "Vercel", detail: "Enterprise marketing", linkedin: "https://www.linkedin.com/in/wolf-cheryl/", photo: "/community/members/cheryl-wolf.png" },
   { name: "Steven Male", initials: "SM", company: "Clay", detail: "AI education & community", linkedin: "https://www.linkedin.com/in/stevenmale/", photo: "/community/members/steven-male.jpeg" },
+  { name: "Matt Ratchford", initials: "MR", company: "Mutiny", detail: "Growth Marketing Lead", linkedin: "https://www.linkedin.com/in/matt-ratchford-940019142/", photo: "/community/members/matt-ratchford.png" },
+  { name: "Obie Odom", initials: "OO", company: "Infinite Machine", detail: "Head of Growth", linkedin: "https://www.linkedin.com/in/obieodom/", photo: "/community/members/obie-odom.jpeg" },
 ];
 
 export const memberAnchor = (name: string) => `member-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
