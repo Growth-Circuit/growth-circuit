@@ -3,7 +3,7 @@ import { communityCompanies } from "@/data/featured-community";
 ---
 <section class="community-companies" aria-labelledby="companies-title">
   <div class="shell">
-    <h2 id="companies-title">Our community includes people who work or have worked at</h2>
+    <h2 id="companies-title">Growth Circuit members include marketers from</h2>
     <ul class="company-wall" role="list">
       {communityCompanies.map((company) => <li title={`${company.name}: ${company.connection}`}>
         <div class:list={["company-logo", { "company-logo-mark": company.mark }]}>
