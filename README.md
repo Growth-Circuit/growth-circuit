@@ -37,6 +37,10 @@ The product shape is:
 - Cloudflare Workers static assets
 - Lucide icons
 
+## Design system
+
+Follow [the Growth Circuit design system](docs/design-system.md) for typography and responsive layout changes. Never leave one or two words hanging on a final line on desktop or mobile.
+
 ## Local Development
 
 ```bash
