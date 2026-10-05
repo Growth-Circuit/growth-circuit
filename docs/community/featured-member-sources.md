@@ -16,3 +16,7 @@ The supplied first-house-party CSV has 48 rows: 39 Going, 6 Can't Go, 3 Maybe. I
 Additional house-party RSVP candidates found during research: Gui Feitosa / Warp (https://www.linkedin.com/in/gui-feitosa/), Will Leatherman / Catalyst Content (https://www.linkedin.com/in/willleatherman/), and Trey Preisel / Pharos Digital (https://www.linkedin.com/posts/tpreisel-connect_entrepreneurship-freelance-marketingagency-activity-7150594214009925635-6Osw). They are not added to the first wall or featured member list. Full local reconciliation is kept outside the public site and repository.
 
 Logo source URLs are recorded in logo-sources.json. Figma, Infinite Machine, and Mutiny use official marks alongside readable company names. SVGs use local assets with no external references; Mutiny embeds its source PNG inside the SVG.
+
+## LinkedIn headshots
+
+On October 5, 2026, the six featured members’ current profile photos were downloaded from their linked LinkedIn profiles through Nick’s authenticated Arc session. The files are stored in `public/community/members/` and used only in featured member cards. Nick and Lucy’s larger event photos in the host section remain unchanged. Nick supplied the titles Founding Marketing Engineer and Senior Content Engineer for himself and Lucy. Both have a Growth Circuit co-founder badge.
