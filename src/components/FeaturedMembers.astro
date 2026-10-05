@@ -48,8 +48,9 @@ const { directory = false } = Astro.props;
   h3 a{text-decoration:underline;text-underline-offset:4px;text-decoration-color:#9cb6bd;}
   h3 a:hover{color:#355e49;text-decoration-color:currentColor;}
   .founder-badge{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#d6e5d2;color:#355e49;cursor:help;}
-  .founder-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);padding:7px 10px;border-radius:5px;background:#17313a;color:#fff;font-size:12px;font-weight:500;line-height:1.4;white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;z-index:2;}
-  .founder-badge:hover .founder-tooltip,.founder-badge:focus .founder-tooltip{opacity:1;visibility:visible;}
+  .founder-tooltip{position:absolute;bottom:calc(100% + 8px);left:0;padding:7px 10px;border-radius:5px;background:#17313a;color:#fff;font-size:12px;font-weight:500;line-height:1.4;white-space:nowrap;display:none;pointer-events:none;z-index:2;}
+  .founder-badge:hover .founder-tooltip,.founder-badge:focus .founder-tooltip{display:block;}
+  li:nth-child(2) .founder-tooltip{left:auto;right:0;}
   .founder-badge:focus-visible{outline:3px solid #287f91;outline-offset:3px;}
   a:focus-visible{outline:3px solid #287f91;outline-offset:5px;}
   @media(max-width:850px){.member-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
