@@ -11,8 +11,8 @@ export const communityCompanies = [
   { name: "Infinite Machine", logo: "infinite-machine.svg", connection: "Obie Odom", mark: true },
 ];
 export const featuredMembers = [
-  { name: "Nick Lafferty", initials: "NL", company: "Profound", detail: "Growth Circuit co-founder", linkedin: "https://www.linkedin.com/in/nicklafferty/", photo: "/hosts/nick-lafferty.jpg" },
-  { name: "Lucy Hoyle", initials: "LH", company: "Carta", detail: "Growth Circuit co-founder", linkedin: "https://www.linkedin.com/in/lucyjanehoyle/", photo: "/hosts/lucy-hoyle-blurred.jpg" },
+  { name: "Nick Lafferty", initials: "NL", company: "Profound", detail: "Founding Marketing Engineer", cofounder: true, linkedin: "https://www.linkedin.com/in/nicklafferty/", photo: "/hosts/nick-lafferty.jpg" },
+  { name: "Lucy Hoyle", initials: "LH", company: "Carta", detail: "Senior Content Engineer", cofounder: true, linkedin: "https://www.linkedin.com/in/lucyjanehoyle/", photo: "/hosts/lucy-hoyle-blurred.jpg" },
   { name: "Chase Wilson", initials: "CW", company: "Figma", detail: "AI & developer marketing", linkedin: "https://www.linkedin.com/in/chasecwilson/", photo: null },
   { name: "Andy McCutcheon", initials: "AM", company: "Toast", detail: "Previously at Block", linkedin: "https://www.linkedin.com/in/andysmccutcheon/", photo: null },
   { name: "Cheryl Wolf", initials: "CW", company: "Vercel", detail: "Enterprise marketing", linkedin: "https://www.linkedin.com/in/wolf-cheryl/", photo: null },
