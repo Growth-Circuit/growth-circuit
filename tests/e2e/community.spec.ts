@@ -20,10 +20,12 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
 test("retired application paths redirect to the newsletter signup", async ({ page, request }) => {
   await page.goto("/");
   await expect(page.locator('a[href*="/apply"]')).toHaveCount(0);
-  const newsletterCta = page.locator("#join").getByRole("link", { name: "Get free NYC event picks", exact: true });
-  await expect(newsletterCta).toHaveAttribute("href", "#newsletter");
-  await newsletterCta.click();
-  await expect(page).toHaveURL(/\/#newsletter$/);
+  await expect(page.locator("#join")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Get free NYC event picks", exact: true })).toHaveCount(0);
+  await expect(page.getByText("Subscribe to get the latest event list.")).toHaveCount(0);
+  await expect(page.getByText("We review community applications")).toHaveCount(0);
+  await expect(page.locator("#newsletter")).toBeVisible();
+  await expect(page.locator("#newsletter .newsletter-form")).toBeVisible();
   await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
 
   for (const path of ["/apply", "/apply?path=global", "/apply?path=nyc"]) {
