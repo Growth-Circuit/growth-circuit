@@ -19,7 +19,7 @@ The product shape is:
 - `/events` lists public Growth Circuit events and links to Partiful for current RSVP details.
 - `/newsletter` is the public archive for the weekly NYC events newsletter. Add a Markdown file under `src/content/newsletter/` after each send.
 - `/people` previews the public profile and project direction.
-- `/apply`, `/auth`, `/community`, and the legacy forum entrypoints redirect to the current public experience.
+- `/apply` permanently redirects to `/#newsletter`. `/auth`, `/community`, and the legacy forum entrypoints redirect to the current public experience.
 
 ## Still To Do
 
@@ -106,20 +106,7 @@ Current title, company, location, specialty, LinkedIn URL, and build context are
 
 ## Application API
 
-`POST /api/applications`
-
-Required fields:
-
-- `full_name`
-- `email`
-- `linkedin_url`
-- `current_title`
-- `current_company`
-- `location`
-- `proud_build`
-- `referral_source`
-
-`POST /api/waitlist` requires `full_name`, `email`, `linkedin_url`, and cohort-opening consent. It stores global waitlist entries in the same Notion database with `Application type` set to `Global waitlist`.
+The public application form is retired. `GET` and `POST` `/api/applications` and `/api/waitlist` return `410 Gone` and point people to `/#newsletter`. Existing Notion approval, People, and CRM sync paths are unchanged.
 
 ## Build
 

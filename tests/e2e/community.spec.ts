@@ -17,68 +17,22 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
   await expect(page.getByRole("link", { name: "Read the latest newsletter" })).toHaveAttribute("href", "/newsletter");
 });
 
-test("the application form stays available from the public site", async ({ page }) => {
+test("retired application paths redirect to the newsletter signup", async ({ page, request }) => {
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Join the Growth Circuit WhatsApp Community", exact: true })).toHaveAttribute("href", "/apply?path=nyc");
-  await expect(page.getByRole("link", { name: "Apply to join global", exact: true })).toHaveCount(0);
-  await page.getByRole("link", { name: "Join the Growth Circuit WhatsApp Community", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Apply for New York" })).toBeVisible();
+  await expect(page.locator('a[href*="/apply"]')).toHaveCount(0);
+  const newsletterCta = page.locator("#join").getByRole("link", { name: "Get free NYC event picks", exact: true });
+  await expect(newsletterCta).toHaveAttribute("href", "#newsletter");
+  await newsletterCta.click();
+  await expect(page).toHaveURL(/\/#newsletter$/);
+  await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
 
-  const response = await page.goto("/apply?source=nav");
-
-  expect(response?.ok()).toBe(true);
-  await expect(page).toHaveURL(/\/apply\?source=nav$/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Find your way into the Circuit.");
-  await expect(page.getByRole("button", { name: /New York, in person/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Somewhere else/ })).toBeVisible();
-
-  await page.goto("/apply?path=nyc&source=test");
-  await expect(page.getByRole("heading", { name: "Apply for New York" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Submit application" })).toBeVisible();
-  await expect(page.getByText("8 spaces", { exact: true })).toHaveCount(0);
-});
-
-test("both application paths post to their CRM endpoints with idempotency", async ({ page }) => {
-  let nycRequest: { idempotencyKey?: string; body?: Record<string, unknown> } = {};
-  let globalRequest: { idempotencyKey?: string; body?: Record<string, unknown> } = {};
-
-  await page.route("**/api/applications", async (route) => {
-    const request = route.request();
-    nycRequest = {
-      idempotencyKey: request.headers()["idempotency-key"],
-      body: request.postDataJSON() as Record<string, unknown>,
-    };
-    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ ok: true, id: "application-1", mode: "notion" }) });
-  });
-
-  await page.goto("/apply?path=nyc&source=test");
-  await page.getByPlaceholder("Your name").fill("Grace Builder");
-  await page.getByPlaceholder("you@example.com").fill("grace@example.com");
-  await page.getByPlaceholder("https://www.linkedin.com/in/...").fill("https://www.linkedin.com/in/grace-builder");
-  await page.getByPlaceholder("Upload a video demo, a live link, or a GitHub repo.").fill("A working growth experiment with a live demo.");
-  await page.getByPlaceholder("Tell us where you found Growth Circuit").fill("A friend");
-  await page.getByRole("button", { name: "Submit application" }).click();
-  await expect(page.getByRole("status")).toContainText("Submission received");
-  expect(nycRequest.idempotencyKey).toBeTruthy();
-  expect(nycRequest.body).toMatchObject({ email: "grace@example.com", full_name: "Grace Builder" });
-
-  await page.route("**/api/waitlist", async (route) => {
-    const request = route.request();
-    globalRequest = {
-      idempotencyKey: request.headers()["idempotency-key"],
-      body: request.postDataJSON() as Record<string, unknown>,
-    };
-    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ ok: true, mode: "notion" }) });
-  });
-
-  await page.goto("/apply?path=global&source=test");
-  await page.getByPlaceholder("Your name").fill("Sam Builder");
-  await page.getByPlaceholder("you@example.com").fill("sam@example.com");
-  await page.getByPlaceholder("https://www.linkedin.com/in/...").fill("https://www.linkedin.com/in/sam-builder");
-  await page.getByRole("button", { name: "Join the global waitlist" }).click();
-  await expect(page.getByRole("status")).toContainText("You’re on the list");
-  expect(globalRequest.idempotencyKey).toBeTruthy();
-  expect(globalRequest.body).toMatchObject({ email: "sam@example.com", full_name: "Sam Builder" });
+  for (const path of ["/apply", "/apply?path=global", "/apply?path=nyc"]) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status()).toBe(301);
+    const location = response.headers().location || "";
+    expect(new URL(location, "http://127.0.0.1:4321").hash).toBe("#newsletter");
+    expect(new URL(location, "http://127.0.0.1:4321").pathname).toBe("/");
+  }
 });
 
 test("profile claiming is available without exposing an unsafe redirect", async ({ page }) => {
