@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-for (const path of ["/", "/newsletter", "/newsletter/2026-09-28", "/events", "/people", "/newsletter/confirm"]) {
+for (const path of ["/", "/newsletter", "/newsletter/2026-09-28", "/events", "/newsletter/confirm"]) {
   test(`shared homepage navigation on ${path}`, async ({ page }) => {
     await page.goto(path);
     const nav = page.getByRole("navigation", { name: "Main navigation" });

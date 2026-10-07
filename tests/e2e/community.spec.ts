@@ -76,18 +76,35 @@ test("member media IDs never disclose content to an anonymous request", async ({
   expect(await response.text()).toBe("Not found");
 });
 
-test("the community route redirects to the public profile direction", async ({ page }) => {
-  const response = await page.goto(`${authBaseUrl}/community`);
-  expect(response?.ok()).toBe(true);
-  await expect(page).toHaveURL(/\/people$/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Who’s building what");
+test("the homepage community section replaces the people directory", async ({ page, request }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Meet the community", exact: true })).toBeVisible();
+  await expect(page.locator('a[href="/people"], a[href^="/people/"], a[href^="/people?"]')).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "People", exact: true })).toHaveCount(0);
+
+  for (const path of ["/people", "/people/someone"]) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status()).toBe(301);
+    const location = new URL(response.headers().location || "", "http://127.0.0.1:4321");
+    expect(location.pathname).toBe("/");
+    expect(location.hash).toBe("#members");
+  }
 });
 
-test("legacy forum entrypoints point to the public profile direction", async ({ request }) => {
+test("the community route redirects to the homepage community section", async ({ page }) => {
+  const response = await page.goto(`${authBaseUrl}/community`);
+  expect(response?.ok()).toBe(true);
+  await expect(page).toHaveURL(/\/#members$/);
+  await expect(page.getByRole("heading", { name: "Meet the community", exact: true })).toBeVisible();
+});
+
+test("legacy forum entrypoints point to the homepage community section", async ({ request }) => {
   for (const path of ["/submit", "/questions", "/builds", "/challenges"]) {
     const response = await request.get(`${authBaseUrl}${path}`, { maxRedirects: 0 });
     expect([301, 302, 307, 308]).toContain(response.status());
-    expect(response.headers().location).toContain("/people");
+    const location = response.headers().location || "";
+    expect(new URL(location, "http://127.0.0.1:4321").hash).toBe("#members");
+    expect(new URL(location, "http://127.0.0.1:4321").pathname).toBe("/");
   }
 });
 
@@ -159,6 +176,6 @@ test("a verified person can claim, publish, and view a profile", async ({ page, 
   await expect(profileLink).toBeVisible();
   const href = await profileLink.getAttribute("href");
   await page.goto(href!);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Grace Builder");
-  await expect(page.getByRole("heading", { name: "A useful project" })).toBeVisible();
+  await expect(page).toHaveURL(/\/#members$/);
+  await expect(page.getByRole("heading", { name: "Meet the community", exact: true })).toBeVisible();
 });

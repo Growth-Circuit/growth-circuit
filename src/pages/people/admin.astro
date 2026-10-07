@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ProfileModeration from "@/components/ProfileModeration";
-if (!Astro.locals.supabase || Astro.locals.communityIdentity.role !== "admin") return Astro.redirect("/people", 303);
+if (!Astro.locals.supabase || Astro.locals.communityIdentity.role !== "admin") return Astro.redirect("/#members", 303);
 const { data } = await Astro.locals.supabase.from("community_profiles").select("id,first_name,last_name,handle,headline,profile_moderation_state,community_projects(id)").not("handle", "is", null).order("updated_at", { ascending: false });
 const profiles = (data || []).map((profile) => ({ id: profile.id, firstName: profile.first_name, lastName: profile.last_name, handle: profile.handle!, headline: profile.headline, state: profile.profile_moderation_state as "visible" | "hidden", projectCount: profile.community_projects?.length || 0 }));
 ---
