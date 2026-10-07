@@ -93,7 +93,3 @@ export function parsePublicProfileInput(value: unknown) {
 
   return { ok: true as const, profile: { firstName, lastName, handle, headline, bio, location, websiteUrl, state, projects } satisfies PublicProfileInput };
 }
-
-export function profileInitials(firstName: string, lastName: string) {
-  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-}

@@ -15,12 +15,11 @@ const valid = /^[a-f0-9]{64}$/.test(id) && /^[a-f0-9]{64}$/.test(token);
     {valid ? <form method="post" action="/api/newsletter/confirm" id="confirm-newsletter"><input type="hidden" name="id" value={id} /><input type="hidden" name="token" value={token} /><button class="button matcha" type="submit">Confirm subscription</button></form> : <p>This link is incomplete. <a href="/#newsletter">Sign up for a new link</a>.</p>}
     <p id="confirmation-status" role="status" aria-live="polite"></p>
     <div id="newsletter-next-step" hidden>
-      <h2>Next, get to know the group.</h2>
-      <p>Apply to join our NYC WhatsApp community. Share what you’re building, meet people between events, and find someone to go with.</p>
-      <p><a class="button matcha" href="/apply?path=nyc&amp;source=newsletter-confirmed">Apply to join WhatsApp</a></p>
-      <p>After approval, we’ll send your invite. Members can see your phone number. Joining is optional.</p>
+      <h2>Find an event to go to.</h2>
+      <p><a class="button matcha" href="/events">Browse upcoming events</a></p>
+      <p><a href="/newsletter">Read the latest issue</a></p>
     </div>
-    <p><a href="/events">Browse upcoming events</a>. Public events are open to you before joining WhatsApp, too.</p>
+    <p>Public events are open to you before joining WhatsApp, too.</p>
   </section>
 </BaseLayout>
 <script>

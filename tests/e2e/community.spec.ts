@@ -17,68 +17,24 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
   await expect(page.getByRole("link", { name: "Read the latest newsletter" })).toHaveAttribute("href", "/newsletter");
 });
 
-test("the application form stays available from the public site", async ({ page }) => {
+test("retired application paths redirect to the newsletter signup", async ({ page, request }) => {
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Join the Growth Circuit WhatsApp Community", exact: true })).toHaveAttribute("href", "/apply?path=nyc");
-  await expect(page.getByRole("link", { name: "Apply to join global", exact: true })).toHaveCount(0);
-  await page.getByRole("link", { name: "Join the Growth Circuit WhatsApp Community", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Apply for New York" })).toBeVisible();
+  await expect(page.locator('a[href*="/apply"]')).toHaveCount(0);
+  await expect(page.locator("#join")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Get free NYC event picks", exact: true })).toHaveCount(0);
+  await expect(page.getByText("Subscribe to get the latest event list.")).toHaveCount(0);
+  await expect(page.getByText("We review community applications")).toHaveCount(0);
+  await expect(page.locator("#newsletter")).toBeVisible();
+  await expect(page.locator("#newsletter .newsletter-form")).toBeVisible();
+  await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
 
-  const response = await page.goto("/apply?source=nav");
-
-  expect(response?.ok()).toBe(true);
-  await expect(page).toHaveURL(/\/apply\?source=nav$/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Find your way into the Circuit.");
-  await expect(page.getByRole("button", { name: /New York, in person/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Somewhere else/ })).toBeVisible();
-
-  await page.goto("/apply?path=nyc&source=test");
-  await expect(page.getByRole("heading", { name: "Apply for New York" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Submit application" })).toBeVisible();
-  await expect(page.getByText("8 spaces", { exact: true })).toHaveCount(0);
-});
-
-test("both application paths post to their CRM endpoints with idempotency", async ({ page }) => {
-  let nycRequest: { idempotencyKey?: string; body?: Record<string, unknown> } = {};
-  let globalRequest: { idempotencyKey?: string; body?: Record<string, unknown> } = {};
-
-  await page.route("**/api/applications", async (route) => {
-    const request = route.request();
-    nycRequest = {
-      idempotencyKey: request.headers()["idempotency-key"],
-      body: request.postDataJSON() as Record<string, unknown>,
-    };
-    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ ok: true, id: "application-1", mode: "notion" }) });
-  });
-
-  await page.goto("/apply?path=nyc&source=test");
-  await page.getByPlaceholder("Your name").fill("Grace Builder");
-  await page.getByPlaceholder("you@example.com").fill("grace@example.com");
-  await page.getByPlaceholder("https://www.linkedin.com/in/...").fill("https://www.linkedin.com/in/grace-builder");
-  await page.getByPlaceholder("Upload a video demo, a live link, or a GitHub repo.").fill("A working growth experiment with a live demo.");
-  await page.getByPlaceholder("Tell us where you found Growth Circuit").fill("A friend");
-  await page.getByRole("button", { name: "Submit application" }).click();
-  await expect(page.getByRole("status")).toContainText("Submission received");
-  expect(nycRequest.idempotencyKey).toBeTruthy();
-  expect(nycRequest.body).toMatchObject({ email: "grace@example.com", full_name: "Grace Builder" });
-
-  await page.route("**/api/waitlist", async (route) => {
-    const request = route.request();
-    globalRequest = {
-      idempotencyKey: request.headers()["idempotency-key"],
-      body: request.postDataJSON() as Record<string, unknown>,
-    };
-    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ ok: true, mode: "notion" }) });
-  });
-
-  await page.goto("/apply?path=global&source=test");
-  await page.getByPlaceholder("Your name").fill("Sam Builder");
-  await page.getByPlaceholder("you@example.com").fill("sam@example.com");
-  await page.getByPlaceholder("https://www.linkedin.com/in/...").fill("https://www.linkedin.com/in/sam-builder");
-  await page.getByRole("button", { name: "Join the global waitlist" }).click();
-  await expect(page.getByRole("status")).toContainText("You’re on the list");
-  expect(globalRequest.idempotencyKey).toBeTruthy();
-  expect(globalRequest.body).toMatchObject({ email: "sam@example.com", full_name: "Sam Builder" });
+  for (const path of ["/apply", "/apply?path=global", "/apply?path=nyc"]) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status()).toBe(301);
+    const location = response.headers().location || "";
+    expect(new URL(location, "http://127.0.0.1:4321").hash).toBe("#newsletter");
+    expect(new URL(location, "http://127.0.0.1:4321").pathname).toBe("/");
+  }
 });
 
 test("profile claiming is available without exposing an unsafe redirect", async ({ page }) => {
@@ -120,18 +76,35 @@ test("member media IDs never disclose content to an anonymous request", async ({
   expect(await response.text()).toBe("Not found");
 });
 
-test("the community route redirects to the public profile direction", async ({ page }) => {
-  const response = await page.goto(`${authBaseUrl}/community`);
-  expect(response?.ok()).toBe(true);
-  await expect(page).toHaveURL(/\/people$/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Who’s building what");
+test("the homepage community section replaces the people directory", async ({ page, request }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Meet the community", exact: true })).toBeVisible();
+  await expect(page.locator('a[href="/people"], a[href^="/people/"], a[href^="/people?"]')).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "People", exact: true })).toHaveCount(0);
+
+  for (const path of ["/people", "/people/someone"]) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status()).toBe(301);
+    const location = new URL(response.headers().location || "", "http://127.0.0.1:4321");
+    expect(location.pathname).toBe("/");
+    expect(location.hash).toBe("#members");
+  }
 });
 
-test("legacy forum entrypoints point to the public profile direction", async ({ request }) => {
+test("the community route redirects to the homepage community section", async ({ page }) => {
+  const response = await page.goto(`${authBaseUrl}/community`);
+  expect(response?.ok()).toBe(true);
+  await expect(page).toHaveURL(/\/#members$/);
+  await expect(page.getByRole("heading", { name: "Meet the community", exact: true })).toBeVisible();
+});
+
+test("legacy forum entrypoints point to the homepage community section", async ({ request }) => {
   for (const path of ["/submit", "/questions", "/builds", "/challenges"]) {
     const response = await request.get(`${authBaseUrl}${path}`, { maxRedirects: 0 });
     expect([301, 302, 307, 308]).toContain(response.status());
-    expect(response.headers().location).toContain("/people");
+    const location = response.headers().location || "";
+    expect(new URL(location, "http://127.0.0.1:4321").hash).toBe("#members");
+    expect(new URL(location, "http://127.0.0.1:4321").pathname).toBe("/");
   }
 });
 
@@ -203,6 +176,6 @@ test("a verified person can claim, publish, and view a profile", async ({ page, 
   await expect(profileLink).toBeVisible();
   const href = await profileLink.getAttribute("href");
   await page.goto(href!);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Grace Builder");
-  await expect(page.getByRole("heading", { name: "A useful project" })).toBeVisible();
+  await expect(page).toHaveURL(/\/#members$/);
+  await expect(page.getByRole("heading", { name: "Meet the community", exact: true })).toBeVisible();
 });

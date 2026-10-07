@@ -51,6 +51,12 @@ function pathStartsWith(pathname: string, roots: string[]) {
   return roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
 }
 
+function isRetiredPeopleDirectory(pathname: string) {
+  if (pathname === "/people" || pathname === "/people/") return true;
+  const match = pathname.match(/^\/people\/([^/]+)\/?$/);
+  return Boolean(match && !["claim", "edit", "admin"].includes(match[1]));
+}
+
 function isPrivateCommunityRequest(url: URL) {
   return url.searchParams.get("tab") === "members"
     || url.searchParams.get("audience") === "members"
@@ -110,9 +116,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (isCommunity || isCommunityDiscovery) {
     if (requestUrl.pathname.startsWith("/api/") || isCommunityDiscovery) return genericDenial();
 
-    const destination = new URL("/people", requestUrl);
+    const destination = new URL("/#members", requestUrl);
     const response = new Response(null, { status: 302, headers: { Location: destination.toString() } });
     applySecurityHeaders(response, requestUrl, true);
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return response;
+  }
+
+  if (isRetiredPeopleDirectory(requestUrl.pathname)) {
+    const destination = new URL("/#members", requestUrl);
+    const response = new Response(null, { status: 301, headers: { Location: destination.toString() } });
+    applySecurityHeaders(response, requestUrl, false);
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
     return response;
   }
