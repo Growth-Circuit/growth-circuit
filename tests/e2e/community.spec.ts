@@ -125,7 +125,7 @@ test("public event and newsletter navigation is keyboard reachable", async ({ pa
   await page.goto("/");
   await navigation.getByRole("link", { name: "Newsletter", exact: true }).click();
   await expect(page).toHaveURL(/\/newsletter\/?$/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("The NYC shortlist, saved here.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("A list of the best NYC events for marketers");
 });
 
 test("a verified person can claim, publish, and view a profile", async ({ page, request }) => {
