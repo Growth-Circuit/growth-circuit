@@ -15,7 +15,7 @@ test("the blog features the published post once", async ({ page }) => {
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://growthcircuit.club/blog");
   await expect(page.locator('link[rel="alternate"]')).toHaveAttribute("href", /\/blog\/rss\.xml$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Field notes.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Community notes.");
   await expect(page.locator(".gc-nav").getByRole("link", { name: "Blog", exact: true })).toHaveAttribute("href", "/blog");
 
   const featured = page.getByRole("region", { name: "Featured post" });
