@@ -11,7 +11,7 @@ import {
   blogSlugProblem,
   extractFaq,
   formatAuthorNames,
-  splitKeepTogether,
+  postsBelowFeatured,
   renderBlogRss,
   resolveAuthors,
   selectFeaturedPost,
@@ -84,6 +84,9 @@ describe("blog posts", () => {
     expect(selectFeaturedPost(posts)?.id).toBe("featured-new");
     expect(selectFeaturedPost(posts.filter((post) => !post.featured))?.id).toBe("newer");
     expect(selectFeaturedPost([])).toBeNull();
+    const featured = selectFeaturedPost(posts);
+    expect(postsBelowFeatured(posts, featured).map((post) => post.id)).toEqual(["older", "newer", "featured-old"]);
+    expect(postsBelowFeatured([], null)).toEqual([]);
     expect(sortPostsNewestFirst(posts).map((post) => post.id)).toEqual([
       "newer",
       "featured-new",
@@ -95,10 +98,6 @@ describe("blog posts", () => {
   it("resolves homepage authors and hides a missing website", () => {
     const [nick, lucy] = resolveAuthors(["nick", "lucy"]);
     expect(formatAuthorNames([nick, lucy])).toBe("Nick Lafferty and Lucy Hoyle");
-    expect(splitKeepTogether("How We Run Growth Circuit With Grok Bot")).toEqual({
-      head: "How We Run Growth Circuit",
-      tail: "With Grok Bot",
-    });
     expect(nick.website).toBe("https://nicklafferty.com");
     expect(nick.linkedin).toBe("https://www.linkedin.com/in/nicklafferty/");
     expect(lucy.website).toBeUndefined();

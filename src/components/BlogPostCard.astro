@@ -1,26 +1,17 @@
 ---
-import { blogPostPath, formatAuthorNames, formatBlogDate, resolveAuthors, splitKeepTogether, type BlogListItem } from "@/lib/blog";
+import { blogPostPath, formatAuthorNames, formatBlogDate, resolveAuthors, type BlogListItem } from "@/lib/blog";
 
 type Props = { post: BlogListItem; featured?: boolean };
 
 const { post, featured = false } = Astro.props;
 const names = formatAuthorNames(resolveAuthors(post.authors));
 const date = formatBlogDate(post.publishDate);
-const description = splitKeepTogether(post.description);
 ---
 
 <a class="blog-index-card" href={blogPostPath(post.id)}>
   <p class="eyebrow">{featured ? `Featured · ${date}` : date}</p>
   <h2>{post.title}</h2>
-  <p>
-    {description.tail ? (
-      <>
-        {description.head}{" "}<span class="keep-together">{description.tail}</span>
-      </>
-    ) : (
-      post.description
-    )}
-  </p>
+  <p>{post.description}</p>
   <p class="blog-card-byline">{names}</p>
   <span>Read this post →</span>
 </a>

@@ -13,6 +13,7 @@ for (const path of ["/", "/newsletter", "/newsletter/2026-09-28", "/events", "/n
     await expect(nav.getByRole("link", { name: "Events", exact: true })).toHaveAttribute("href", `${prefix}#events`);
     await expect(nav.getByRole("link", { name: "Subscribe free", exact: true })).toHaveAttribute("href", `${prefix}#newsletter`);
     await page.setViewportSize({ width: 375, height: 812 });
+    await expect(nav.getByRole("link", { name: "The community", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Blog", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Subscribe free", exact: true })).toBeVisible();
     const fits = await page.evaluate(() => {
@@ -32,6 +33,16 @@ for (const path of ["/", "/newsletter", "/newsletter/2026-09-28", "/events", "/n
         && oneLine;
     });
     expect(fits).toBe(true);
+    await page.setViewportSize({ width: 320, height: 812 });
+    await expect(nav.getByRole("link", { name: "The community", exact: true })).toBeHidden();
+    await expect(nav.getByRole("link", { name: "Blog", exact: true })).toBeVisible();
+    const fitsNarrow = await page.evaluate(() => {
+      const bar = document.querySelector(".gc-nav");
+      if (!bar) return false;
+      return document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
+        && bar.getBoundingClientRect().right <= window.innerWidth + 1;
+    });
+    expect(fitsNarrow).toBe(true);
     await nav.getByRole("link", { name: "Subscribe free", exact: true }).click();
     await expect(page).toHaveURL(/\/#newsletter$/);
     await expect(page.locator(".gc-hero .newsletter-form")).toBeVisible();
