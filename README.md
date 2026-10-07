@@ -18,6 +18,7 @@ The product shape is:
 - `.env.example` is kept as a safe placeholder file and should not contain real keys.
 - `/events` lists public Growth Circuit events and links to Partiful for current RSVP details.
 - `/newsletter` is the public archive for the weekly NYC events newsletter. Add a Markdown file under `src/content/newsletter/` after each send.
+- `/blog` is the public blog. Add a Markdown file under `src/content/blog/`. The filename is the slug. See `src/content/blog/README.md` for frontmatter, the no-dates slug rule, and answer-first headings.
 - `/people` and public profile URLs permanently redirect to `/#members`.
 - `/apply` permanently redirects to `/#newsletter`. `/auth`, `/community`, and the legacy forum entrypoints redirect to the current public experience.
 

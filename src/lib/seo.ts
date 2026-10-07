@@ -165,6 +165,81 @@ export function communityPostJsonLd(post: CommunityPostView, replies: CommunityR
   };
 }
 
+export function blogCollectionJsonLd(description: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Blog",
+    description,
+    url: canonical("/blog"),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Growth Circuit",
+      url: siteUrl,
+    },
+  };
+}
+
+export function blogPostingJsonLd(post: {
+  title: string;
+  description: string;
+  publishDate: string;
+  updatedDate: string;
+  path: string;
+  image: string;
+  authors: Array<{
+    name: string;
+    role: string;
+    photo: string;
+    website?: string;
+    linkedin?: string;
+  }>;
+}) {
+  const pageUrl = canonical(post.path);
+  const image = post.image.startsWith("http") ? post.image : canonical(post.image);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.publishDate,
+    dateModified: post.updatedDate,
+    author: post.authors.map((person) => {
+      const sameAs = [person.website, person.linkedin].filter((value): value is string => Boolean(value));
+      return {
+        "@type": "Person",
+        name: person.name,
+        jobTitle: person.role,
+        image: person.photo.startsWith("http") ? person.photo : canonical(person.photo),
+        ...(person.website ? { url: person.website } : {}),
+        ...(sameAs.length ? { sameAs } : {}),
+      };
+    }),
+    image,
+    mainEntityOfPage: pageUrl,
+    publisher: {
+      "@type": "Organization",
+      name: "Growth Circuit",
+      url: siteUrl,
+    },
+  };
+}
+
+export function faqPageJsonLd(items: Array<{ question: string; answer: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+}
+
 export function newsletterIssueJsonLd(issue: {
   title: string;
   description: string;

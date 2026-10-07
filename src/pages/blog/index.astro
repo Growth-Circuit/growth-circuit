@@ -1,0 +1,73 @@
+---
+import BlogPostCard from "@/components/BlogPostCard.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BLOG_DESCRIPTION, selectFeaturedPost, sortPostsNewestFirst, type BlogListItem } from "@/lib/blog";
+import { blogCollectionJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { getCollection } from "astro:content";
+
+export const prerender = true;
+
+const posts: BlogListItem[] = sortPostsNewestFirst(
+  (await getCollection("blog")).map((post) => ({
+    id: post.id,
+    title: post.data.title,
+    description: post.data.description,
+    publishDate: post.data.publishDate,
+    updatedDate: post.data.updatedDate,
+    authors: post.data.authors,
+    featured: post.data.featured,
+    category: post.data.category,
+  })),
+);
+const featured = selectFeaturedPost(posts);
+---
+
+<BaseLayout
+  title="Blog"
+  description={BLOG_DESCRIPTION}
+  path="/blog"
+  bodyClass="sky-page pivot-page blog-page"
+  feedPath="/blog/rss.xml"
+  jsonLd={[
+    breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Blog", path: "/blog" },
+    ]),
+    blogCollectionJsonLd(BLOG_DESCRIPTION),
+  ]}
+>
+  <section class="shell listing-hero">
+    <p class="eyebrow">Growth Circuit blog</p>
+    <h1>Field notes.</h1>
+    <p>
+      Writing about how Growth Circuit runs, from the weekly newsletter to the
+      <span class="keep-together">bots that help.</span>
+    </p>
+  </section>
+
+  {
+    featured ? (
+      <section class="shell blog-featured" aria-label="Featured post">
+        <BlogPostCard post={featured} featured />
+      </section>
+    ) : null
+  }
+
+  <section class="shell blog-index" aria-label="All posts">
+    {
+      posts.length ? (
+        <ol class="blog-index-list">
+          {posts.map((post) => (
+            <li>
+              <BlogPostCard post={post} />
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <div class="directory-empty">
+          <p>No posts yet. New writing will show up here.</p>
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

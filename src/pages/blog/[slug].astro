@@ -1,0 +1,89 @@
+---
+import BlogAuthors from "@/components/BlogAuthors.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  assertBlogBody,
+  blogPostPath,
+  extractFaq,
+  formatBlogDate,
+  resolveAuthors,
+} from "@/lib/blog";
+import { blogPostingJsonLd, breadcrumbJsonLd, faqPageJsonLd } from "@/lib/seo";
+import { getCollection, render } from "astro:content";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const body = post.body ?? "";
+assertBlogBody(post.id, body);
+const { Content } = await render(post);
+const people = resolveAuthors(post.data.authors);
+const path = blogPostPath(post.id);
+const faq = post.data.faq === false ? [] : extractFaq(body);
+const image = post.data.heroImage ?? "/growth-circuit-og-v4.png";
+const jsonLd: unknown[] = [
+  breadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Blog", path: "/blog" },
+    { name: post.data.title, path },
+  ]),
+  blogPostingJsonLd({
+    title: post.data.title,
+    description: post.data.description,
+    publishDate: post.data.publishDate,
+    updatedDate: post.data.updatedDate,
+    path,
+    image,
+    authors: people,
+  }),
+];
+if (faq.length) jsonLd.push(faqPageJsonLd(faq));
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  path={path}
+  bodyClass="sky-page pivot-page blog-page"
+  socialType="article"
+  socialImage={post.data.heroImage}
+  socialImageAlt={post.data.heroImageAlt}
+  feedPath="/blog/rss.xml"
+  articlePublishedTime={post.data.publishDate}
+  articleModifiedTime={post.data.updatedDate}
+  jsonLd={jsonLd}
+>
+  <article>
+    <header class="shell listing-hero blog-post-header">
+      <div class="blog-post-meta">
+        <p class="blog-post-kicker">
+          <time datetime={post.data.publishDate}>{formatBlogDate(post.data.publishDate)}</time>
+          {
+            post.data.category && (
+              <>
+                <span class="blog-post-kicker-sep" aria-hidden="true">
+                  /
+                </span>
+                <span class="blog-post-category">{post.data.category}</span>
+              </>
+            )
+          }
+        </p>
+        <p class="blog-post-updated">
+          Updated <time datetime={post.data.updatedDate}>{formatBlogDate(post.data.updatedDate)}</time>
+        </p>
+      </div>
+      <h1>{post.data.title}</h1>
+      <BlogAuthors authors={people} />
+    </header>
+    <div class="shell blog-post-body">
+      <Content />
+    </div>
+    <p class="shell blog-post-back"><a href="/blog">All posts →</a></p>
+  </article>
+</BaseLayout>
