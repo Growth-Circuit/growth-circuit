@@ -71,6 +71,12 @@ export function selectFeaturedPost<T extends Pick<BlogListItem, "featured" | "pu
   return sortPostsNewestFirst(featured.length ? featured : posts)[0] ?? null;
 }
 
+/** Listing cards under the featured block. The featured post is not repeated. */
+export function postsBelowFeatured<T extends Pick<BlogListItem, "id">>(posts: T[], featured: T | null) {
+  if (!featured) return posts;
+  return posts.filter((post) => post.id !== featured.id);
+}
+
 export function formatBlogDate(isoDate: string) {
   const [year, month, day] = isoDate.split("-").map(Number);
   if (!year || !month || !day) throw new Error(`Invalid blog date "${isoDate}".`);
@@ -88,13 +94,6 @@ export function resolveAuthors(ids: string[]): Author[] {
     if (!author) throw new Error(`Unknown author id "${id}". Add them to src/data/authors.ts.`);
     return author;
   });
-}
-
-/** Keeps the last three words together so a heading or summary does not end on one or two words. */
-export function splitKeepTogether(text: string) {
-  const words = text.trim().split(/\s+/);
-  if (words.length < 4) return { head: text, tail: null as string | null };
-  return { head: words.slice(0, -3).join(" "), tail: words.slice(-3).join(" ") };
 }
 
 export function formatAuthorNames(people: Array<Pick<Author, "name">>) {

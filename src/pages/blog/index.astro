@@ -1,7 +1,7 @@
 ---
 import BlogPostCard from "@/components/BlogPostCard.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { BLOG_DESCRIPTION, selectFeaturedPost, sortPostsNewestFirst, type BlogListItem } from "@/lib/blog";
+import { BLOG_DESCRIPTION, postsBelowFeatured, selectFeaturedPost, sortPostsNewestFirst, type BlogListItem } from "@/lib/blog";
 import { blogCollectionJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { getCollection } from "astro:content";
 
@@ -20,6 +20,7 @@ const posts: BlogListItem[] = sortPostsNewestFirst(
   })),
 );
 const featured = selectFeaturedPost(posts);
+const listed = postsBelowFeatured(posts, featured);
 ---
 
 <BaseLayout
@@ -38,7 +39,7 @@ const featured = selectFeaturedPost(posts);
 >
   <section class="shell listing-hero">
     <p class="eyebrow">Growth Circuit blog</p>
-    <h1>Field notes.</h1>
+    <h1>Community notes.</h1>
     <p>
       Writing about how Growth Circuit runs, from the weekly newsletter to the
       <span class="keep-together">bots that help.</span>
@@ -53,21 +54,23 @@ const featured = selectFeaturedPost(posts);
     ) : null
   }
 
-  <section class="shell blog-index" aria-label="All posts">
-    {
-      posts.length ? (
+  {
+    listed.length ? (
+      <section class="shell blog-index" aria-label="All posts">
         <ol class="blog-index-list">
-          {posts.map((post) => (
+          {listed.map((post) => (
             <li>
               <BlogPostCard post={post} />
             </li>
           ))}
         </ol>
-      ) : (
+      </section>
+    ) : featured ? null : (
+      <section class="shell blog-index" aria-label="All posts">
         <div class="directory-empty">
           <p>No posts yet. New writing will show up here.</p>
         </div>
-      )
-    }
-  </section>
+      </section>
+    )
+  }
 </BaseLayout>

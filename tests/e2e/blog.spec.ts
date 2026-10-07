@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const postPath = "/blog/how-we-run-growth-circuit-with-grok-bot";
 const title = "How We Run Growth Circuit With Grok Bot";
 
-test("the blog features the published post and lists every post", async ({ page }) => {
+test("the blog features the published post once", async ({ page }) => {
   const response = await page.goto("/blog");
 
   expect(response?.ok()).toBe(true);
@@ -15,17 +15,19 @@ test("the blog features the published post and lists every post", async ({ page 
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://growthcircuit.club/blog");
   await expect(page.locator('link[rel="alternate"]')).toHaveAttribute("href", /\/blog\/rss\.xml$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Field notes.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Community notes.");
   await expect(page.locator(".gc-nav").getByRole("link", { name: "Blog", exact: true })).toHaveAttribute("href", "/blog");
 
   const featured = page.getByRole("region", { name: "Featured post" });
   await expect(featured.getByRole("heading", { name: title })).toBeVisible();
+  await expect(page.getByRole("heading", { name: title })).toHaveCount(1);
   await expect(featured.getByText("Nick Lafferty and Lucy Hoyle")).toBeVisible();
   await expect(featured.getByRole("link", { name: new RegExp(title) })).toHaveAttribute("href", postPath);
-
-  const list = page.getByRole("region", { name: "All posts" });
-  await expect(list.getByRole("heading", { name: title })).toBeVisible();
-  await expect(list.getByText("Nick Lafferty and Lucy Hoyle")).toBeVisible();
+  await expect(featured.locator("p").nth(1)).toHaveText(
+    "Growth Circuit runs on a small team of Grok Bot specialists plus one front door. Here's what each bot does and what Lucy and I still decide.",
+  );
+  await expect(featured.locator(".keep-together")).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "All posts" })).toHaveCount(0);
   await expect(page.getByText("No posts yet.")).toHaveCount(0);
 });
 
