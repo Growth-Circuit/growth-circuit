@@ -1,0 +1,24 @@
+Edit the provided image into an updated square Growth Circuit newsletter social graphic. Match its exact design format: bright blue sky and soft clouds, autumn foliage around corners, photoreal green park and Manhattan skyline along bottom, centered Growth Circuit circular logo topped with an orange leaf, bold rounded navy headline, coral date labels in left column, green icons, navy event titles with smaller detail lines in right column, and pale green rounded footer panel. Preserve "GROWTH CIRCUIT" and "THIS WEEK IN GROWTH". Replace all old event copy and dates. This is the same template updated, not a redesign. No em dash characters.
+Header: "SEPT 28–OCT 4" and "NYC + ONLINE".
+Five main event rows with green location pins:
+Date "TUE 9/29 · 6PM"
+Title "Build Your Content Operating System"
+Detail "Hudson Square · Free / approval"
+Date "WED 9/30 · 6PM"
+Title "Best of NYC with Work-Bench"
+Detail "Forward Deployed Engineers · Williamsburg"
+Date "THU 10/1 · 6PM"
+Title "AI Demos #11: Media"
+Detail "Williamsburg · Free / approval · Nick is speaking!"
+Date "THU 10/1 · 6PM"
+Title "Vibe Coding for Designers"
+Detail "Pier 57 · Free"
+Date "SUN 10/4 · 10AM"
+Title "Brderless Buildathon: AI Agents"
+Detail "Williamsburg · Free / approval"
+Footer panel with calendar icon, heading "NEXT AT GROWTH CIRCUIT" and three lines:
+"OCT 9 · Good Friends Run Club · 6:30AM · Prospect Park"
+"OCT 9 · Show & Tell · 1PM · Zoom"
+"OCT 11 · House Party #2 · 2PM · Brooklyn"
+Small footer "All times ET".
+Keep all text crisp, legible, aligned, spelled exactly as supplied. Slightly reduce headline height and increase footer panel height if needed for comfortable spacing. Keep the beautiful airy fall park aesthetic and square composition.

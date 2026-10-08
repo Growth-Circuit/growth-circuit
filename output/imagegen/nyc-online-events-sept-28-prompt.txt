@@ -1,0 +1,15 @@
+Create a new version of this square event graphic with the branding removed from the top and a stronger focus on the events. Use the attached graphic as the edit target.
+Remove the circular Growth Circuit logo, orange leaf on logo, and GROWTH CIRCUIT wordmark at the top entirely. Replace the big headline THIS WEEK IN GROWTH with "NYC + ONLINE" on first line and "EVENTS" on second line in the same chunky rounded navy type. Shift headline up into the freed space and give the event listings more breathing room. Keep date line "SEPT 28–OCT 4" with coral calendar icon centered under headline; remove the redundant NYC + ONLINE location label from date line. Change the green bottom panel heading from NEXT AT GROWTH CIRCUIT to "COMING UP". Preserve the same sky, clouds, autumn foliage, park, skyline, color palette, green location icons, coral date/time labels, navy event names, square format and overall template. Keep all five main listings and all three upcoming listings with exactly the same dates, start times, titles and details. Do not add any events or branding.
+Exact main rows:
+"TUE 9/29 · 6PM" | "Build Your Content Operating System" | "Hudson Square · Free / approval"
+"WED 9/30 · 6PM" | "Best of NYC with Work-Bench" | "Forward Deployed Engineers · Williamsburg"
+"THU 10/1 · 6PM" | "AI Demos #11: Media" | "Williamsburg · Free / approval · Nick is speaking!"
+"THU 10/1 · 6PM" | "Vibe Coding for Designers" | "Pier 57 · Free"
+"SUN 10/4 · 10AM" | "Brderless Buildathon: AI Agents" | "Williamsburg · Free / approval"
+Bottom panel:
+"COMING UP"
+"OCT 9 · Good Friends Run Club · 6:30AM · Prospect Park"
+"OCT 9 · Show & Tell · 1PM · Zoom"
+"OCT 11 · House Party #2 · 2PM · Brooklyn"
+Small footer "All times ET".
+Render exact text clearly and legibly with aligned columns. No em dashes. No logos anywhere.

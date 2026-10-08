@@ -1,0 +1,25 @@
+Use case: ads-marketing.
+Create a finished, polished landscape newsletter and social banner for Growth Circuit, approximately 1800 x 1000, with extremely legible editorial typography. A curated NYC marketing and builder events guide. Brand palette: near-black #101418, warm porcelain #f7f8f3, matcha #8fa66a, muted coral #d36b5a and teal #287f91. Sophisticated local cultural calendar meets friendly Brooklyn creative community. Flat finished graphic, no mockup.
+Layout: generous margins, small GROWTH CIRCUIT wordmark top left, subtle issue/date label top right. Left 42% contains a very bold large sans-serif stacked headline and a charming detailed small illustrated Brooklyn streetscape along bottom: brownstones, autumn tree, stoop, small people meeting, warm windows. Restrained screenprinted texture. Right 58% contains four beautifully aligned event rows on warm cream with dark text, thin rules, large condensed date numerals in a narrow left column and event titles on right. Two tiny understated green tags identify Growth Circuit events. Real hierarchy, lots of breathing room. No pill cards, no gradients, no fake logos. Headline must be a visual focal point and dates must read at mobile size.
+Exact text:
+Brand: "GROWTH CIRCUIT"
+Issue label: "OCTOBER 2026"
+Headline: "Good people.\nCool things.\nNYC + online."
+Subheading: "Four dates worth saving."
+First row date: "OCT 01"
+First row title: "AI Demos #11: Media"
+First row details: "6–8pm • Williamsburg"
+First row small note: "Nick is speaking!"
+Second row date: "OCT 06"
+Second row title on two lines: "ElevenLabs × Creator Spotlight:\nThe New Reach"
+Second row details: "6:30–9pm • Lower Manhattan"
+Third row date: "OCT 09"
+Third row title: "Show & Tell"
+Third row details: "1–2pm • Zoom"
+Third row tag: "GROWTH CIRCUIT"
+Fourth row date: "OCT 11"
+Fourth row title: "House Party #2"
+Fourth row details: "2–5pm • Brooklyn"
+Fourth row tag: "GROWTH CIRCUIT"
+Bottom footer: "growthcircuit.club" and "All times ET"
+Only the above text. No em dashes. Render every event and time accurately. Keep illustration secondary to information. Make this attractive enough that a marketer saves it.

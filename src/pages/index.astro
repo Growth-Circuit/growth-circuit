@@ -1,140 +1,76 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { upcomingEvents } from "@/data/events";
-
-const featuredEvent = upcomingEvents[0];
-const nycWhatsApp = "https://chat.whatsapp.com/DrALA6m5IHa9XgMG1q4YkB";
-const globalWhatsApp = "https://chat.whatsapp.com/LurxSBSuEFF7jIlInK0CV6";
+const calendarUrl = "https://luma.com/growth-circuit";
+const joinPaths = [
+  { name: "New York City", label: "For the people around the corner", description: "Meet in person, find local collaborators, and keep talking in the NYC WhatsApp group.", href: "https://growthcircuit.club/apply?path=nyc", cta: "Apply to join NYC", marker: "NYC" },
+  { name: "Everywhere else", label: "Good company travels", description: "Swap ideas, share your work, and meet other people building growth systems in the global WhatsApp group.", href: "https://growthcircuit.club/apply?path=global", cta: "Apply to join global", marker: "↗" },
+];
 ---
 
-<BaseLayout
-  title="Growth Circuit"
-  description="Meet the people building growth systems through public NYC events, WhatsApp groups, and a growing directory of member projects."
-  hideHeader
-  bodyClass="sky-page pivot-page"
->
-  <div class="pivot-hero">
-    <header class="pivot-header">
-      <div class="shell pivot-nav">
-        <a class="brand" href="/" aria-label="Growth Circuit home">
-          <img class="brand-logo" src="/growth-circuit-icon.svg" alt="" width="44" height="44" />
-          <span>Growth Circuit</span>
-        </a>
-        <nav class="pivot-nav__links" aria-label="Main navigation">
-          <a href="/events">Events</a>
-          <a href="/people">People + projects</a>
-          <a href="#join">WhatsApp</a>
-        </nav>
-      </div>
-    </header>
-
-    <section class="shell pivot-hero__inner">
-      <div class="pivot-hero__copy">
-        <p class="eyebrow eyebrow--live">NYC-first. Open to everyone.</p>
-        <h1>Meet the people <span>building growth systems.</span></h1>
-        <p class="pivot-lead">Growth Circuit is a community for engineers, marketers, and builders who work on growth. We started with in-person events in New York City and grew from there.</p>
-        <div class="pivot-actions">
-          <a class="button matcha" href={featuredEvent.partifulUrl} target="_blank" rel="noopener noreferrer">Come to the launch party ↗</a>
-          <a class="pivot-text-link" href="#join">Join WhatsApp ↓</a>
-        </div>
-      </div>
-
-      <div class="circuit-map" aria-label="Growth Circuit connects NYC events, WhatsApp conversation, and public work">
-        <div class="circuit-map__line" aria-hidden="true"></div>
-        <a class="circuit-node circuit-node--event" href="/events">
-          <span>01</span><strong>Meet</strong><small>Public events in NYC</small>
-        </a>
-        <a class="circuit-node circuit-node--chat" href="#join">
-          <span>02</span><strong>Talk</strong><small>NYC + global WhatsApp</small>
-        </a>
-        <a class="circuit-node circuit-node--work" href="/people">
-          <span>03</span><strong>Show</strong><small>Profiles + projects</small>
-        </a>
-      </div>
-    </section>
-  </div>
-
-  <section class="shell model-section" aria-labelledby="model-title">
-    <div class="section-intro">
-      <p class="eyebrow">How the circuit works</p>
-      <h2 id="model-title">Three ways in. One useful community.</h2>
+<BaseLayout title="Growth Circuit" description="Find your people in growth. Meet marketers, engineers, and builders through NYC events and a global community. Apply to join Growth Circuit." hideHeader bodyClass="sky-page circuit-home">
+  <a class="gc-skip" href="#main-content">Skip to content</a>
+  <header class="gc-header">
+    <div class="shell gc-nav">
+      <a class="brand" href="/" aria-label="Growth Circuit home"><img class="brand-logo" src="/growth-circuit-icon.svg" alt="" width="44" height="44" /><span>Growth Circuit</span></a>
+      <nav aria-label="Main navigation"><a class="gc-nav-about" href="#how-it-works">The community</a><a href="/events">Events</a><a class="gc-button gc-button-small" href="#join">Find your people</a></nav>
     </div>
-    <div class="model-grid">
-      <article>
-        <span class="model-card__number">NYC</span>
-        <h3>Meet in New York</h3>
-        <p>Larger events, usually 30 to 100 people, are how most people find Growth Circuit. Expect people who work on growth and have real things to share.</p>
-        <a href="/events">See upcoming events →</a>
-      </article>
-      <article>
-        <span class="model-card__number">Chat</span>
-        <h3>Talk on WhatsApp</h3>
-        <p>Between events, share what you are working on, ask a question, or pass along something useful. Join the local NYC group or the broader global group.</p>
-        <a href="#join">Choose your group →</a>
-      </article>
-      <article>
-        <span class="model-card__number">Work</span>
-        <h3>Show what you built</h3>
-        <p>We are building a public directory of members and the things they have shipped. Claim a profile, add your projects, and let your work be findable.</p>
-        <a href="/people">Preview profiles →</a>
-      </article>
-    </div>
-    <p class="supper-note"><span>Small table, by invitation</span> Nick and Lucy also host smaller dinners for people they meet at larger events.</p>
-  </section>
+  </header>
 
-  <section class="event-feature" aria-labelledby="event-title">
-    <div class="shell event-feature__inner">
-      <div class="event-feature__image">
-        <img src={featuredEvent.image} alt={featuredEvent.imageAlt} width="1080" height="1080" loading="lazy" />
+  <section class="gc-hero" id="main-content" aria-labelledby="hero-title">
+    <div class="shell gc-hero-grid">
+      <div class="gc-hero-copy">
+        <p class="gc-location"><span aria-hidden="true"></span> Rooted in NYC. Connected everywhere.</p>
+        <h1 id="hero-title">Growth is better<br />in good company</h1>
+        <p class="gc-lead">Find the marketers, engineers, and builders who get excited about the same things you&nbsp;do.</p>
+        <p class="gc-hero-detail">Meet in New York. Compare notes on WhatsApp. Bring the thing you’re building, or the question you’re stuck on.</p>
+        <div class="gc-actions"><a class="gc-button" href="#join">Find your people</a><a class="gc-link" href={calendarUrl} target="_blank" rel="noopener noreferrer">Explore NYC events <span aria-hidden="true">↗</span></a></div>
+        <p class="gc-micro">NYC and global groups. Applications reviewed by our team.</p>
       </div>
-      <div class="event-feature__copy">
-        <p class="eyebrow">Next in New York</p>
-        <h2 id="event-title">{featuredEvent.title}</h2>
-        <dl class="event-facts">
-          <div><dt>When</dt><dd><time datetime={featuredEvent.dateTime}>{featuredEvent.dateLabel}<br />{featuredEvent.timeLabel}</time></dd></div>
-          <div><dt>Where</dt><dd>{featuredEvent.location}<br /><small>{featuredEvent.locationDetail}</small></dd></div>
-        </dl>
-        <p>{featuredEvent.description}</p>
-        <div class="pivot-actions">
-          <a class="button matcha" href={featuredEvent.partifulUrl} target="_blank" rel="noopener noreferrer">RSVP on Partiful ↗</a>
-          <a class="pivot-text-link" href="/events">All events →</a>
-        </div>
-      </div>
+      <figure class="gc-neighborhood">
+        <div class="gc-neighborhood-caption"><span class="gc-dot" aria-hidden="true"></span> A little closer to your kind of people.</div>
+        <img src="/growth-circuit-park-slope-final.webp" alt="An illustrated neighborhood of Park Slope brownstones beside Prospect Park in Brooklyn" width="1448" height="1086" fetchpriority="high" />
+        <figcaption><span>Starting in New York</span><span>See you around the neighborhood.</span></figcaption>
+      </figure>
     </div>
   </section>
 
-  <section class="shell profiles-feature" aria-labelledby="profiles-title">
-    <div class="profiles-feature__copy">
-      <p class="eyebrow">Coming soon</p>
-      <h2 id="profiles-title">A public home for people and their work.</h2>
-      <p>Claim your Growth Circuit profile, add the projects you have shipped, and make your work findable by people who care about it. Doorway can make it easy to publish a project and attach it to your profile.</p>
-      <div class="profile-labels" aria-label="Planned profile features">
-        <span>Member profiles</span><span>Project pages</span><span>Curated highlights</span>
-      </div>
-      <a class="button matcha" href="/people">Preview the directory →</a>
-    </div>
-    <div class="profile-preview" aria-label="Example Growth Circuit profile">
-      <div class="profile-preview__top"><span>growthcircuit.club/people/you</span><span>Claimed ✓</span></div>
-      <div class="profile-preview__identity"><div class="profile-preview__avatar">YOU</div><div><p>Marketing engineer</p><h3>Your name</h3><span>New York City</span></div></div>
-      <div class="profile-preview__project"><span>Latest project</span><strong>The useful thing you shipped</strong><small>Published with Doorway ↗</small></div>
-      <p class="profile-preview__note">Useful WhatsApp conversations may become public highlights after review. Private conversation stays private.</p>
+  <section class="gc-hosts" aria-label="Meet your hosts"><div class="shell gc-hosts-inner"><p>Built by people doing the work.</p><p><a href="https://www.linkedin.com/in/nicklafferty/" target="_blank" rel="noopener noreferrer">Nick Lafferty</a><span>Profound</span></p><span class="gc-host-plus" aria-hidden="true">+</span><p><a href="https://www.linkedin.com/in/lucyjanehoyle" target="_blank" rel="noopener noreferrer">Lucy Hoyle</a><span>Carta</span></p></div></section>
+
+  <section class="shell gc-community" id="how-it-works" aria-labelledby="community-title">
+    <div class="gc-section-heading"><h2 id="community-title">Your next good idea<br />might start with a hello.</h2><p>You don’t need a finished project or a particular job title. If you work on growth and want to learn with other people, you’re in the right place.</p></div>
+    <div class="gc-routes">
+      <article><div class="gc-route-symbol gc-route-meet" aria-hidden="true"><span></span><span></span><span></span></div><h3>Meet your people.</h3><p>Come to a public NYC event. Talk about what you’re working on. Leave with someone you want to keep in touch with.</p><a class="gc-link" href={calendarUrl} target="_blank" rel="noopener noreferrer">Browse the event calendar ↗</a></article>
+      <article><div class="gc-route-symbol gc-route-chat" aria-hidden="true"><span></span><span></span></div><h3>Get another perspective.</h3><p>A question about your stack. An experiment that surprised you. WhatsApp is where the conversation carries on between events.</p><a class="gc-link" href="#join">Find your WhatsApp group</a></article>
+      <article><div class="gc-route-symbol gc-route-build" aria-hidden="true"><span>↗</span></div><h3>Bring what you’re building.</h3><p>Share the workflow, tool, or scrappy first version you’ve been working on. Find people who understand the problem and can compare notes.</p><a class="gc-link" href="#join">Join the community</a></article>
     </div>
   </section>
 
-  <section class="whatsapp-section" id="join" aria-labelledby="join-title">
-    <div class="shell whatsapp-section__inner">
-      <div>
-        <p class="eyebrow">Between events</p>
-        <h2 id="join-title">Keep the conversation going.</h2>
-      </div>
-      <div class="whatsapp-section__copy">
-        <p>There are two WhatsApp groups, one for New York City and one for the broader global community. Share builds, ask useful questions, and meet people working on similar problems.</p>
-        <div class="whatsapp-actions">
-          <a class="button matcha" href={nycWhatsApp} target="_blank" rel="noopener noreferrer">Join the NYC group ↗</a>
-          <a class="button" href={globalWhatsApp} target="_blank" rel="noopener noreferrer">Join the global group ↗</a>
-        </div>
-        <p class="privacy-note"><strong>Before you join:</strong> joining is explicit opt-in, and everyone in a WhatsApp group can see member phone numbers.</p>
-      </div>
-    </div>
-  </section>
+  <section class="gc-in-person" aria-labelledby="events-title"><div class="shell gc-in-person-inner"><div class="gc-event-ticket"><span class="gc-ticket-top">Growth Circuit / New York</span><h2 id="events-title">Make room<br />for a hello.</h2><p>One city. More people worth knowing.</p><span class="gc-ticket-bottom">Come solo. Bring a friend. Be yourself.</span></div><div class="gc-event-copy"><h3>Start with an event.</h3><p>Meeting someone face to face makes the next conversation easier. Our public NYC events are a good first step, whether you’re new to the city or just want to meet more people working on growth.</p><p>Nick and Lucy also host smaller, invite-only dinners with people they meet at larger events.</p><a class="gc-button" href={calendarUrl} target="_blank" rel="noopener noreferrer">See upcoming events ↗</a><p class="gc-micro">Dates, details, and RSVPs are on our event calendar.</p></div></div></section>
+
+  <section class="shell gc-join" id="join" aria-labelledby="join-title"><div class="gc-join-heading"><p class="gc-location"><span aria-hidden="true"></span> There’s a place for you here.</p><h2 id="join-title">Where’s your circuit?</h2><p>Choose your group and tell us a little about yourself.<br />We’ll review your application and share an invite if you’re approved.</p></div><div class="gc-join-grid">{joinPaths.map((path) => <article class="gc-join-card"><div class="gc-join-marker" aria-hidden="true">{path.marker}</div><p class="gc-join-label">{path.label}</p><h3>{path.name}</h3><p>{path.description}</p><a class="gc-button" href={path.href}>{path.cta}</a></article>)}</div><p class="gc-privacy">A note on privacy: other members of a WhatsApp group can see your phone number. Joining the group is your choice.</p></section>
+
+  <section class="shell gc-faq" aria-labelledby="faq-title"><h2 id="faq-title">A few things<br />you might be wondering.</h2><div><details><summary>Is this for marketers or engineers?</summary><p>Both, and anyone building growth systems. Your job title matters less than your interest in the work and willingness to share what you’re learning.</p></details><details><summary>Do I have to live in New York?</summary><p>Our in-person events are in NYC. If you’re somewhere else, apply to the global WhatsApp group to join the conversation from wherever you are.</p></details><details><summary>Can I come to an event on my own?</summary><p>Yes! Public events are a way to meet people. Check the event calendar for details and RSVP requirements, and come by yourself or bring a friend.</p></details><details><summary>What happens after I apply?</summary><p>Our team reviews applications. If you’re approved, we’ll share the invite to your WhatsApp group. Once you’re in, introduce yourself and tell us what you’re working on.</p></details></div></section>
 </BaseLayout>
+
+<style>
+  :global(.circuit-home) { --gc-ink:#17313a; --gc-muted:#4d6570; --gc-blue:#dceef5; --gc-green:#d6e5d2; --gc-accent:#355e49; color-scheme:light; background:#f7fcfd; }
+  :global(.circuit-home .footer) { background:#e8f1ed; color:#425c62; border-color:#cbded7; }
+  :global(.circuit-home .footer a) {color:#17313a;}
+  .gc-skip { position:absolute; top:-80px; left:16px; z-index:100; padding:12px 20px; background:white; color:#17313a; } .gc-skip:focus{top:12px;}
+  .gc-header {background:#dceef5;} .gc-nav {display:flex; align-items:center; justify-content:space-between; min-height:100px; gap:24px;} .gc-nav nav{display:flex;align-items:center;gap:30px;} .gc-nav nav>a{font-size:14px;font-weight:650;} .gc-nav .brand{font-size:19px;}
+  .gc-button {display:inline-flex;justify-content:center;align-items:center;min-height:52px;padding:14px 25px;border-radius:8px;background:var(--gc-ink);color:#fff;font-size:15px;font-weight:700;text-align:center;line-height:1.3;transition:background .15s;} .gc-button:hover{background:#355e49;} .gc-button-small{min-height:42px;padding:11px 18px;} .gc-link{font-size:15px;font-weight:700;text-decoration:underline;text-underline-offset:5px;text-decoration-color:#90aaa9;} .gc-link:hover{text-decoration-color:currentColor;} a:focus-visible,summary:focus-visible{outline:3px solid #287f91;outline-offset:5px;}
+  .gc-hero{background:var(--gc-blue);overflow:hidden;} .gc-hero-grid{display:grid;grid-template-columns:1.05fr 1fr;align-items:center;gap:10px;min-height:625px;padding-top:45px;padding-bottom:68px;}
+  .gc-hero-copy{position:relative;z-index:1;} .gc-location{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:650;letter-spacing:.01em;} .gc-location>span,.gc-dot{width:8px;height:8px;background:#355e49;border-radius:50%;flex-shrink:0;}
+  h1{font-size:clamp(44px,4.7vw,65px);line-height:1.06;letter-spacing:-.055em;margin:25px 0;max-width:650px;font-weight:760;} .gc-lead{font-size:21px;line-height:1.5;max-width:470px;margin:0 0 16px;} .gc-hero-detail{font-size:16px;line-height:1.7;color:var(--gc-muted);max-width:440px;margin:0;} .gc-actions{display:flex;align-items:center;gap:24px;margin-top:29px;} .gc-micro{font-size:12px;line-height:1.6;color:var(--gc-muted);margin-top:15px;}
+  .gc-neighborhood{margin:0 -65px 0 -45px;position:relative;} .gc-neighborhood img{width:100%;height:auto;mix-blend-mode:multiply;} .gc-neighborhood-caption{display:flex;align-items:center;justify-content:center;gap:9px;font-size:12px;color:#3c5c62;} .gc-neighborhood figcaption{display:flex;justify-content:space-between;margin:0 65px 0 45px;padding-top:16px;border-top:1px solid #aecbd2;font-size:11px;color:#45616b;}
+  .gc-hosts{background:#e9f3f6;border-bottom:1px solid #d4e5eb;} .gc-hosts-inner{display:flex;align-items:center;justify-content:center;gap:42px;padding:25px 0;} .gc-hosts p{margin:0;font-size:14px;font-weight:650;} .gc-hosts p:first-child{color:var(--gc-muted);font-weight:500;margin-right:18px;} .gc-hosts p span{display:block;font-size:12px;color:var(--gc-muted);font-weight:400;margin-top:2px;} .gc-host-plus{color:#688080;} .gc-hosts a:hover{text-decoration:underline;}
+  h2{font-size:clamp(32px,3.2vw,44px);line-height:1.15;letter-spacing:-.04em;margin:0;font-weight:740;} h3{letter-spacing:-.025em;} .gc-community{padding-top:94px;padding-bottom:90px;scroll-margin-top:25px;} .gc-section-heading{display:grid;grid-template-columns:1.2fr 1fr;gap:90px;align-items:center;} .gc-section-heading>p{color:var(--gc-muted);line-height:1.8;font-size:16px;margin:0;max-width:425px;}
+  .gc-routes{display:grid;grid-template-columns:repeat(3,1fr);gap:55px;margin-top:54px;} .gc-routes article{display:flex;flex-direction:column;align-items:flex-start;} .gc-routes h3{font-size:23px;margin:23px 0 12px;} .gc-routes p{font-size:15px;line-height:1.8;margin:0 0 21px;color:var(--gc-muted);} .gc-routes a{margin-top:auto;font-size:14px;}
+  .gc-route-symbol{height:57px;display:flex;align-items:center;position:relative;} .gc-route-meet span{width:40px;height:40px;background:#cedfc7;border:2px solid #f7fcfd;border-radius:50%;margin-left:-9px;} .gc-route-meet span:first-child{margin:0;background:#84a293;} .gc-route-meet span:last-child{background:#aed2de;} .gc-route-chat span{width:42px;height:32px;border:2px solid #62849a;border-radius:12px 12px 12px 2px;background:#e1eef5;} .gc-route-chat span:last-child{position:relative;top:12px;left:-12px;background:#c5dfc1;border-color:#6d8c69;transform:scaleX(-1);} .gc-route-build span{height:48px;width:48px;background:#d4e4d0;border-radius:12px;display:grid;place-items:center;font-size:32px;color:#426046;}
+  .gc-in-person{background:#e8f0e5;padding:66px 0;} .gc-in-person-inner{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:95px;} .gc-event-ticket{background:#d1e2ca;border:1px solid #b3caae;border-radius:18px;position:relative;padding:35px 39px;transform:rotate(-2deg);box-shadow:8px 10px 0 #dce8d7;} .gc-ticket-top{font-size:13px;font-weight:650;} .gc-event-ticket h2{font-size:58px;line-height:1.05;margin-top:40px;} .gc-event-ticket>p{font-size:15px;margin:20px 0 36px;} .gc-ticket-bottom{display:block;border-top:2px dashed #a7bda1;padding-top:24px;font-size:12px;} .gc-event-copy h3{font-size:32px;margin:0 0 20px;} .gc-event-copy>p:not(.gc-micro){color:#4d6354;font-size:16px;line-height:1.8;} .gc-event-copy .gc-button{margin-top:12px;}
+  .gc-join{padding-top:96px;padding-bottom:78px;scroll-margin-top:24px;} .gc-join-heading{text-align:center;} .gc-join-heading .gc-location{justify-content:center;margin:0 0 17px;} .gc-join-heading>p:last-child{line-height:1.8;color:var(--gc-muted);font-size:16px;margin:20px 0 0;} .gc-join-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:930px;margin:39px auto 0;} .gc-join-card{position:relative;border:1px solid #c9dee5;background:#edf5f8;border-radius:16px;padding:35px;display:flex;flex-direction:column;align-items:flex-start;} .gc-join-card:last-child{background:#edf3e9;border-color:#d1dfc9;} .gc-join-marker{border:1px solid #acccd3;border-radius:50%;height:53px;width:53px;display:grid;place-items:center;font-size:14px;font-weight:700;margin-bottom:28px;} .gc-join-card:last-child .gc-join-marker{font-size:27px;border-color:#bccfb4;} .gc-join-label{font-size:12px;margin:0;color:#506972;} .gc-join-card h3{font-size:31px;margin:9px 0 12px;} .gc-join-card>p:not(.gc-join-label){font-size:15px;line-height:1.75;color:var(--gc-muted);margin:0 0 26px;max-width:350px;} .gc-join-card .gc-button{margin-top:auto;width:100%;} .gc-privacy{font-size:12px;line-height:1.7;text-align:center;max-width:660px;margin:23px auto 0;color:var(--gc-muted);}
+  .gc-faq{display:grid;grid-template-columns:1fr 1.25fr;gap:65px;border-top:1px solid #d5e2e6;padding-top:65px;padding-bottom:90px;} .gc-faq h2{font-size:32px;} details{border-bottom:1px solid #d5e2e6;} summary{cursor:pointer;font-size:16px;font-weight:650;padding:19px 28px 19px 0;position:relative;list-style:none;} summary::-webkit-details-marker{display:none;} summary:after{content:'+';position:absolute;right:3px;font-size:21px;top:15px;font-weight:400;} details[open] summary:after{content:'−';} details p{font-size:15px;line-height:1.8;color:var(--gc-muted);margin:0;padding:0 25px 23px 0;}
+  @media(min-width:1400px){.gc-hero-grid{min-height:670px;}} @media(max-width:1000px){.gc-nav nav{gap:18px;}.gc-hero-grid{grid-template-columns:1.2fr 1fr;}.gc-neighborhood{margin:0 -35px 0 -20px;}.gc-neighborhood figcaption{margin:0 30px;gap:20px;}.gc-actions{gap:16px;flex-wrap:wrap;}.gc-section-heading{gap:40px;}.gc-routes{gap:28px;}.gc-in-person-inner{gap:55px;}.gc-event-ticket h2{font-size:48px;}}
+  @media(max-width:700px){.gc-nav{min-height:82px;gap:12px;}.gc-nav .brand{font-size:15px;gap:8px;}.gc-nav .brand-logo{width:34px;height:34px;flex-basis:34px;}.gc-nav nav{gap:15px;}.gc-nav nav>a{font-size:12px;}.gc-nav-about{display:none;}.gc-button-small{min-height:38px;padding:10px 12px;}.gc-hero-grid{grid-template-columns:1fr;gap:30px;padding-top:32px;padding-bottom:25px;min-height:auto;}.gc-location{font-size:11px;}h1{font-size:clamp(42px,8vw,58px);max-width:560px;margin:24px 0;}.gc-lead{font-size:19px;max-width:500px;text-wrap:balance;}.gc-hero-detail{font-size:15px;max-width:500px;}.gc-neighborhood{margin:0 auto;width:100%;max-width:530px;}.gc-neighborhood-caption{display:none;}.gc-neighborhood figcaption{margin:0 10px;font-size:10px;}.gc-actions{margin-top:25px;gap:20px;}.gc-actions .gc-link{font-size:13px;}.gc-micro{font-size:11px;}.gc-hosts-inner{flex-wrap:wrap;gap:18px 30px;padding:23px 0;}.gc-hosts p:first-child{width:100%;text-align:center;margin:0 0 3px;font-size:13px;}.gc-hosts p{font-size:13px;}.gc-community{padding-top:57px;padding-bottom:55px;}.gc-section-heading{grid-template-columns:1fr;gap:20px;}.gc-section-heading>p{max-width:none;font-size:15px;}.gc-routes{grid-template-columns:1fr;gap:31px;margin-top:33px;}.gc-routes article{position:relative;padding-left:78px;}.gc-route-symbol{position:absolute;top:0;left:0;transform:scale(.75);transform-origin:left top;}.gc-routes h3{margin:4px 0 10px;font-size:22px;}.gc-routes p{margin-bottom:13px;}.gc-in-person{padding:45px 0;}.gc-in-person-inner{grid-template-columns:1fr;gap:43px;}.gc-event-ticket{margin:0 8px;padding:28px;}.gc-event-ticket h2{font-size:47px;margin-top:27px;}.gc-event-ticket>p{margin-bottom:26px;}.gc-event-copy h3{font-size:29px;}.gc-join{padding-top:60px;padding-bottom:49px;}.gc-join-heading>p:last-child{font-size:15px;}.gc-join-grid{grid-template-columns:1fr;gap:16px;margin-top:30px;}.gc-join-card{padding:27px;}.gc-join-marker{position:absolute;right:25px;top:25px;width:45px;height:45px;}.gc-join-label{max-width:75%;font-size:11px;}.gc-join-card h3{font-size:29px;margin-top:14px;}.gc-join-card>p:not(.gc-join-label){max-width:100%;}.gc-privacy{text-align:left;}.gc-faq{grid-template-columns:1fr;gap:20px;padding-top:42px;padding-bottom:55px;}.gc-faq h2{font-size:30px;}summary{font-size:15px;}}
+  @media(max-width:370px){.gc-nav nav>a:not(.gc-button){display:none;}.gc-actions{gap:18px;}.gc-button{padding:14px 18px;}h1{font-size:40px;}.gc-join-marker{display:none;}}
+</style>

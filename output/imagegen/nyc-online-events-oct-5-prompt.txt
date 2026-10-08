@@ -1,0 +1,25 @@
+Update this square newsletter event image for October 5–11, 2026. Closely preserve the approved logo-free design: airy bright blue sky, white clouds, realistic autumn leaves at corners, green park and NYC skyline at bottom, huge rounded navy headline "NYC + ONLINE" / "EVENTS", coral dates, forest-green location icons, two-column event rows, pale sage rounded bottom panel. No brand logo or wordmark at top. Same square format. Replace ALL old event content.
+Date under headline with coral calendar icon: "OCTOBER 5–11".
+Four main event rows, rather than five. Use spacious rows and wrap longer titles neatly. Date and start time in coral left column, title bold navy and details smaller navy on right:
+Row 1 date "TUE 10/6 · 6PM"
+Title "Ophelia Demo Night"
+Subtitle "The Future of Agentic Commerce"
+Details "Betaworks / Meatpacking · Free"
+Row 2 date "TUE 10/6 · 6PM"
+Title "Storytelling as GTM"
+Details "Midtown South · Free / approval"
+Row 3 date "TUE 10/6 · 6:30PM"
+Title across two lines if needed "ElevenLabs × Creator Spotlight:"
+"The New Reach"
+Details "Lower Manhattan · Free / approval"
+Row 4 date "THU 10/8 · 6PM"
+Title "Adtech and AI"
+Subtitle "How LLMs and Agents Are Changing the Game"
+Details "535 8th Ave · Free"
+Bottom pale green rounded panel with calendar icon and heading "MEET UP THIS WEEK".
+Three exact lines:
+"OCT 9 · Good Friends Run Club · 7AM · Prospect Park"
+"OCT 9 · Show & Tell · 1PM · Zoom"
+"OCT 11 · House Party #2 · 2PM · Brooklyn"
+Small footer "All times ET".
+The run club time MUST be 7AM, replacing 6:30AM in reference. Only four main listings and these three footer listings. All text crisp, correctly spelled and easily readable. No URLs, no em dashes, no extra text, no logo. Maintain aligned columns and clear hierarchy; the design must feel like the next edition of the same newsletter.

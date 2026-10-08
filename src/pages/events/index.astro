@@ -1,6 +1,8 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { upcomingEvents } from "@/data/events";
+import { growthCircuitEvents } from "@/data/events";
+
+const upcomingEvents = growthCircuitEvents.filter((event) => event.status === "upcoming" && new Date(event.dateTime).getTime() > Date.now());
 ---
 
 <BaseLayout title="Events" description="Public Growth Circuit events in New York City." path="/events" bodyClass="sky-page pivot-page">
@@ -10,6 +12,12 @@ import { upcomingEvents } from "@/data/events";
     <p>Larger public events are the front door to Growth Circuit. Come by yourself or bring someone who should be in the room.</p>
   </section>
   <section class="shell event-list" aria-label="Upcoming Growth Circuit events">
+    {upcomingEvents.length === 0 && <div class="calendar-invitation">
+      <h2>Find your next hello.</h2>
+      <p>Our latest NYC dates, event details, and RSVPs are on the Growth Circuit calendar.</p>
+      <a class="button matcha" href="https://luma.com/growth-circuit" target="_blank" rel="noopener noreferrer">See the event calendar ↗</a>
+      <p><a href="/#join">Or apply to join the community</a> and keep the conversation going between events.</p>
+    </div>}
     {upcomingEvents.map((event) => (
       <article class="event-listing">
         <img src={event.image} alt={event.imageAlt} width="1080" height="1080" />
@@ -32,3 +40,10 @@ import { upcomingEvents } from "@/data/events";
     <p>Nick and Lucy curate smaller dinners by hand from people they meet at larger Growth Circuit events.</p>
   </section>
 </BaseLayout>
+
+<style>
+.calendar-invitation { padding: 35px; background: #e8f0e5; border-radius: 16px; color: #17313a; }
+.calendar-invitation h2 { margin-top: 0; font-size: 32px; letter-spacing: -.03em; }
+.calendar-invitation p { max-width: 600px; line-height: 1.7; color: #4d6570; }
+.calendar-invitation p a { text-decoration: underline; text-underline-offset: 3px; }
+</style>

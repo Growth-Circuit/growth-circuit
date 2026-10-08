@@ -1,0 +1,4 @@
+interface:
+  display_name: "Growth Circuit Operations"
+  short_description: "Operate Growth Circuit CRM and campaigns safely"
+  default_prompt: "Use $growth-circuit-operations to prepare and verify a Growth Circuit audience or campaign."
