@@ -131,7 +131,14 @@ describe("blog posts", () => {
       "Did bots write this post?",
       "Is there a Global Growth Circuit community?",
     ]);
-    expect(faq[0]?.answer.startsWith("A small team of specialists plus one front door.")).toBe(true);
+    expect(faq.map((entry) => entry.answer)).toEqual([
+      "Ten bots, a small team of nine specialists plus one front door. The specialists cover ops, the newsletter, the website, our Notion handbook, WhatsApp spam, event art, recruiting, voice checks, and texting me when something needs me. Grok Bot sits in front of them and only brings me decisions and real problems.",
+      "Who we reach out to and what the community feels like. We also own every send and publish, outreach rules and spend, website merges, and any moderation call that isn't clear spam.",
+      "They never send, publish, or merge without approval. They also never resubscribe someone who opted out, guess who a person is, share private links, or add anyone to WhatsApp on their own.",
+      "Subscribe to the newsletter. You'll get the latest issue right away, and a week later you'll get an invite to the NYC WhatsApp group.",
+      "Mostly, yes. Operator interviewed the bots, Writing Style drafted it in my voice, Grok Bot updated it, Copy Humanizer made it sound less like AI, and Website built the blog. I reviewed and approved it before it went live.",
+      "Not right now. We retired the Global WhatsApp community because WhatsApp didn't work for a global group.",
+    ]);
     expect(extractFaq("## Notes\n\nNo questions here.")).toEqual([]);
     expect(extractFaq("## FAQ\n\n### Question?\n\nAnswer.")).toEqual([{ question: "Question?", answer: "Answer." }]);
   });

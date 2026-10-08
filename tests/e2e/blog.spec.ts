@@ -99,6 +99,18 @@ test("the post renders the byline, formatting, and structured data", async ({ pa
   expect(article.publisher.name).toBe("Growth Circuit");
   expect(faq.mainEntity).toHaveLength(6);
   expect(faq.mainEntity[0]["@type"]).toBe("Question");
+  const visibleFaq = await page.locator(".blog-post-body h3").evaluateAll((headings) =>
+    headings.map((heading) => ({
+      question: heading.textContent?.trim() ?? "",
+      answer: heading.nextElementSibling?.textContent?.replace(/\s+/g, " ").trim() ?? "",
+    })),
+  );
+  expect(
+    faq.mainEntity.map((entry: { name: string; acceptedAnswer: { text: string } }) => ({
+      question: entry.name,
+      answer: entry.acceptedAnswer.text,
+    })),
+  ).toEqual(visibleFaq);
   expect(crumbs.itemListElement.map((item: { name: string }) => item.name)).toEqual(["Home", "Blog", title]);
 });
 
