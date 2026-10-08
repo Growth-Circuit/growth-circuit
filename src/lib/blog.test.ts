@@ -120,7 +120,7 @@ describe("blog posts", () => {
     );
     expect(data.authors).toEqual(["nick", "lucy"]);
     expect(data.category).toBe("Community ops");
-    expect(content.trimStart().startsWith("Growth Circuit runs on a small team")).toBe(true);
+    expect(content.trimStart().startsWith("Growth Circuit is a community for marketing engineers in NYC.")).toBe(true);
     expect(assertBlogBody("how-we-run-growth-circuit-with-grok-bot", content)).toBeUndefined();
     const faq = extractFaq(content);
     expect(faq.map((entry) => entry.question)).toEqual([

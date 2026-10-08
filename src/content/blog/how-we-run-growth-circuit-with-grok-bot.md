@@ -10,7 +10,7 @@ featured: true
 category: Community ops
 ---
 
-Growth Circuit runs on a small team of Grok Bot specialists plus one front door. Each bot owns one job, like the newsletter or WhatsApp spam, and stays quiet unless something changed. Lucy and I still decide who we reach out to and what gets sent, and we're the ones shaping what the community feels like.
+Growth Circuit is a community for marketing engineers in NYC. We send a short, curated weekly email of the best NYC and virtual events for marketers in growth and AI, host our own events, and run a small WhatsApp group where members share what they're building. The whole thing runs on a small team of Grok Bot specialists plus one front door. Each bot owns one job, like the newsletter or WhatsApp spam, and stays quiet unless something changed. Lucy and I still decide who we reach out to and what gets sent, and we're the ones shaping what the community feels like.
 
 Lucy and I started Growth Circuit for marketing engineers in NYC, meaning marketers who build their own tools with scripts, APIs, agents, and automations. I also work full time at Profound, so the community has to run without eating every night and weekend I have.
 
