@@ -10,9 +10,11 @@ featured: true
 category: Community ops
 ---
 
-Growth Circuit is a community for marketing engineers in NYC. We send a short, curated weekly email of the best NYC and virtual events for marketers in growth and AI, host our own events, and run a small WhatsApp group where members share what they're building. The whole thing runs on a small team of Grok Bot specialists plus one front door. Each bot owns one job, like the newsletter or WhatsApp spam, and stays quiet unless something changed. Lucy and I still decide who we reach out to and what gets sent, and we're the ones shaping what the community feels like.
+Growth Circuit is a community for marketing engineers in NYC. We send a short, curated weekly email of the best NYC and virtual events for marketers in growth and AI, host our own events, and run a small WhatsApp group where members share what they're building. 
 
-Lucy and I started Growth Circuit for marketing engineers in NYC, meaning marketers who build their own tools with scripts, APIs, agents, and automations. I also work full time at Profound, so the community has to run without eating every night and weekend I have.
+It all runs on a small team of Grok Bot specialists plus one supervisor bot. Each bot owns one job, like researching events for the newsletter or managing WhatsApp spam. 
+
+Lucy and I started Growth Circuit because we wanted a place to organize and meet other marketing engineers and to see what everyone is building. 
 
 ## Why we use bots to run a community
 
@@ -20,11 +22,11 @@ Community ops is a pile of small recurring jobs, and bots are good at those. Som
 
 So each bot gets one lane and the tools for that lane. It also gets a written list of things it never does, and that list is the part I care about most.
 
-## How the front door works
+## How the supervisor bot works
 
-Grok Bot is my single front door. The specialist bots hand it critical updates. Every bot stays quiet when nothing changed, so I only hear about decisions and real problems. Even a bot telling me "all good, nothing changed" is noise.
+![Screenshot 2026-10-08 at 3.55.35 PM](/Users/nicklafferty/Library/Application Support/typora-user-images/Screenshot 2026-10-08 at 3.55.35 PM.png)Grok Grok Bot launched a supervisor bot lately and that is who manages all my other bots. The specialist bots hand it critical updates. Every bot stays quiet when nothing changed, so I only hear about decisions and real problems. Even a bot telling me "all good, nothing changed" is noise.
 
-A few bots have narrower roles around that. Text Me is the only bot that texts me, so if I get a text from a bot, something actually needs me. Operator routes marketing and ops blockers and approvals. Documenter works silently in Notion and keeps our handbook current without pinging anyone.
+A few bots have narrower roles around that. Text Me is the only bot that texts me, via the Zo MCP, so if I get a text from a bot, something actually needs me. Operator routes marketing and ops blockers and approvals. Documenter works silently in Notion and keeps our handbook current without pinging anyone.
 
 ## The bots on the team
 
@@ -32,7 +34,7 @@ Ten bots run Growth Circuit, Grok Bot plus nine specialists, and each one owns a
 
 | Bot | What it owns |
 | --- | --- |
-| Grok Bot | My front door. Takes critical updates from the specialists and brings me only decisions and real problems. |
+| Grok Bot | My supervisor bot. Takes critical updates from the specialists and brings me only decisions and real problems. |
 | Operator | Community ops across our CRM, events, email audiences, and WhatsApp. Routes marketing and ops blockers and approvals. |
 | Newsletter | Researches, drafts, and stages the weekly NYC marketing events newsletter. |
 | Documenter | Keeps our Notion handbook current, quietly. |
@@ -45,27 +47,29 @@ Ten bots run Growth Circuit, Grok Bot plus nine specialists, and each one owns a
 
 ## How people join Growth Circuit now
 
-The newsletter is the one way into Growth Circuit. We used to have an apply form on the website and retired it. Anyone who subscribes gets the latest issue right away, and seven days later the welcome series sends them an invite to the small NYC marketing engineers WhatsApp group Lucy and I run. Any subscriber can join.
+We've already evolved the idea of Growth Circuit since we launched in August. Our initial idea was to run cohort-based meetups roughly every quarter (1 meetup per month). However we found that people were more engaged in our WhatsApp group and not everyone could commit to the same time every month. So we started building out the WhatsApp group as a place for casual conversation about AI and marketing, and then we launched a newsletter to create another channel to notify our members of what cool events are happening in NYC. 
 
-Members share what they're building, plus local events and AI news. Spam Protector watches for clear spam and leaves the normal stuff alone, and portfolio posts, dinner invites, and intros all count as normal. When something is ambiguous self-promo, a human makes the call.
-
-We also had a Global WhatsApp community, which we retired for now because WhatsApp just didn't work for a global group. I'd rather say that out loud than keep a quiet room running.
+Anyone who subscribes to the newsletter gets the most recent issue of our event email right away and then a few days later they get an invite to the WhatsApp group. This was all setup via Grok Bot :)
 
 ## How the weekly newsletter gets made
 
-The Newsletter bot researches public NYC marketing events, decides which ones fit, and stages a draft in Loops, then I edit it and send it myself. It pulls from Luma, Partiful, community calendars, and public invites. We built an event classifier that hit about 95% on a labeled batch, so it handles the obvious calls and anything ambiguous doesn't sneak in silently. Private or non-shareable events never make the list, even when the bot can see them.
-
-Once an issue is set, the handoffs start, and nothing in them publishes without my yes. Image Generation makes the weekly events square, Website opens a PR for the archive page, and Writing Style checks the copy.
+![Screenshot 2026-10-09 at 2.36.18 PM](/Users/nicklafferty/Library/Application Support/typora-user-images/Screenshot 2026-10-09 at 2.36.18 PM.png)The Newsletter bot researches public NYC marketing events, decides which ones fit, and stages a draft in Loops, then I edit it and send it myself. It pulls from Luma, Partiful, community calendars, and public invites. We built an event classifier in Jev that helps filter all the events into only ones that are helpful for marketers and it's about 95% accurate now (meaning that it correctly filters for the right events 95% of the time). The ones it's unsure of it pings me and I thumbs up or down.
 
 ## How event attendees join the email list
 
 Every Friday, Newsletter adds people who attended Growth Circuit Luma events to our Loops list, with each contact's source set to the event they came to. It doesn't send any emails, and it never resubscribes anyone who opted out. When it's done, it sends me a weekly summary of our subscription stats.
 
-Bots make mistakes, and the opt-out rule exists because we broke it once. An older Sunday import resubscribed someone who had unsubscribed. We caught it and set them back to unsubscribed, but a fix only counts if it reaches the next run, so we wrote the rule down to keep the next version from repeating it. The Friday sync replaced that import.
+This is done via the Luma MCP. Grok Bot runs a scheduled routine that sees what emails have subscribed to our Luma events and then moves them to our contact list in Loops. This is also why we switched from using Partiful to run events to Luma, because Partiful doesn't require / store emails
 
-## What humans still decide
+## What role humans play in this system
 
-Lucy and I own the taste calls. I approve every campaign send and every social publish, along with outreach rules and spend, website merges, and any WhatsApp moderation that isn't clear spam. Writing Style is part of every outbound draft, so nothing goes out sounding like a brand account instead of me.
+I am pro-human-in-the-loop when it comes to AI agents still. I approve everything at the final stage:
+
+* The final draft of the email newsletter
+* The social posts on LinkedIn and Twitter
+* The final copy of the ABM outreach on LinkedIn
+
+Once I have the copy in a template I like, then I allow the system to run automatically. 
 
 Image Generation is how we learned why approvals matter. An early publish overwrote edits I'd already made in Buffer. Now it keeps my edits and waits for a clear yes before anything goes live.
 
