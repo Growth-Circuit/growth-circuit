@@ -24,7 +24,7 @@ test("the blog features the published post once", async ({ page }) => {
   await expect(featured.getByText("Nick Lafferty and Lucy Hoyle")).toBeVisible();
   await expect(featured.getByRole("link", { name: new RegExp(title) })).toHaveAttribute("href", postPath);
   await expect(featured.locator("p").nth(1)).toHaveText(
-    "Growth Circuit runs on a small team of Grok Bot specialists plus one front door. Here's what each bot does and what Lucy and I still decide.",
+    "Growth Circuit runs on a small team of Grok Bot specialists plus one supervisor bot. Here's what each bot does and what Lucy and I still decide.",
   );
   await expect(featured.locator(".keep-together")).toHaveCount(0);
   await expect(page.getByRole("region", { name: "All posts" })).toHaveCount(0);
@@ -38,7 +38,7 @@ test("the post renders the byline, formatting, and structured data", async ({ pa
   await expect(page).toHaveTitle(`${title} | Growth Circuit`);
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
-    "Growth Circuit runs on a small team of Grok Bot specialists plus one front door. Here's what each bot does and what Lucy and I still decide.",
+    "Growth Circuit runs on a small team of Grok Bot specialists plus one supervisor bot. Here's what each bot does and what Lucy and I still decide.",
   );
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `https://growthcircuit.club${postPath}`);
   await expect(page.locator('meta[property="og:type"]')).toHaveAttribute("content", "article");

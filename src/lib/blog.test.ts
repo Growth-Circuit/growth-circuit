@@ -116,7 +116,7 @@ describe("blog posts", () => {
     const data = blogPostSchema.parse(frontmatter);
     expect(data.title).toBe("How We Run Growth Circuit With Grok Bot");
     expect(data.description).toBe(
-      "Growth Circuit runs on a small team of Grok Bot specialists plus one front door. Here's what each bot does and what Lucy and I still decide.",
+      "Growth Circuit runs on a small team of Grok Bot specialists plus one supervisor bot. Here's what each bot does and what Lucy and I still decide.",
     );
     expect(data.authors).toEqual(["nick", "lucy"]);
     expect(data.category).toBe("Community ops");
@@ -132,7 +132,7 @@ describe("blog posts", () => {
       "Is there a Global Growth Circuit community?",
     ]);
     expect(faq.map((entry) => entry.answer)).toEqual([
-      "Ten bots, a small team of nine specialists plus one front door. The specialists cover ops, the newsletter, the website, our Notion handbook, WhatsApp spam, event art, recruiting, voice checks, and texting me when something needs me. Grok Bot sits in front of them and only brings me decisions and real problems.",
+      "Ten bots, a small team of nine specialists plus one supervisor bot. The specialists cover ops, the newsletter, the website, our Notion handbook, WhatsApp spam, event art, recruiting, voice checks, and texting me when something needs me. Grok Bot sits in front of them and only brings me decisions and real problems.",
       "Who we reach out to and what the community feels like. We also own every send and publish, outreach rules and spend, website merges, and any moderation call that isn't clear spam.",
       "They never send, publish, or merge without approval. They also never resubscribe someone who opted out, guess who a person is, share private links, or add anyone to WhatsApp on their own.",
       "Subscribe to the newsletter. You'll get the latest issue right away, and a week later you'll get an invite to the NYC WhatsApp group.",
