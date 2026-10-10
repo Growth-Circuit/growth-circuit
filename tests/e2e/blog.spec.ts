@@ -77,10 +77,8 @@ test("the post renders the byline, formatting, and structured data", async ({ pa
 
   const images = [
     ["grok-bot.png", "Grok Bot, Growth Circuit's supervisor bot", "1672", "941"],
-    ["grok-bot-front-door.png", "Grok Bot introducing itself as my primary bot and checking my calendar before AI Demo Day", "1070", "942"],
     ["operator.png", "Operator bot", "1672", "941"],
     ["newsletter.png", "Newsletter bot", "1672", "941"],
-    ["newsletter-weekly-draft.png", "The weekly Growth Circuit newsletter draft with upcoming community events and NYC marketing events", "1526", "1240"],
     ["documenter.png", "Documenter bot", "1672", "941"],
     ["website.png", "Website bot", "1672", "940"],
     ["spam-protector.png", "Spam Protector bot", "1672", "941"],
@@ -98,6 +96,8 @@ test("the post renders the byline, formatting, and structured data", async ({ pa
     await expect(image).toHaveAttribute("height", height);
     await expect(image).toHaveAttribute("loading", "lazy");
   }
+  await expect(page.locator('.blog-post-body img[src$="grok-bot-front-door.png"]')).toHaveCount(0);
+  await expect(page.locator('.blog-post-body img[src$="newsletter-weekly-draft.png"]')).toHaveCount(0);
   await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
   await expect(page.getByRole("columnheader", { name: "Bot" })).toBeVisible();
   await expect(page.getByRole("cell", { name: "Spam Protector" })).toBeVisible();
