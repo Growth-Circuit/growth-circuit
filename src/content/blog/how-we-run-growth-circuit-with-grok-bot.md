@@ -51,8 +51,6 @@ Ten bots run Growth Circuit, Grok Bot plus nine specialists, and each one owns a
 
 ![Grok Bot, Growth Circuit's supervisor bot](/blog/how-we-run-growth-circuit-with-grok-bot/img/grok-bot.png)
 
-![Grok Bot introducing itself as my primary bot and checking my calendar before AI Demo Day](/blog/how-we-run-growth-circuit-with-grok-bot/img/grok-bot-front-door.png)
-
 Grok Bot is the primary bot I talk to now, it's a newly launched supervisor bot and that is who manages all my other bots. The specialist bots hand it critical updates, and it brings me the stuff that needs a decision.
 
 Every bot stays quiet when nothing changed, so I only hear about decisions and real problems. Even a bot telling me "all good, nothing changed" is noise.
@@ -66,8 +64,6 @@ Operator does the ops work underneath everything. It keeps our CRM, Luma events,
 This is the unsexy work that I don't want to do, or would forget completely to do. It was also one of the first bots I made, it handles all the MCP connections to Notion (our current CRM), Luma (where we host events), and Loops (our email service). It has a very specific job and the other bots know when to tag it in. 
 
 ## Newsletter: finds the events and stages the weekly email
-
-![The weekly Growth Circuit newsletter draft with upcoming community events and NYC marketing events](/blog/how-we-run-growth-circuit-with-grok-bot/img/newsletter-weekly-draft.png)
 
 The Newsletter bot researches public NYC marketing events, decides which ones fit, and stages a draft in Loops, then I edit it and send it myself. It pulls from Luma, Partiful, community calendars, and public invites. 
 
