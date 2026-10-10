@@ -14,7 +14,7 @@ Growth Circuit is a community for marketing engineers in NYC. We send a short, c
 
 Lucy and I started Growth Circuit because we wanted a place to organize and meet other marketing engineers and to see what everyone is building. NYC is lacking a well-run community for AI-pilled marketers in NYC and we love organizing and hosting events. 
 
-I'm writing this a few days before we host our second [https://luma.com/qt18lrxc](https://luma.com/qt18lrxc), where we invite 40 people, mostly strangers, into our apartment in Brooklyn to hang out, demo what they're building, and meet other people.
+I'm writing this a few days before we host our second [House Party](https://luma.com/qt18lrxc), where we invite 40 people, mostly strangers, into our apartment in Brooklyn to hang out, demo what they're building, and meet other people.
 
 Our community runs on a small team of Grok Bot specialists plus one supervisor bot. Each bot owns one job, like researching events for the newsletter or managing WhatsApp spam.
 
