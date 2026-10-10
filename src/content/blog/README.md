@@ -47,6 +47,8 @@ A slug must not contain a year or a date. These filenames fail the build:
 
 The page title is the only H1. Start body headings at H2. A Markdown H1 fails the build.
 
+Put each post's images in `public/blog/<slug>/img/`. They are served at `/blog/<slug>/img/<file>`.
+
 Write the answer in the first sentence under each heading so answer engines can quote it. Use a later paragraph for the story, the caveat, or the example.
 
 For a FAQ, add an H2 titled `FAQ` and make each question an H3. The paragraphs under that H3 become the answer.

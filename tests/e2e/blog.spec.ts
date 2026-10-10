@@ -74,6 +74,28 @@ test("the post renders the byline, formatting, and structured data", async ({ pa
   await expect(authors.nth(1).getByText("Carta")).toBeVisible();
 
   await expect(page.getByRole("heading", { level: 2, name: "Why we use bots to run a community" })).toBeVisible();
+
+  const images = [
+    ["grok-bot.png", "Grok Bot, Growth Circuit's supervisor bot", "1672", "941"],
+    ["grok-bot-front-door.png", "Grok Bot introducing itself as my primary bot and checking my calendar before AI Demo Day", "1070", "942"],
+    ["operator.png", "Operator bot", "1672", "941"],
+    ["newsletter-weekly-draft.png", "The weekly Growth Circuit newsletter draft with upcoming community events and NYC marketing events", "1526", "1240"],
+    ["website.png", "Website bot", "1672", "940"],
+    ["spam-protector.png", "Spam Protector bot", "1672", "941"],
+    ["image-generation.png", "Image Generation bot", "1672", "941"],
+    ["writing-style.png", "Writing Style bot", "1672", "941"],
+  ] as const;
+  const rendered = page.locator(".blog-post-body img");
+  await expect(rendered).toHaveCount(images.length);
+  for (const [index, [file, alt, width, height]] of images.entries()) {
+    const image = rendered.nth(index);
+    await expect(image).toHaveAttribute("src", `${postPath}/img/${file}`);
+    await expect(image).toHaveAttribute("alt", alt);
+    await expect(image).toHaveAttribute("width", width);
+    await expect(image).toHaveAttribute("height", height);
+    await expect(image).toHaveAttribute("loading", "lazy");
+  }
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
   await expect(page.getByRole("columnheader", { name: "Bot" })).toBeVisible();
   await expect(page.getByRole("cell", { name: "Spam Protector" })).toBeVisible();
   await expect(page.getByRole("link", { name: "running Knock's marketing org with Grok Bot" })).toHaveAttribute(
@@ -112,6 +134,34 @@ test("the post renders the byline, formatting, and structured data", async ({ pa
     })),
   ).toEqual(visibleFaq);
   expect(crumbs.itemListElement.map((item: { name: string }) => item.name)).toEqual(["Home", "Blog", title]);
+});
+
+test("post images are served as pngs and the old screenshot URLs redirect", async ({ request }) => {
+  const files = [
+    "grok-bot.png",
+    "operator.png",
+    "website.png",
+    "spam-protector.png",
+    "image-generation.png",
+    "writing-style.png",
+    "grok-bot-front-door.png",
+    "newsletter-weekly-draft.png",
+  ];
+  for (const file of files) {
+    const response = await request.get(`${postPath}/img/${file}`);
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("image/png");
+  }
+
+  const redirects = [
+    ["/blog/grok-bot-front-door.png", `${postPath}/img/grok-bot-front-door.png`],
+    ["/blog/newsletter-weekly-draft.png", `${postPath}/img/newsletter-weekly-draft.png`],
+  ];
+  for (const [from, to] of redirects) {
+    const response = await request.get(from, { maxRedirects: 0 });
+    expect(response.status()).toBe(301);
+    expect(response.headers().location).toContain(to);
+  }
 });
 
 test("the blog feed and sitemap include the post", async ({ request }) => {

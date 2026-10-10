@@ -1,8 +1,48 @@
+import { readFileSync } from "node:fs";
+import { join, normalize, sep } from "node:path";
 import { defineConfig, sessionDrivers } from "astro/config";
 import cloudflare from "@astrojs/cloudflare";
 import { unified } from "@astrojs/markdown-remark";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
+
+function pngSize(filePath) {
+  const buf = readFileSync(filePath);
+  if (buf.length < 24 || buf.toString("ascii", 12, 16) !== "IHDR") return null;
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+}
+
+/** Local blog images fill the column without layout shift, and load lazily. */
+function rehypeBlogImages() {
+  const publicDir = join(process.cwd(), "public");
+  return (tree) => {
+    walk(tree);
+  };
+
+  function walk(node) {
+    if (!node) return;
+    if (node.type === "element" && node.tagName === "img") {
+      const src = node.properties?.src;
+      if (typeof src === "string" && src.startsWith("/blog/")) {
+        const relative = decodeURIComponent(src).replace(/^\/+/, "");
+        const filePath = normalize(join(publicDir, relative));
+        if (filePath.startsWith(`${publicDir}${sep}`)) {
+          try {
+            const size = pngSize(filePath);
+            if (size) {
+              node.properties.width = size.width;
+              node.properties.height = size.height;
+            }
+          } catch {
+            // A missing file keeps the markdown image as authored.
+          }
+          if (!node.properties.loading) node.properties.loading = "lazy";
+        }
+      }
+    }
+    for (const child of node.children ?? []) walk(child);
+  }
+}
 
 function rehypeKeepEndings() {
   return (tree) => {
@@ -75,13 +115,23 @@ export default defineConfig({
     shikiConfig: { theme: "github-light" },
     processor: unified({
       smartypants: false,
-      rehypePlugins: [rehypeKeepEndings, rehypeWrapTables],
+      rehypePlugins: [rehypeKeepEndings, rehypeWrapTables, rehypeBlogImages],
     }),
   },
   integrations: [react(), sitemap({
     // /blog and /blog/<slug> stay in the sitemap. The RSS feed is not a page.
     filter: (page) => ![/\/homepage-preview(?:\/|$)/, /\/auth(?:\/|$)/, /\/newsletter\/confirm(?:\/|$)/, /\/community(?:\/|$)/, /\/people(?:\/|$)/, /\/(?:apply|myspace|submit|builds|questions|tags|challenges)(?:\/|$)/, /\/blog\/rss\.xml$/].some((pattern) => pattern.test(new URL(page).pathname)),
   })],
+  redirects: {
+    "/blog/grok-bot-front-door.png": {
+      status: 301,
+      destination: "/blog/how-we-run-growth-circuit-with-grok-bot/img/grok-bot-front-door.png",
+    },
+    "/blog/newsletter-weekly-draft.png": {
+      status: 301,
+      destination: "/blog/how-we-run-growth-circuit-with-grok-bot/img/newsletter-weekly-draft.png",
+    },
+  },
   session: {
     driver: sessionDrivers.memory(),
   },
