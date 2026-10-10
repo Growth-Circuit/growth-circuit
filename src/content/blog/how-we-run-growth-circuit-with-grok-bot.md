@@ -12,15 +12,17 @@ category: Community ops
 
 Growth Circuit is a community for marketing engineers in NYC. We send a short, curated weekly email of the best NYC and virtual events for marketers in growth and AI, host our own events, and run a small WhatsApp group where members share what they're building.
 
-It all runs on a small team of Grok Bot specialists plus one supervisor bot. Each bot owns one job, like researching events for the newsletter or managing WhatsApp spam.
+Lucy and I started Growth Circuit because we wanted a place to organize and meet other marketing engineers and to see what everyone is building. NYC is lacking a well-run community for AI-pilled marketers in NYC and we love organizing and hosting events. 
 
-Lucy and I started Growth Circuit because we wanted a place to organize and meet other marketing engineers and to see what everyone is building.
+I'm writing this a few days before we host our second [https://luma.com/qt18lrxc](https://luma.com/qt18lrxc), where we invite 40 people, mostly strangers, into our apartment in Brooklyn to hang out, demo what they're building, and meet other people.
+
+Our community runs on a small team of Grok Bot specialists plus one supervisor bot. Each bot owns one job, like researching events for the newsletter or managing WhatsApp spam.
 
 ## Why we use bots to run a community
 
-Community ops is a pile of small recurring jobs, and bots are good at those. Someone subscribes or RSVPs to an event. A new event needs to go in the newsletter, an archive page needs to go up, and a message in the group might be spam. None of it is hard, but together it eats the hours I'd rather spend hosting and talking to members, or figuring out what Growth Circuit should even be.
+Community ops is a pile of small recurring jobs, and bots are good at those. Someone subscribes or RSVPs to an event. A new event needs to go in the newsletter, an archive page needs to go up, and a message in the group might be spam. None of it is hard, but together it eats the hours I'd rather spend hosting events and contributing to the community. 
 
-So each bot gets one lane and the tools for that lane. It also gets a written list of things it never does, and that list is the part I care about most.
+Plus it gives me something to talk about at our events :) 
 
 ## How people join Growth Circuit now
 
@@ -37,33 +39,33 @@ Ten bots run Growth Circuit, Grok Bot plus nine specialists, and each one owns a
 | Grok Bot | My supervisor bot. Takes critical updates from the specialists and brings me only decisions and real problems. |
 | Operator | Community ops across our CRM, events, email audiences, and WhatsApp. Routes marketing and ops blockers and approvals. |
 | Newsletter | Researches, drafts, and stages the weekly NYC marketing events newsletter. |
-| Documenter | Keeps our Notion handbook current, quietly. |
+| Documenter | Keeps our Notion handbook current because I am terrible at documenting |
 | Website | Owns growthcircuit.club through small, reviewable GitHub PRs. |
 | Spam Protector | Watches the NYC WhatsApp group for clear spam. |
-| Image Generation | Makes event and social art in the Growth Circuit style. |
+| Image Generation | Makes event and social art in the Growth Circuit style, although Grok is pretty bad at image gen |
 | Community ABM | Finds marketing engineers we'd love to meet and sends personalized invites inside rules I approve. |
 | Writing Style | Checks every outbound draft against how I actually write. |
 | Text Me | Texts me only when something truly needs me. |
 
-## Grok Bot is my supervisor bot
+## Grok Bot: The main supervisor bot
 
 ![Grok Bot introducing itself as my primary bot and checking my calendar before AI Demo Day](/blog/grok-bot-front-door.png)
 
-Grok Bot is the one bot I talk to. Grok Bot launched a supervisor bot lately and that is who manages all my other bots. The specialist bots hand it critical updates, and it brings me the stuff that needs a decision.
+Grok Bot is the primary bot I talk to now, it's a newly launched supervisor bot and that is who manages all my other bots. The specialist bots hand it critical updates, and it brings me the stuff that needs a decision.
 
 Every bot stays quiet when nothing changed, so I only hear about decisions and real problems. Even a bot telling me "all good, nothing changed" is noise.
 
-## Operator runs community ops
+## Operator: community operations
 
 Operator does the ops work underneath everything. It keeps our CRM, Luma events, Loops email audiences, and the WhatsApp group in sync, and marketing and ops blockers and approvals get routed through it too.
 
-My favorite recent example is a boring one. Two people joined the WhatsApp group with only a phone number, and neither number matched anyone in our CRM. Guessing would have been easy and wrong, so Operator logged the joins, didn't guess who they were, and handed the update to Documenter. It never makes up who someone is, and it never shares private links.
+This is the unsexy work that I don't want to do, or would forget completely to do. It was also one of the first bots I made, it handles all the MCP connections to Notion (our current CRM), Luma (where we host events), and Loops (our email service). It has a very specific job and the other bots know when to tag it in. 
 
-## Newsletter finds the events and stages the weekly email
+## Newsletter: finds the events and stages the weekly email
 
 ![The weekly Growth Circuit newsletter draft with upcoming community events and NYC marketing events](/blog/newsletter-weekly-draft.png)
 
-The Newsletter bot researches public NYC marketing events, decides which ones fit, and stages a draft in Loops, then I edit it and send it myself. It pulls from Luma, Partiful, community calendars, and public invites. Private events stay out.
+The Newsletter bot researches public NYC marketing events, decides which ones fit, and stages a draft in Loops, then I edit it and send it myself. It pulls from Luma, Partiful, community calendars, and public invites. 
 
 We built an event classifier in Jev that filters all those events down to the ones that are actually helpful for marketers. It's about 95% accurate now (meaning it correctly filters for the right events 95% of the time). When it's unsure about one, it pings me and I give it a thumbs up or down.
 
@@ -71,43 +73,53 @@ Newsletter has a second job too. Every Friday, it adds people who attended Growt
 
 This runs through the Luma MCP. Newsletter runs a scheduled routine that checks which emails have subscribed to our Luma events and moves them to our contact list in Loops. It's also why we switched from Partiful to Luma for running events, since Partiful doesn't require or store emails.
 
-The "never resubscribes" rule came from a real mistake. An older Sunday import resubscribed someone who had opted out. We caught it, set them back to unsubscribed, and wrote the rule down.
+The "never resubscribes" rule came from a mistake it (and I, the human) made. An older Sunday import accidentally resubscribed someone who had opted out. We caught it, set them back to unsubscribed, and wrote the rule down.
 
-## Documenter keeps the handbook current
+## Documenter: keeps our Notion docs current
 
-Documenter works silently in Notion and keeps our handbook current without pinging anyone. When something changes, it updates the living page that describes it instead of stacking up dated snapshots, so the handbook shows how things work today.
+Documenter works silently in Notion and keeps our handbook current without pinging anyone. This is important because I (Nick) often work on things for our community or the website while Lucy is busy doing other things. The Notion exists as a centralized source of truth for what I've done. 
+
+When I first built this, the bot kept stacking dated snapshots of work over time as a historical record. But that wasn't helpful, I don't really care about a historical record, I care more about how the current thing *works*. When something changes, it updates the living page that describes it instead of stacking up dated snapshots, so the handbook shows how things work today.
 
 It also keeps our ideal-member criteria up to date, which matters because Community ABM reads those. Documenter never invents counts or matches.
 
-## Website builds growthcircuit.club
+## Website: builds growthcircuit.club
 
-Website owns growthcircuit.club. Every change comes in as a small GitHub PR I can actually review, and I do the merging. It never puts private links or guest lists on the site.
+Website bot owns growthcircuit.club. Every change comes in as a small GitHub PR I can actually review, and I do the merging. This bot knows the codebase and is the only one I want making commits to the website. 
 
-It built the homepage, the events page, the newsletter signup, the newsletter archive and issue pages, and the blog you're reading this on. When we made the newsletter the one way in, Website retired the old apply form.
+It built the homepage, the events page, the newsletter signup, the newsletter archive and issue pages, and the blog you're reading this on. The blog was built on a fight back from San Francisco, Lucy and I were happily chatting away in seats 48 A and B while our GrokBot was creating a blog on the website and drafting the first version of this blog post. 
 
-## Spam Protector watches the WhatsApp group
+## Spam Protector: watches the WhatsApp group
 
 Spam Protector checks the NYC WhatsApp group for clear spam several times every weekday, and if the group is clean, it says nothing. Portfolio posts, dinner invites, and intros are normal community stuff, so it leaves them alone. If something might be self-promo but it's not obvious, it goes to a human.
 
-## Image Generation makes the event art
+Sometimes this bot is a little overeager so I've had to tune it over time. It works by me logging into WhatsApp on the GrokBot browser because there is unfortunately no WhatsApp MCP or a better way to interact with WhatsApp for agents. This is the one downside of using WhatsApp as our primary communication channel for the community, it's annoying to interact with it agentically. 
+
+## Image Generation: makes the event art
 
 Image Generation makes our event art and the weekly events square for social, in the warm, outdoorsy, Brooklyn Growth Circuit style. It also stages the post copy in Buffer.
 
 It only publishes after I say yes, because an early publish overwrote edits I'd already made in Buffer, image included. Now it keeps my edits and waits for a clear yes before anything goes live.
 
-## Community ABM finds people we'd love to meet
+This one kind of sucks TBH, Grok is pretty bad at generating images so I make them in Codex instead. I haven't found a good way to get Grok to generate the images via Codex yet, I could use OpenRouter and plug in an API key as a next step. 
+
+## Community ABM: finds people we'd love to meet
 
 Community ABM finds marketing engineers who fit the ideal-member criteria in our handbook and sends personalized invites on LinkedIn from my account. It works inside rules I set: who to reach, who to skip, how often, and what it can spend on data.
 
 It can send invites, but it never adds anyone to WhatsApp or creates CRM records. People it invites still join through the newsletter like everyone else.
 
-## Writing Style keeps it sounding like me
+This is my best bot right now, it's hit rate is about 75% of DMing people and inviting them to our events. Outbound works for communities, especially because it comes from my personal LinkedIn account :) 
+
+## Writing Style: keeps it sounding like me (ish)
 
 Writing Style is the bot that keeps my voice consistent everywhere. Every outbound draft from the other bots goes through it before it leaves, and it checks each one against how I actually write. If a draft sounds like a marketer writing marketing, it goes back for another pass.
 
+It does an OK job but it still comes out sounding very AI-coded. Lucy keeps telling me to start a blog post with voice dictation and then have AI edit it, which is absolutely a better way of doing things.
+
 ## Text Me is the only bot that texts me
 
-Text Me is the only bot that texts me, via the Zo MCP, so if I get a text from a bot, something actually needs me.
+Text Me is the only bot that texts me, via the Zo MCP, so if I get a text from a bot, something actually needs me. This is honestly not that useful and I'll remove it soon. 
 
 ## What role humans play in this system
 
@@ -119,11 +131,9 @@ I'm still pro-human-in-the-loop when it comes to AI agents. I approve everything
 
 Once I have the copy in a template I like, I let the system run automatically. Lucy and I also decide what the community feels like, and any moderation call that isn't clear spam comes to us.
 
-## What I'd tell someone building this
+## How to build your own version of these
 
-Start with one boring recurring job, and keep someone on the hook for the system as it grows. If y'all are building something like this, give that first job to one bot along with the tools for it and a written list of things it never does, and have it stay quiet by default.
-
-Context drifts and rules change, which is why the system needs a person who owns it. Guests on The Marketing Engineer podcast keep telling me the same thing, that automation needs an owner.
+Start with one boring recurring job, and keep someone on the hook for the system as it grows. Give that first job to one bot along with the tools for it and a written list of things it never does, and have it stay quiet by default because AI is way too chatty for my liking right now. I would get a million different pings and notifications from Grok Bot on my phone which I found extremely annoying. 
 
 I'd also add a supervisor bot before adding more bots. Without one, more bots just means more notifications.
 
