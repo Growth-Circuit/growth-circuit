@@ -49,7 +49,9 @@ Ten bots run Growth Circuit, Grok Bot plus nine specialists, and each one owns a
 
 ## Grok Bot: The main supervisor bot
 
-![Grok Bot introducing itself as my primary bot and checking my calendar before AI Demo Day](/blog/grok-bot-front-door.png)
+![Grok Bot, Growth Circuit's supervisor bot](/blog/how-we-run-growth-circuit-with-grok-bot/img/grok-bot.png)
+
+![Grok Bot introducing itself as my primary bot and checking my calendar before AI Demo Day](/blog/how-we-run-growth-circuit-with-grok-bot/img/grok-bot-front-door.png)
 
 Grok Bot is the primary bot I talk to now, it's a newly launched supervisor bot and that is who manages all my other bots. The specialist bots hand it critical updates, and it brings me the stuff that needs a decision.
 
@@ -57,13 +59,15 @@ Every bot stays quiet when nothing changed, so I only hear about decisions and r
 
 ## Operator: community operations
 
+![Operator bot](/blog/how-we-run-growth-circuit-with-grok-bot/img/operator.png)
+
 Operator does the ops work underneath everything. It keeps our CRM, Luma events, Loops email audiences, and the WhatsApp group in sync, and marketing and ops blockers and approvals get routed through it too.
 
 This is the unsexy work that I don't want to do, or would forget completely to do. It was also one of the first bots I made, it handles all the MCP connections to Notion (our current CRM), Luma (where we host events), and Loops (our email service). It has a very specific job and the other bots know when to tag it in. 
 
 ## Newsletter: finds the events and stages the weekly email
 
-![The weekly Growth Circuit newsletter draft with upcoming community events and NYC marketing events](/blog/newsletter-weekly-draft.png)
+![The weekly Growth Circuit newsletter draft with upcoming community events and NYC marketing events](/blog/how-we-run-growth-circuit-with-grok-bot/img/newsletter-weekly-draft.png)
 
 The Newsletter bot researches public NYC marketing events, decides which ones fit, and stages a draft in Loops, then I edit it and send it myself. It pulls from Luma, Partiful, community calendars, and public invites. 
 
@@ -85,17 +89,23 @@ It also keeps our ideal-member criteria up to date, which matters because Commun
 
 ## Website: builds growthcircuit.club
 
+![Website bot](/blog/how-we-run-growth-circuit-with-grok-bot/img/website.png)
+
 Website bot owns growthcircuit.club. Every change comes in as a small GitHub PR I can actually review, and I do the merging. This bot knows the codebase and is the only one I want making commits to the website. 
 
 It built the homepage, the events page, the newsletter signup, the newsletter archive and issue pages, and the blog you're reading this on. The blog was built on a fight back from San Francisco, Lucy and I were happily chatting away in seats 48 A and B while our GrokBot was creating a blog on the website and drafting the first version of this blog post. 
 
 ## Spam Protector: watches the WhatsApp group
 
+![Spam Protector bot](/blog/how-we-run-growth-circuit-with-grok-bot/img/spam-protector.png)
+
 Spam Protector checks the NYC WhatsApp group for clear spam several times every weekday, and if the group is clean, it says nothing. Portfolio posts, dinner invites, and intros are normal community stuff, so it leaves them alone. If something might be self-promo but it's not obvious, it goes to a human.
 
 Sometimes this bot is a little overeager so I've had to tune it over time. It works by me logging into WhatsApp on the GrokBot browser because there is unfortunately no WhatsApp MCP or a better way to interact with WhatsApp for agents. This is the one downside of using WhatsApp as our primary communication channel for the community, it's annoying to interact with it agentically. 
 
 ## Image Generation: makes the event art
+
+![Image Generation bot](/blog/how-we-run-growth-circuit-with-grok-bot/img/image-generation.png)
 
 Image Generation makes our event art and the weekly events square for social, in the warm, outdoorsy, Brooklyn Growth Circuit style. It also stages the post copy in Buffer.
 
@@ -112,6 +122,8 @@ It can send invites, but it never adds anyone to WhatsApp or creates CRM records
 This is my best bot right now, it's hit rate is about 75% of DMing people and inviting them to our events. Outbound works for communities, especially because it comes from my personal LinkedIn account :) 
 
 ## Writing Style: keeps it sounding like me (ish)
+
+![Writing Style bot](/blog/how-we-run-growth-circuit-with-grok-bot/img/writing-style.png)
 
 Writing Style is the bot that keeps my voice consistent everywhere. Every outbound draft from the other bots goes through it before it leaves, and it checks each one against how I actually write. If a draft sounds like a marketer writing marketing, it goes back for another pass.
 
