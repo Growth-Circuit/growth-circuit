@@ -4,12 +4,12 @@ Your profile showcases you and your work at https://growthcircuit.club/people. Y
 
 ## Give your agent this prompt
 
-> Create or update my Growth Circuit profile by following https://github.com/nicklafferty/growth-circuit/blob/main/PROFILE.md. Ask me for the details you need, help me choose which projects to share, and show me the profile before submitting it. Validate it and open a pull request into nicklafferty/growth-circuit (main) for Nick and Lucy to review. Do not merge it.
+> Create or update my Growth Circuit profile by following https://github.com/Growth-Circuit/growth-circuit/blob/main/PROFILE.md. Ask me for the details you need, help me choose which projects to share, and show me the profile before submitting it. Validate it and open a pull request into Growth-Circuit/growth-circuit (main) for Nick and Lucy to review. Do not merge it.
 
 1. Create a GitHub account if you need one, and add a profile picture. We use your GitHub avatar by default.
-2. Connect GitHub to Claude, Codex, or whichever agent you use. If the agent asks you to select a repository owned by your account, fork [Growth Circuit](https://github.com/nicklafferty/growth-circuit/fork) first and select your fork. The agent needs permission to push a branch and open a pull request to the original repository.
+2. Connect GitHub to Claude, Codex, or whichever agent you use. If the agent asks you to select a repository owned by your account, fork [Growth Circuit](https://github.com/Growth-Circuit/growth-circuit/fork) first and select your fork. The agent needs permission to push a branch and open a pull request to the original repository.
 3. Give your agent the prompt above, then share your name, GitHub username, bio, and any projects you want to include.
-4. Review the public details before the agent submits them. Confirm that the returned PR URL starts with `https://github.com/nicklafferty/growth-circuit/pull/`. Your profile goes live after we approve and merge it and the site deployment finishes.
+4. Review the public details before the agent submits them. Confirm that the returned PR URL starts with `https://github.com/Growth-Circuit/growth-circuit/pull/`. Your profile goes live after we approve and merge it and the site deployment finishes.
 
 All submitted information is public, including the repository history. Include an email address only if you want it publicly visible. Removing a field later removes it from the site but does not erase Git history.
 
@@ -57,11 +57,11 @@ Keep the same project `id` when editing or renaming a project. Project links use
 2. Look for the existing username file before creating one. Update that file for subsequent edits. Never change another member's file.
 3. Ask for missing required information. Never invent a bio, affiliation, project, contribution, metric, result, or link. Optional fields can be omitted.
 4. Prepare the JSON using only supplied or member-confirmed details. Preserve existing projects and their IDs unless the member asks to change or remove them. Never create a duplicate file for a name change. For a GitHub username change, explain the URL change and request maintainer review.
-5. Make the change on a new branch in a fork if you do not have repository write access. Start from the latest `main` in `nicklafferty/growth-circuit` so an older fork does not overwrite newer profile details. Your fork holds the working branch; the PR must target the original repository. This task normally changes only the member's JSON file. Do not modify site code, schemas, workflows, or other profiles to make validation pass.
+5. Make the change on a new branch in a fork if you do not have repository write access. Start from the latest `main` in `Growth-Circuit/growth-circuit` so an older fork does not overwrite newer profile details. Your fork holds the working branch; the PR must target the original repository. This task normally changes only the member's JSON file. Do not modify site code, schemas, workflows, or other profiles to make validation pass.
 6. Use Node.js 22.18+ and run `npm ci`, then `npm run validate:members`. Fix errors in the submitted profile. If tools or permissions prevent validation or PR creation, explain the limitation honestly and provide the proposed file; do not claim a PR exists.
-7. Show the member the proposed public details. After the member confirms them, open the PR with base repository `nicklafferty/growth-circuit` and base branch `main`, following the destination instructions below. Title it `Add profile: <name>` or `Update profile: <name>`. List the profile path, project additions/changes/removals, and validation result in the description.
+7. Show the member the proposed public details. After the member confirms them, open the PR with base repository `Growth-Circuit/growth-circuit` and base branch `main`, following the destination instructions below. Title it `Add profile: <name>` or `Update profile: <name>`. List the profile path, project additions/changes/removals, and validation result in the description.
 8. Include the public-information consent and ownership confirmation from the PR template. If an agent or collaborator opens the PR, explain who authorized the submission and link to their GitHub account.
-9. Verify the created PR's base repository and branch, then return its URL to the member. The URL must start with `https://github.com/nicklafferty/growth-circuit/pull/`. A PR targeting the member's fork does not reach Nick and Lucy; create the correct upstream PR before reporting success. Never merge the PR, enable auto-merge, approve it on the member's behalf, or push to `main`. Only Nick (`@nicklafferty`) and Lucy (`@lucy-jane-hoyle`) may merge submissions after review.
+9. Verify the created PR's base repository and branch, then return its URL to the member. The URL must start with `https://github.com/Growth-Circuit/growth-circuit/pull/`. A PR targeting the member's fork does not reach Nick and Lucy; create the correct upstream PR before reporting success. Never merge the PR, enable auto-merge, approve it on the member's behalf, or push to `main`. Only Nick (`@nicklafferty`) and Lucy (`@lucy-jane-hoyle`) may merge submissions after review.
 
 ## Open the PR in the original repository
 
@@ -69,7 +69,7 @@ Use these destinations for every submission:
 
 | Setting | Value |
 | --- | --- |
-| Base repository | `nicklafferty/growth-circuit` |
+| Base repository | `Growth-Circuit/growth-circuit` |
 | Base branch | `main` |
 | Head repository | The member's fork, such as `<member-username>/growth-circuit` |
 | Compare branch | The branch containing the profile change |
@@ -79,16 +79,16 @@ On GitHub, open the original repository's **Pull requests â†’ New pull request â
 With GitHub CLI, explicitly select the original repository. Replace the placeholders with the member's username, working branch, title, and saved PR description:
 
 ```sh
-gh pr create --repo nicklafferty/growth-circuit --base main --head "<member-username>:<branch>" --title "Add profile: <name>" --body-file <description-file>
+gh pr create --repo Growth-Circuit/growth-circuit --base main --head "<member-username>:<branch>" --title "Add profile: <name>" --body-file <description-file>
 ```
 
 After creation, verify the returned URL and base branch:
 
 ```sh
-gh pr view <pr-url> --repo nicklafferty/growth-circuit --json url,baseRefName,headRefName,headRepositoryOwner
+gh pr view <pr-url> --repo Growth-Circuit/growth-circuit --json url,baseRefName,headRefName,headRepositoryOwner
 ```
 
-The URL must start with `https://github.com/nicklafferty/growth-circuit/pull/` and `baseRefName` must be `main`. If a PR was created inside the member's fork, open a new PR from the same working branch into the original repository. Close the mistaken fork PR after the correct PR exists, with the member's permission. Do not merge either PR yourself.
+The URL must start with `https://github.com/Growth-Circuit/growth-circuit/pull/` and `baseRefName` must be `main`. If a PR was created inside the member's fork, open a new PR from the same working branch into the original repository. Close the mistaken fork PR after the correct PR exists, with the member's permission. Do not merge either PR yourself.
 
 ## Automated PR checks
 
