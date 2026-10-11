@@ -1,11 +1,3 @@
 ---
-import AuthForm from "@/components/AuthForm";
-import BaseLayout from "@/layouts/BaseLayout.astro";
-if (Astro.locals.communityIdentity.user) return Astro.redirect("/people/edit", 303);
+return Astro.redirect("/people/contribute", 302);
 ---
-<BaseLayout title="Claim your profile" description="Claim your public Growth Circuit profile." path="/people/claim" noindex bodyClass="sky-page pivot-page">
-  <section class="shell profile-auth-page">
-    <div><p class="eyebrow">Growth Circuit</p><h1>Claim your profile</h1><p>Sign in with your email. Once you are in, you can fill out your profile and add projects you have shipped.</p></div>
-    <AuthForm client:load csrfToken={Astro.locals.csrfToken} nextPath="/people/edit" initialMode="signup" signupEnabled={true} />
-  </section>
-</BaseLayout>

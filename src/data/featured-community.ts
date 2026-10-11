@@ -11,7 +11,7 @@ export const communityCompanies = [
   { name: "Infinite Machine", logo: "infinite-machine.svg", connection: "Obie Odom", mark: true },
 ];
 export const featuredMembers = [
-  { name: "Nick Lafferty", initials: "NL", company: "Profound", detail: "Founding Marketing Engineer", cofounder: true, linkedin: "https://www.linkedin.com/in/nicklafferty/", photo: "/community/members/nick-lafferty.jpeg" },
+  { name: "Nick Lafferty", github: "nicklafferty", initials: "NL", company: "Profound", detail: "Founding Marketing Engineer", cofounder: true, linkedin: "https://www.linkedin.com/in/nicklafferty/", photo: "/community/members/nick-lafferty.jpeg" },
   { name: "Lucy Hoyle", initials: "LH", company: "Carta", detail: "Senior Content Engineer", cofounder: true, linkedin: "https://www.linkedin.com/in/lucyjanehoyle/", photo: "/community/members/lucy-hoyle.png" },
   { name: "Chase Wilson", initials: "CW", company: "Figma", detail: "AI & developer marketing", linkedin: "https://www.linkedin.com/in/chasecwilson/", photo: "/community/members/chase-wilson.jpeg" },
   { name: "Andy McCutcheon", initials: "AM", company: "Toast", detail: "Previously at Block", linkedin: "https://www.linkedin.com/in/andysmccutcheon/", photo: "/community/members/andy-mccutcheon.jpeg" },

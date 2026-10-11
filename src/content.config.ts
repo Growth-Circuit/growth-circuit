@@ -2,6 +2,7 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { assertBlogSlug, blogSlugFromFilename } from "./lib/blog";
 import { blogPostSchema } from "./lib/blog-schema";
+import { memberProfileSchema, memberIdFromFilename } from "./lib/member-schema";
 
 const blog = defineCollection({
   loader: glob({
@@ -12,4 +13,13 @@ const blog = defineCollection({
   schema: blogPostSchema,
 });
 
-export const collections = { blog };
+const members = defineCollection({
+  loader: glob({
+    base: "./src/content/members",
+    pattern: "*.json",
+    generateId: ({ entry, data }) => memberIdFromFilename(entry, data),
+  }),
+  schema: memberProfileSchema,
+});
+
+export const collections = { blog, members };

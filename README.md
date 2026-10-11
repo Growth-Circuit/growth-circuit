@@ -1,12 +1,12 @@
 # Growth Circuit
 
-A public home for Growth Circuit's NYC events, WhatsApp communities, and coming member project directory.
+A public home for Growth Circuit's NYC events, WhatsApp communities, and member project directory.
 
 The product shape is:
 
 - Public NYC event listings backed by a small reusable event data source.
 - Direct entry into separate NYC and global WhatsApp groups with a visible privacy note.
-- A public preview of claimable member profiles and project pages.
+- Public member profiles and projects submitted through reviewed GitHub pull requests.
 - Parked application, member login, forum, posting, and moderation surfaces. Their code and data foundation remain in the repository.
 - Existing Notion CRM, Loops sync, Supabase, and Cloudflare operations remain available for internal use.
 
@@ -19,12 +19,13 @@ The product shape is:
 - `/events` lists public Growth Circuit events and links to Partiful for current RSVP details.
 - `/newsletter` is the public archive for the weekly NYC events newsletter. Add a Markdown file under `src/content/newsletter/` after each send.
 - `/blog` is the public blog. Add a Markdown file under `src/content/blog/`. The filename is the slug. See `src/content/blog/README.md` for frontmatter, the no-dates slug rule, answer-first headings, and the `public/blog/<slug>/img/` image folder.
-- `/people` and public profile URLs permanently redirect to `/#members`.
+- `/people` lists GitHub-backed member profiles. `/people/<github-username>` shows a member and their projects. `/people/contribute` has the copyable agent prompt. See [CONTRIBUTING.md](CONTRIBUTING.md) and [examples/member-profile.json](examples/member-profile.json).
+- Run `npm run validate:members` before opening a profile PR. The production build and the dedicated **Validate member profiles** GitHub Action run the same validation.
+- Legacy `/people/claim`, `/people/edit`, and `/people/admin` entrypoints redirect to the GitHub submission guide. Legacy profile APIs return `410 Gone`; stored Supabase records are preserved.
 - `/apply` permanently redirects to `/#newsletter`. `/auth`, `/community`, and the legacy forum entrypoints redirect to the current public experience.
 
 ## Still To Do
 
-- Turn the public profile preview into a claim flow with project publishing.
 - Connect Doorway as an optional project publishing path.
 - Add a reviewed curation workflow for useful WhatsApp highlights. Private conversation must remain private unless a human approves publication.
 - Decide whether public event data should remain a small checked-in source or sync from Partiful.

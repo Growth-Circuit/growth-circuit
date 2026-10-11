@@ -37,10 +37,10 @@ test("retired application paths redirect to the newsletter signup", async ({ pag
   }
 });
 
-test("profile claiming is available without exposing an unsafe redirect", async ({ page }) => {
+test("legacy profile claiming redirects to the GitHub submission guide", async ({ page }) => {
   const response = await page.goto(`${authBaseUrl}/people/claim?next=https%3A%2F%2Fattacker.example`);
   expect(response?.ok()).toBe(true);
-  await expect(page.getByRole("heading", { level: 1 }).first()).toContainText("Claim your profile");
+  await expect(page.getByRole("heading", { level: 1 }).first()).toHaveText("Share your work.");
   await expect(page.locator("body")).not.toContainText("attacker.example");
 });
 
@@ -76,19 +76,13 @@ test("member media IDs never disclose content to an anonymous request", async ({
   expect(await response.text()).toBe("Not found");
 });
 
-test("the homepage community section replaces the people directory", async ({ page, request }) => {
+test("the homepage links to the public member directory", async ({ page, request }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Meet the community", exact: true })).toBeVisible();
-  await expect(page.locator('a[href="/people"], a[href^="/people/"], a[href^="/people?"]')).toHaveCount(0);
-  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "People", exact: true })).toHaveCount(0);
-
-  for (const path of ["/people", "/people/someone"]) {
-    const response = await request.get(path, { maxRedirects: 0 });
-    expect(response.status()).toBe(301);
-    const location = new URL(response.headers().location || "", "http://127.0.0.1:4321");
-    expect(location.pathname).toBe("/");
-    expect(location.hash).toBe("#members");
-  }
+  await expect(page.getByRole("link", { name: "Explore member projects" })).toHaveAttribute("href", "/people");
+  const response = await request.get("/people/", { maxRedirects: 0 });
+  expect(response.status()).toBe(200);
+  expect((await request.get("/people/someone", { maxRedirects: 0 })).status()).toBe(404);
 });
 
 test("the community route redirects to the homepage community section", async ({ page }) => {
@@ -126,56 +120,4 @@ test("public event and newsletter navigation is keyboard reachable", async ({ pa
   await navigation.getByRole("link", { name: "Newsletter", exact: true }).click();
   await expect(page).toHaveURL(/\/newsletter\/?$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("A list of the best NYC events for marketers");
-});
-
-test("a verified person can claim, publish, and view a profile", async ({ page, request }) => {
-  test.skip(process.env.PROFILE_E2E_FULL !== "true", "requires the local Supabase and Mailpit stack");
-  const email = `profile-${Date.now()}@example.com`;
-  await page.goto("/people/claim");
-  await page.waitForLoadState("networkidle");
-  await page.getByLabel("First name").fill("Grace");
-  await page.getByLabel("Last name").fill("Builder");
-  await page.getByLabel("Email").fill(email);
-  await expect(page.getByLabel("First name")).toHaveValue("Grace");
-  await page.getByRole("button", { name: "Email me a confirmation link" }).click();
-  await expect(page.getByRole("status")).toContainText("confirmation link");
-
-  let confirmationUrl = "";
-  await expect.poll(async () => {
-    const listing = await request.get("http://127.0.0.1:54324/api/v1/messages");
-    const payload = await listing.json() as { messages: Array<{ ID: string; To: Array<{ Address: string }> }> };
-    const message = payload.messages.find((item) => item.To.some((recipient) => recipient.Address === email));
-    if (!message) return false;
-    const detail = await request.get(`http://127.0.0.1:54324/api/v1/message/${message.ID}`);
-    const content = await detail.json() as { Text: string };
-    const match = content.Text.match(/https?:\/\/[^\s)]+/);
-    confirmationUrl = match?.[0] || "";
-    return Boolean(confirmationUrl);
-  }, { timeout: 10_000 }).toBe(true);
-
-  await page.goto(confirmationUrl);
-  await page.getByRole("button", { name: "Confirm sign-in" }).click();
-  await page.waitForURL(/\/(?:auth\?complete=1|people\/edit)/);
-  if (new URL(page.url()).pathname === "/auth") {
-    await page.waitForLoadState("networkidle");
-    await page.getByLabel("First name").fill("Grace");
-    await page.getByLabel("Last name").fill("Builder");
-    await page.getByRole("button", { name: "Save and continue" }).click();
-  }
-  await expect(page).toHaveURL(/\/people\/edit$/);
-  await page.getByLabel("Profile handle").fill(`grace-${Date.now()}`);
-  await page.getByLabel("Headline").fill("Builds useful growth systems");
-  await page.getByLabel("Short bio").fill("I turn practical ideas into working tools and share what I learn.");
-  await page.getByRole("button", { name: "Add a project" }).click();
-  await page.getByLabel("Title").last().fill("A useful project");
-  await page.getByLabel("URL").last().fill("https://example.com/project");
-  await page.getByLabel("What did you build?").last().fill("A small system that makes growth work easier to repeat.");
-  await page.getByRole("button", { name: "Publish profile" }).click();
-  await expect(page.getByRole("status")).toContainText("profile is live");
-  const profileLink = page.getByRole("link", { name: /View profile/ });
-  await expect(profileLink).toBeVisible();
-  const href = await profileLink.getAttribute("href");
-  await page.goto(href!);
-  await expect(page).toHaveURL(/\/#members$/);
-  await expect(page.getByRole("heading", { name: "Meet the community", exact: true })).toBeVisible();
 });
