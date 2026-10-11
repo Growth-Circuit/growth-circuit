@@ -11,7 +11,8 @@ test("directory links to a member and their stable project anchor", async ({ pag
   await expect(page.locator(".people-profile-heading img")).toHaveAttribute("src", "https://github.com/nicklafferty.png?size=192");
   await expect(page.getByRole("link", { name: "Edit your profile" })).toHaveAttribute("href", "/people/contribute");
   await page.goto("/people");
-  const projectLink = page.locator(".people-project-links").getByRole("link", { name: "Growth Circuit", exact: true });
+  const nickCard = page.locator(".people-summary").filter({ has: page.getByRole("heading", { name: "Nick Lafferty", exact: true }) });
+  const projectLink = nickCard.getByRole("link", { name: "Growth Circuit", exact: true });
   await expect(projectLink).toHaveAttribute("href", "/people/nicklafferty#growth-circuit");
   await projectLink.click();
   await expect(page).toHaveURL(/\/people\/nicklafferty\/?#growth-circuit$/);

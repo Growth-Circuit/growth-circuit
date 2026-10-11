@@ -1,0 +1,16 @@
+{
+  "name": "Lucy Hoyle",
+  "github": "lucy-jane-hoyle",
+  "bio": "Senior Content Engineer at Carta and co-founder of Growth Circuit.",
+  "location": "Brooklyn, NY",
+  "linkedin": "https://www.linkedin.com/in/lucyjanehoyle/",
+  "projects": [
+    {
+      "id": "growth-circuit",
+      "name": "Growth Circuit",
+      "description": "A community for people building growth systems, with NYC events, a newsletter, and a place to share your work.",
+      "url": "https://growthcircuit.club",
+      "contribution": "Co-founder with Nick Lafferty."
+    }
+  ]
+}
