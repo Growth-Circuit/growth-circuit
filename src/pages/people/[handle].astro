@@ -1,3 +1,47 @@
 ---
-return Astro.redirect("/#members", 301);
+import { getCollection } from "astro:content";
+import MemberText from "@/components/MemberText.astro";
+import MemberSocialIcon from "@/components/MemberSocialIcon.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { memberAvatarUrl } from "@/lib/member-schema";
+import "@/styles/members.css";
+
+export const prerender = true;
+export async function getStaticPaths() {
+  return (await getCollection("members")).map((member) => ({ params: { handle: member.id }, props: { member } }));
+}
+const { member } = Astro.props;
+const { data } = member;
+const socials = [
+  { label: "GitHub", url: `https://github.com/${data.github}` },
+  { label: "Website", url: data.website },
+  { label: "LinkedIn", url: data.linkedin },
+  { label: "Twitter / X", url: data.twitter },
+  { label: "Email", url: data.email ? `mailto:${data.email}` : undefined },
+].filter((link) => link.url);
 ---
+<BaseLayout title={data.name} description={data.bio} bodyClass="sky-page pivot-page">
+  <section class="shell people-page">
+    <a href="/people">All members</a>
+    <header class="people-profile-heading">
+      <img src={memberAvatarUrl(data)} alt="" width="112" height="112" />
+      <div><h1>{data.name}</h1>{data.location && <p class="people-muted">{data.location}</p>}<p><MemberText text={data.bio} /></p></div>
+    </header>
+    <ul class="people-socials" role="list">{socials.map((link) => <li><a class="people-social-icon" href={link.url} aria-label={link.label} title={link.label} target={link.label === "Email" ? undefined : "_blank"} rel="noopener noreferrer"><MemberSocialIcon label={link.label} /></a></li>)}</ul>
+    <div class="people-section-heading"><h2>Projects</h2><a href="/people/contribute">Edit your profile</a></div>
+    {data.projects.length === 0 && <p>No projects shared yet.</p>}
+    <div class="people-projects">
+      {data.projects.map((project) => <article class="people-project" id={project.id}>
+        <div class="people-project-copy">
+          <h3><a href={project.url} target="_blank" rel="noopener noreferrer">{project.name}</a></h3>
+          <p><MemberText text={project.description} /></p>
+          {project.contribution && <p><strong>My contribution:</strong> <MemberText text={project.contribution} /></p>}
+          {project.tools && project.tools.length > 0 && <p class="people-muted">Built with {project.tools.join(", ")}</p>}
+          {project.result && <p><strong>Result:</strong> <MemberText text={project.result} /></p>}
+          <div class="people-socials"><a class="people-project-action" href={project.url} target="_blank" rel="noopener noreferrer">Explore project <span aria-hidden="true">↗</span></a>{project.video && <a class="people-project-action" href={project.video} target="_blank" rel="noopener noreferrer">Watch demo <span aria-hidden="true">↗</span></a>}</div>
+        </div>
+        {project.screenshot && <a class="people-screenshot" href={project.screenshot} target="_blank" rel="noopener noreferrer"><img src={project.screenshot} alt={project.screenshotAlt} width="960" height="600" loading="lazy" /></a>}
+      </article>)}
+    </div>
+  </section>
+</BaseLayout>

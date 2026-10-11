@@ -1,0 +1,52 @@
+name: Member profile validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/content/members/**'
+      - 'src/lib/member-schema*'
+      - 'scripts/validate-members.mjs'
+      - 'examples/member-profile.json'
+      - '.github/workflows/member-profiles.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  push:
+    branches: [main]
+    paths:
+      - 'src/content/members/**'
+      - 'src/lib/member-schema*'
+      - 'scripts/validate-members.mjs'
+      - 'examples/member-profile.json'
+      - '.github/workflows/member-profiles.yml'
+      - 'package.json'
+      - 'package-lock.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: member-profiles-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate member profiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out submission
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Test profile validation
+        run: npm test -- src/lib/member-schema.test.ts
+      - name: Validate member files
+        run: npm run validate:members

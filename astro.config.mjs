@@ -120,7 +120,7 @@ export default defineConfig({
   },
   integrations: [react(), sitemap({
     // /blog and /blog/<slug> stay in the sitemap. The RSS feed is not a page.
-    filter: (page) => ![/\/homepage-preview(?:\/|$)/, /\/auth(?:\/|$)/, /\/newsletter\/confirm(?:\/|$)/, /\/community(?:\/|$)/, /\/people(?:\/|$)/, /\/(?:apply|myspace|submit|builds|questions|tags|challenges)(?:\/|$)/, /\/blog\/rss\.xml$/].some((pattern) => pattern.test(new URL(page).pathname)),
+    filter: (page) => ![/\/homepage-preview(?:\/|$)/, /\/auth(?:\/|$)/, /\/newsletter\/confirm(?:\/|$)/, /\/community(?:\/|$)/, /\/people\/(?:claim|edit|admin)(?:\/|$)/, /\/(?:apply|myspace|submit|builds|questions|tags|challenges)(?:\/|$)/, /\/blog\/rss\.xml$/].some((pattern) => pattern.test(new URL(page).pathname)),
   })],
   redirects: {
     "/blog/grok-bot-front-door.png": {

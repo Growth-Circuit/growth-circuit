@@ -1,0 +1,7 @@
+---
+// Nonbreaking spaces keep the last three words together; overflow-wrap still
+// lets unusually long member-supplied words fit a narrow screen.
+const { text } = Astro.props as { text: string };
+const match = text.match(/^(.*\S)(\s+)(\S+\s+\S+\s+\S+)$/s);
+---
+{match ? <>{match[1]}{match[2]}<span>{match[3].replace(/\s+/g, "\u00a0")}</span></> : text}

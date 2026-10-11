@@ -51,7 +51,7 @@ function pathStartsWith(pathname: string, roots: string[]) {
   return roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
 }
 
-function isRetiredPeopleDirectory(pathname: string) {
+function isPublicPeoplePage(pathname: string) {
   if (pathname === "/people" || pathname === "/people/") return true;
   const match = pathname.match(/^\/people\/([^/]+)\/?$/);
   return Boolean(match && !["claim", "edit", "admin"].includes(match[1]));
@@ -123,11 +123,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return response;
   }
 
-  if (isRetiredPeopleDirectory(requestUrl.pathname)) {
-    const destination = new URL("/#members", requestUrl);
-    const response = new Response(null, { status: 301, headers: { Location: destination.toString() } });
+  if (["/people/claim", "/people/edit", "/people/admin"].includes(requestUrl.pathname.replace(/\/$/, ""))) {
+    const response = new Response(null, { status: 302, headers: { Location: new URL("/people/contribute", requestUrl).toString() } });
+    applySecurityHeaders(response, requestUrl, true);
+    return response;
+  }
+
+  if (pathStartsWith(requestUrl.pathname, ["/api/profiles"])) {
+    const response = Response.json({
+      error: "Profiles are now managed through reviewed GitHub pull requests.",
+      contributionUrl: "/people/contribute",
+    }, { status: 410 });
+    applySecurityHeaders(response, requestUrl, true);
+    return response;
+  }
+
+  // Reviewed GitHub profiles are public and independent of legacy account editing.
+  if (isPublicPeoplePage(requestUrl.pathname)) {
+    const response = await next();
     applySecurityHeaders(response, requestUrl, false);
-    response.headers.set("X-Robots-Tag", "noindex, nofollow");
     return response;
   }
 

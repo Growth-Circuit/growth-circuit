@@ -1,3 +1,33 @@
 ---
-return Astro.redirect("/#members", 301);
+import { getCollection } from "astro:content";
+import MemberText from "@/components/MemberText.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { memberAvatarUrl } from "@/lib/member-schema";
+import "@/styles/members.css";
+
+export const prerender = true;
+const members = (await getCollection("members")).sort((a, b) => a.data.name.localeCompare(b.data.name));
 ---
+<BaseLayout title="Member projects" description="Meet Growth Circuit members and explore the projects they build." bodyClass="sky-page pivot-page">
+  <section class="shell people-page">
+    <div class="people-heading">
+      <div><h1>People who build.</h1><p>Meet Growth Circuit members and explore <span class="keep-together">what they’re making.</span></p></div>
+      <a class="people-button" href="/people/contribute">Create your profile</a>
+    </div>
+    <ul class="people-list" role="list">
+      {members.map(({ id, data }) => <li>
+        <article class="people-summary">
+          <img src={memberAvatarUrl(data)} alt="" width="80" height="80" loading="lazy" />
+          <div>
+            <h2><a href={`/people/${id}`}>{data.name}</a></h2>
+            {data.location && <p class="people-muted">{data.location}</p>}
+            <p><MemberText text={data.bio} /></p>
+            <p class="people-muted">{data.projects.length} {data.projects.length === 1 ? "project" : "projects"}</p>
+            {data.projects.length > 0 && <ul class="people-project-links" role="list">{data.projects.map((project) => <li><a href={`/people/${id}#${project.id}`}>{project.name}</a></li>)}</ul>}
+          </div>
+        </article>
+      </li>)}
+    </ul>
+    {members.length === 0 && <p>No profiles yet. Create yours to share <span class="keep-together">what you’re building.</span></p>}
+  </section>
+</BaseLayout>

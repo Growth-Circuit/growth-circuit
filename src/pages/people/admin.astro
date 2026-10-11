@@ -1,11 +1,3 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import ProfileModeration from "@/components/ProfileModeration";
-if (!Astro.locals.supabase || Astro.locals.communityIdentity.role !== "admin") return Astro.redirect("/#members", 303);
-const { data } = await Astro.locals.supabase.from("community_profiles").select("id,first_name,last_name,handle,headline,profile_moderation_state,community_projects(id)").not("handle", "is", null).order("updated_at", { ascending: false });
-const profiles = (data || []).map((profile) => ({ id: profile.id, firstName: profile.first_name, lastName: profile.last_name, handle: profile.handle!, headline: profile.headline, state: profile.profile_moderation_state as "visible" | "hidden", projectCount: profile.community_projects?.length || 0 }));
+return Astro.redirect("/people/contribute", 302);
 ---
-<BaseLayout title="Profile moderation" description="Moderate public Growth Circuit profiles." path="/people/admin" noindex bodyClass="sky-page pivot-page">
-  <section class="shell profile-editor-hero"><p class="eyebrow">Admin</p><h1>Moderation</h1><p>Review profiles and projects. Hide anything that makes the directory less useful, and leave an audit reason for every change.</p></section>
-  <section class="shell profile-editor-shell"><ProfileModeration client:load csrfToken={Astro.locals.csrfToken} initialProfiles={profiles} /></section>
-</BaseLayout>

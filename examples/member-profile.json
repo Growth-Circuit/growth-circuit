@@ -1,0 +1,25 @@
+{
+  "name": "Your name",
+  "github": "your-github-username",
+  "bio": "One or two sentences about you and what you build.",
+  "location": "Your city or region",
+  "website": "https://example.com",
+  "linkedin": "https://www.linkedin.com/in/your-username/",
+  "twitter": "https://x.com/your-username",
+  "email": "public-contact@example.com",
+  "photo": "https://example.com/your-photo.jpg",
+  "projects": [
+    {
+      "id": "your-project",
+      "name": "Your project name",
+      "description": "What it does, who it helps, and why you built it.",
+      "url": "https://example.com/project",
+      "contribution": "What you personally built or contributed.",
+      "tools": ["Claude", "Python"],
+      "screenshot": "https://example.com/project-screenshot.png",
+      "screenshotAlt": "Describe what the screenshot shows.",
+      "video": "https://www.loom.com/share/your-video-id",
+      "result": "An outcome you can support with evidence."
+    }
+  ]
+}

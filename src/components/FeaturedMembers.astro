@@ -1,18 +1,23 @@
 ---
 import { featuredMembers, memberAnchor } from "@/data/featured-community";
+import { getCollection } from "astro:content";
+const profiles = await getCollection("members");
 ---
 <section class="shell featured-members" id="members" aria-labelledby="members-title">
   <div class="members-heading">
     <div><h2 id="members-title">Meet the community</h2><p>Meet some of the people you’ll find at our events and in the community.</p></div>
+    <a class="directory-link" href="/people">Explore member projects</a>
   </div>
   <ul class="member-grid" role="list">
-    {featuredMembers.map((member) => <li>
+    {featuredMembers.map((member) => {
+      const profile = "github" in member ? profiles.find((profile) => profile.id === member.github) : undefined;
+      return <li>
       <article class="member-profile" id={memberAnchor(member.name)} tabindex="-1">
         <div class="member-identity">
           {member.photo ? <img class="member-avatar" src={member.photo} alt="" width="72" height="72" loading="lazy" /> : <span class="member-avatar member-initials" aria-hidden="true">{member.initials}</span>}
           <div>
             <div class="member-name">
-              <h3><a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${member.name}, LinkedIn profile (opens in a new tab)`}>{member.name}</a></h3>
+              <h3><a href={profile ? `/people/${profile.id}` : member.linkedin} target={profile ? undefined : "_blank"} rel={profile ? undefined : "noopener noreferrer"}>{member.name}</a></h3>
               {"cofounder" in member && member.cofounder && <span class="founder-badge" tabindex="0" aria-label="Growth Circuit co-founder" aria-describedby={`founder-${member.initials}`}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1L3.2 9.4l6.1-.9L12 3Z" /></svg>
                 <span class="founder-tooltip" role="tooltip" id={`founder-${member.initials}`}>Growth Circuit co-founder</span>
@@ -23,7 +28,8 @@ import { featuredMembers, memberAnchor } from "@/data/featured-community";
         </div>
         <p class="member-detail">{member.detail}</p>
       </article>
-    </li>)}
+    </li>;
+    })}
   </ul>
 </section>
 <style>

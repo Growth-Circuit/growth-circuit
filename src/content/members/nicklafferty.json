@@ -1,0 +1,16 @@
+{
+  "name": "Nick Lafferty",
+  "github": "nicklafferty",
+  "bio": "Founding Marketing Engineer at Profound. I co-founded Growth Circuit with Lucy Hoyle.",
+  "location": "New York City",
+  "linkedin": "https://www.linkedin.com/in/nicklafferty/",
+  "projects": [
+    {
+      "id": "growth-circuit",
+      "name": "Growth Circuit",
+      "description": "A community for people building growth systems, with NYC events, a newsletter, and a place to share your work.",
+      "url": "https://growthcircuit.club",
+      "contribution": "Co-founder with Lucy Hoyle."
+    }
+  ]
+}
