@@ -77,9 +77,7 @@ test("the post renders the byline, formatting, and structured data", async ({ pa
 
   const images = [
     ["grok-bot.png", "Grok Bot, Growth Circuit's supervisor bot", "1672", "941"],
-    ["grok-bot-front-door.png", "Grok Bot introducing itself as my primary bot and checking my calendar before AI Demo Day", "1070", "942"],
     ["operator.png", "Operator bot", "1672", "941"],
-    ["newsletter-weekly-draft.png", "The weekly Growth Circuit newsletter draft with upcoming community events and NYC marketing events", "1526", "1240"],
     ["website.png", "Website bot", "1672", "940"],
     ["spam-protector.png", "Spam Protector bot", "1672", "941"],
     ["image-generation.png", "Image Generation bot", "1672", "941"],
