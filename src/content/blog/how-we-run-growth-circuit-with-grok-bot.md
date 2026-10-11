@@ -65,6 +65,8 @@ This is the unsexy work that I don't want to do, or would forget completely to d
 
 ## Newsletter: finds the events and stages the weekly email
 
+![Newsletter bot](/blog/how-we-run-growth-circuit-with-grok-bot/img/newsletter.png)
+
 The Newsletter bot researches public NYC marketing events, decides which ones fit, and stages a draft in Loops, then I edit it and send it myself. It pulls from Luma, Partiful, community calendars, and public invites. 
 
 We built an event classifier in Jev that filters all those events down to the ones that are actually helpful for marketers. It's about 95% accurate now (meaning it correctly filters for the right events 95% of the time). When it's unsure about one, it pings me and I give it a thumbs up or down.
@@ -76,6 +78,8 @@ This runs through the Luma MCP. Newsletter runs a scheduled routine that checks 
 The "never resubscribes" rule came from a mistake it (and I, the human) made. An older Sunday import accidentally resubscribed someone who had opted out. We caught it, set them back to unsubscribed, and wrote the rule down.
 
 ## Documenter: keeps our Notion docs current
+
+![Documenter bot](/blog/how-we-run-growth-circuit-with-grok-bot/img/documenter.png)
 
 Documenter works silently in Notion and keeps our handbook current without pinging anyone. This is important because I (Nick) often work on things for our community or the website while Lucy is busy doing other things. The Notion exists as a centralized source of truth for what I've done. 
 
@@ -110,6 +114,8 @@ It only publishes after I say yes, because an early publish overwrote edits I'd 
 This one kind of sucks TBH, Grok is pretty bad at generating images so I make them in Codex instead. I haven't found a good way to get Grok to generate the images via Codex yet, I could use OpenRouter and plug in an API key as a next step. 
 
 ## Community ABM: finds people we'd love to meet
+
+![Community ABM bot](/blog/how-we-run-growth-circuit-with-grok-bot/img/community-abm.png)
 
 Community ABM finds marketing engineers who fit the ideal-member criteria in our handbook and sends personalized invites on LinkedIn from my account. It works inside rules I set: who to reach, who to skip, how often, and what it can spend on data.
 
