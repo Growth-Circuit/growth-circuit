@@ -19,6 +19,10 @@
 .people-profile-heading{display:flex;gap:32px;align-items:center;margin-top:36px;}
 .people-profile-heading h1{margin-top:0;}.people-profile-heading p{margin-bottom:0;}
 .people-socials{margin-top:24px;}
+.people-social-icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid #9dbbc5;border-radius:50%;color:#17313a;background:#e9f3f6;text-decoration:none;}
+.people-social-icon:hover{background:#d4e9ee;border-color:#287f91;color:#216b7a;}
+.people-project-action{display:inline-flex;align-items:center;gap:8px;color:#216b7a;font-weight:650;text-decoration:underline;text-decoration-thickness:2px;}
+.people-project-action:hover{color:#17313a;}
 .people-project{padding:32px 0;border-top:1px solid #cbdde2;scroll-margin-top:100px;}
 .people-screenshot{display:block;max-width:760px;margin-top:24px;}
 .people-screenshot img{display:block;width:100%;height:auto;border-radius:8px;}
