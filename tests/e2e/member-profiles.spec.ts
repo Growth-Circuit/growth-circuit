@@ -33,6 +33,7 @@ test("the contribution prompt copies and explains public information", async ({ 
   const clipboard = await page.evaluate(() => navigator.clipboard.readText());
   expect(clipboard).toContain("https://github.com/nicklafferty/growth-circuit");
   expect(clipboard).toContain("PROFILE.md");
+  expect(clipboard).toContain("open a pull request into nicklafferty/growth-circuit (main)");
   expect(clipboard).toContain("Do not merge it.");
 });
 
