@@ -3,7 +3,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import "@/styles/members.css";
 
 export const prerender = true;
-const prompt = "Create or update my Growth Circuit profile by following https://github.com/nicklafferty/growth-circuit/blob/main/PROFILE.md. Ask me for the details you need, help me choose which projects to share, and show me the profile before submitting it. Validate it and open a pull request for Nick and Lucy to review. Do not merge it.";
+const prompt = "Create or update my Growth Circuit profile by following https://github.com/Growth-Circuit/growth-circuit/blob/main/PROFILE.md. Ask me for the details you need, help me choose which projects to share, and show me the profile before submitting it. Validate it and open a pull request into Growth-Circuit/growth-circuit (main) for Nick and Lucy to review. Do not merge it.";
 ---
 <BaseLayout title="Create or edit your profile" description="Share your work on Growth Circuit with a GitHub pull request and your favorite coding agent." bodyClass="sky-page pivot-page">
   <section class="shell people-page people-contribute">
@@ -12,13 +12,13 @@ const prompt = "Create or update my Growth Circuit profile by following https://
     <p>Share who you are and what you’re building. Nick and Lucy review submissions <span class="keep-together">before they go live.</span></p>
     <ol class="people-steps">
       <li><h2>Set up GitHub</h2><p><a href="https://github.com/signup" target="_blank" rel="noopener noreferrer">Create a GitHub account</a> if you need one, and add a profile picture. That’s the avatar <span class="keep-together">on your profile.</span></p></li>
-      <li><h2>Connect your agent</h2><p>Connect GitHub to Claude, Codex, or whichever coding agent you use. It needs access to create <span class="keep-together">a pull request.</span></p></li>
+      <li><h2>Connect your agent</h2><p>Connect GitHub to Claude, Codex, or whichever coding agent you use. If it asks for a repo in your account, <a href="https://github.com/Growth-Circuit/growth-circuit/fork" target="_blank" rel="noopener noreferrer">fork Growth Circuit</a> and select your fork. Your agent will submit the change to <span class="keep-together">our original repo.</span></p></li>
       <li><h2>Copy this prompt</h2><p>Give it to your agent, then share your name, GitHub username, a short bio, and any projects you <span class="keep-together">want to include.</span></p>
         <div class="people-prompt"><p id="member-prompt">{prompt}</p><button type="button" class="people-button" id="copy-member-prompt" hidden>Copy prompt</button><p id="copy-status" role="status" class="people-muted"></p></div>
       </li>
-      <li><h2>Review your submission</h2><p>Check the public details before your agent opens the pull request. We’ll review it, and your profile will appear <span class="keep-together">after it’s approved.</span></p></li>
+      <li><h2>Review your submission</h2><p>Check the public details before your agent opens the pull request. Make sure the PR is in <a href="https://github.com/Growth-Circuit/growth-circuit/pulls" target="_blank" rel="noopener noreferrer">Growth-Circuit/growth-circuit</a>, with <code>main</code> as its base branch. Nick and Lucy will review and merge it before your profile <span class="keep-together">goes live.</span></p></li>
     </ol>
-    <div class="people-note"><h2>What to share</h2><p>Your name, GitHub username, and bio are required. Projects need a name, description, and link. Social links, location, screenshots, and video demos <span class="keep-together">are all optional.</span></p><p>Everything you submit is public, including the repository history. Only include an email address if you want people <span class="keep-together">to see it.</span></p><p>Already have a profile? Use the same prompt to edit it or add projects. Your agent will update <span class="keep-together">your existing file.</span></p><a href="https://github.com/nicklafferty/growth-circuit/blob/main/PROFILE.md" target="_blank" rel="noopener noreferrer">Read the profile guide</a></div>
+    <div class="people-note"><h2>What to share</h2><p>Your name, GitHub username, and bio are required. Projects need a name, description, and link. Social links, location, screenshots, and video demos <span class="keep-together">are all optional.</span></p><p>Everything you submit is public, including the repository history. Only include an email address if you want people <span class="keep-together">to see it.</span></p><p>Already have a profile? Use the same prompt to edit it or add projects. Your agent will update <span class="keep-together">your existing file.</span></p><a href="https://github.com/Growth-Circuit/growth-circuit/blob/main/PROFILE.md" target="_blank" rel="noopener noreferrer">Read the profile guide</a></div>
   </section>
 </BaseLayout>
 <script>
