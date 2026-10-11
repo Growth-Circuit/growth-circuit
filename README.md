@@ -19,7 +19,7 @@ The product shape is:
 - `/events` lists public Growth Circuit events and links to Partiful for current RSVP details.
 - `/newsletter` is the public archive for the weekly NYC events newsletter. Add a Markdown file under `src/content/newsletter/` after each send.
 - `/blog` is the public blog. Add a Markdown file under `src/content/blog/`. The filename is the slug. See `src/content/blog/README.md` for frontmatter, the no-dates slug rule, answer-first headings, and the `public/blog/<slug>/img/` image folder.
-- `/people` lists GitHub-backed member profiles. `/people/<github-username>` shows a member and their projects. `/people/contribute` has the copyable agent prompt. See [CONTRIBUTING.md](CONTRIBUTING.md) and [examples/member-profile.json](examples/member-profile.json).
+- `/people` lists GitHub-backed member profiles. `/people/<github-username>` shows a member and their projects. `/people/contribute` has the copyable agent prompt. See [PROFILE.md](PROFILE.md) and [examples/member-profile.json](examples/member-profile.json).
 - Run `npm run validate:members` before opening a profile PR. The production build and the dedicated **Validate member profiles** GitHub Action run the same validation.
 - Legacy `/people/claim`, `/people/edit`, and `/people/admin` entrypoints redirect to the GitHub submission guide. Legacy profile APIs return `410 Gone`; stored Supabase records are preserved.
 - `/apply` permanently redirects to `/#newsletter`. `/auth`, `/community`, and the legacy forum entrypoints redirect to the current public experience.

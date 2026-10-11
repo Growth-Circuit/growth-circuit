@@ -32,7 +32,7 @@ test("the contribution prompt copies and explains public information", async ({ 
   await expect(page.getByRole("status")).toContainText("Copied.");
   const clipboard = await page.evaluate(() => navigator.clipboard.readText());
   expect(clipboard).toContain("https://github.com/nicklafferty/growth-circuit");
-  expect(clipboard).toContain("CONTRIBUTING.md");
+  expect(clipboard).toContain("PROFILE.md");
   expect(clipboard).toContain("Do not merge it.");
 });
 
@@ -40,7 +40,7 @@ test("the contribution prompt remains readable without JavaScript", async ({ bro
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto("/people/contribute");
-  await expect(page.locator("#member-prompt")).toContainText("CONTRIBUTING.md");
+  await expect(page.locator("#member-prompt")).toContainText("PROFILE.md");
   await expect(page.getByRole("button", { name: "Copy prompt" })).toBeHidden();
   await context.close();
 });
