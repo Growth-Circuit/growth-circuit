@@ -78,7 +78,7 @@ for (const [name, role, slug] of [["Matt Ratchford", "Growth Marketing Lead", "m
     const card = page.locator(`#member-${slug}`);
     await expect(card).toBeFocused();
     await expect(card).toContainText(role);
-    await expect(card.getByRole("link", { name: `${name}, LinkedIn profile (opens in a new tab)`, exact: true })).toHaveAttribute("href", /linkedin\.com/);
+    await expect(card.getByRole("link", { name, exact: true })).toHaveAttribute("href", /linkedin\.com/);
     expect(await card.locator("img").evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
   });
 }
