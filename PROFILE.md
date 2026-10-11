@@ -4,10 +4,10 @@ Your profile showcases you and your work at https://growthcircuit.club/people. Y
 
 ## Give your agent this prompt
 
-> Create or update my Growth Circuit profile by following https://github.com/Growth-Circuit/growth-circuit/blob/main/PROFILE.md. Ask me for the details you need, help me choose which projects to share, and show me the profile before submitting it. Validate it and open a pull request into Growth-Circuit/growth-circuit (main) for Nick and Lucy to review. Do not merge it.
+> Create or update my Growth Circuit profile by following https://github.com/Growth-Circuit/growth-circuit/blob/main/PROFILE.md. Ask me for missing required details and only include information I provide or confirm. Use my lowercase GitHub username for the profile filename, preserve my existing projects unless I ask to change them, and show me the profile before submitting it. Work on a new branch in my fork unless I have write access to the organization’s repo. Validate the profile and open a pull request into Growth-Circuit/growth-circuit (main) for Nick and Lucy to review. Verify that the PR targets the organization’s repo and return its URL. Do not merge it.
 
 1. Create a GitHub account if you need one, and add a profile picture. We use your GitHub avatar by default.
-2. Connect GitHub to Claude, Codex, or whichever agent you use. If the agent asks you to select a repository owned by your account, fork [Growth Circuit](https://github.com/Growth-Circuit/growth-circuit/fork) first and select your fork. The agent needs permission to push a branch and open a pull request to the original repository.
+2. Connect GitHub to Claude, Codex, or whichever agent you use. If the agent asks you to select a repository owned by your account, fork [Growth Circuit](https://github.com/Growth-Circuit/growth-circuit/fork) first and select your fork. You do not need to join the Growth-Circuit organization to submit a profile. If you already have write access and your agent can access the organization’s repo, use a new branch there instead. The agent needs permission to push the working branch and open a pull request to the organization’s repository.
 3. Give your agent the prompt above, then share your name, GitHub username, bio, and any projects you want to include.
 4. Review the public details before the agent submits them. Confirm that the returned PR URL starts with `https://github.com/Growth-Circuit/growth-circuit/pull/`. Your profile goes live after we approve and merge it and the site deployment finishes.
 
@@ -71,7 +71,7 @@ Use these destinations for every submission:
 | --- | --- |
 | Base repository | `Growth-Circuit/growth-circuit` |
 | Base branch | `main` |
-| Head repository | The member's fork, such as `<member-username>/growth-circuit` |
+| Head repository | The member's fork, such as `<member-username>/growth-circuit`, or `Growth-Circuit/growth-circuit` if the member has write access |
 | Compare branch | The branch containing the profile change |
 
 On GitHub, open the original repository's **Pull requests → New pull request → compare across forks**. Choose the base repository and branch above, then choose the member's fork and working branch. Check the destination before clicking **Create pull request**.
@@ -82,7 +82,7 @@ With GitHub CLI, explicitly select the original repository. Replace the placehol
 gh pr create --repo Growth-Circuit/growth-circuit --base main --head "<member-username>:<branch>" --title "Add profile: <name>" --body-file <description-file>
 ```
 
-After creation, verify the returned URL and base branch:
+For a branch in the organization’s repository, use `--head "<branch>"` instead. After creation, verify the returned URL and base branch:
 
 ```sh
 gh pr view <pr-url> --repo Growth-Circuit/growth-circuit --json url,baseRefName,headRefName,headRepositoryOwner
@@ -106,4 +106,4 @@ Merging publishes the data through the normal production deployment. GitHub acco
 
 ## Merge permissions
 
-Members and their agents submit pull requests from forks. Only Nick (`@nicklafferty`) and Lucy (`@lucy-jane-hoyle`) may merge changes into `main`. Passing checks do not authorize an agent to merge. Repository rules enforce the merge boundary and require the site build before merging.
+Members and their agents submit pull requests from forks. Only Nick (`@nicklafferty`) and Lucy (`@lucy-jane-hoyle`) may merge changes into `main`. Passing checks do not authorize an agent to merge. Repository rules require a pull request, resolved review conversations, and a passing site build before merging. The separate rule limiting merges to the Nick-and-Lucy team is disabled; GitHub write permissions determine who can merge. Members and agents should leave profile submissions for Nick and Lucy to review and merge.
