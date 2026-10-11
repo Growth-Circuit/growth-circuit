@@ -4,6 +4,7 @@ For member profiles, include your profile filename and any project additions, ed
 
 ## Member profile submissions
 
+- [ ] This PR targets `Growth-Circuit/growth-circuit`, with `main` as its base branch.
 - [ ] I own the GitHub account named in the profile, or I have explained who authorized me to submit on their behalf.
 - [ ] I reviewed the submitted details and want them publicly visible on Growth Circuit and in this repository, including any email address.
 - [ ] I only included accurate information and projects I contributed to.

@@ -12,7 +12,7 @@ The product shape is:
 
 ## Current Status
 
-- GitHub repo is live at `nicklafferty/growth-circuit`.
+- GitHub repo is live at `Growth-Circuit/growth-circuit`.
 - Supabase project has been created and `supabase/schema.sql` has been run.
 - Local `.env` contains the Supabase project URL and publishable key.
 - `.env.example` is kept as a safe placeholder file and should not contain real keys.

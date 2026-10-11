@@ -17,7 +17,7 @@ test("logo reveals a member, dismisses, and navigates to their card", async ({ p
   await expect(page).toHaveURL(/#member-nick-lafferty$/);
   await expect(page.locator("#member-nick-lafferty")).toBeFocused();
   await expect(page.getByRole("link", { name: /Meet Andy McCutcheon.*previously at Block/ })).toHaveAttribute("href", "#member-andy-mccutcheon");
-  await expect(page.locator(".company-link")).toHaveCount(7);
+  await expect(page.locator(".company-link")).toHaveCount(9);
 });
 
 for (const width of [320, 390, 768, 1440]) {
@@ -67,3 +67,18 @@ test("reduced motion removes reveal transitions", async ({ page }) => {
   await page.goto("/");
   expect(await page.locator(".member-reveal").first().evaluate(el => getComputedStyle(el).transitionDuration)).toBe("0s");
 });
+
+for (const [name, role, slug] of [["Matt Ratchford", "Growth Marketing Lead", "matt-ratchford"], ["Obie Odom", "Head of Growth", "obie-odom"]]) {
+  test(`${name} is linked from the wall to a member card with a headshot`, async ({ page }) => {
+    await page.goto("/");
+    const logo = page.getByRole("link", { name: `Meet ${name}, ${role}`, exact: true });
+    await logo.hover();
+    await expect(logo.locator(".member-reveal")).toBeVisible();
+    await logo.click();
+    const card = page.locator(`#member-${slug}`);
+    await expect(card).toBeFocused();
+    await expect(card).toContainText(role);
+    await expect(card.getByRole("link", { name, exact: true })).toHaveAttribute("href", /linkedin\.com/);
+    expect(await card.locator("img").evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+  });
+}
