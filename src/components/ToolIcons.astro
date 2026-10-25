@@ -1,0 +1,66 @@
+---
+import { resolveTools } from "@/lib/blog";
+
+type Props = { tools?: string[] };
+const { tools: slugs = [] } = Astro.props;
+const tools = resolveTools(slugs);
+---
+
+{
+  tools.length > 0 && (
+    <ul class="tool-icons" role="list" aria-label="Tools mentioned in this post">
+      {tools.map((tool) => (
+        <li>
+          <a class="tool-icon" href={tool.url} target="_blank" rel="noopener noreferrer">
+            <img src={tool.icon} alt="" width="20" height="20" loading="lazy" />
+            <span>{tool.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .tool-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
+    margin: 18px 0 0;
+    padding: 0;
+  }
+
+  .tool-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 5px 13px 5px 8px;
+    border: 1px solid var(--pivot-line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--pivot-navy);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  .tool-icon:hover {
+    border-color: var(--sky-deep);
+  }
+
+  .tool-icon:focus-visible {
+    outline: 3px solid #287f91;
+    outline-offset: 3px;
+  }
+
+  .tool-icon img {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    object-fit: contain;
+  }
+</style>

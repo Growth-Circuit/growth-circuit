@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const postPath = "/blog/how-we-run-growth-circuit-with-grok-bot";
 const title = "How We Run Growth Circuit With Grok Bot";
 
-test("the blog features the published post once", async ({ page }) => {
+test("the blog features the published post once and lists the rest", async ({ page }) => {
   const response = await page.goto("/blog");
 
   expect(response?.ok()).toBe(true);
@@ -27,8 +27,16 @@ test("the blog features the published post once", async ({ page }) => {
     "Growth Circuit runs on a small team of Grok Bot specialists plus one supervisor bot. Here's what each bot does and what Lucy and I still decide.",
   );
   await expect(featured.locator(".keep-together")).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "All posts" })).toHaveCount(0);
+
+  const listed = page.getByRole("region", { name: "All posts" });
+  await expect(listed).toBeVisible();
   await expect(page.getByText("No posts yet.")).toHaveCount(0);
+  const showAndTellTitle = "Show & Tell: Proactive Agents, Jev and Agent Marketing";
+  await expect(listed.getByRole("heading", { name: showAndTellTitle })).toBeVisible();
+  await expect(listed.getByRole("link", { name: new RegExp(showAndTellTitle) })).toHaveAttribute(
+    "href",
+    "/blog/show-and-tell-proactive-agents",
+  );
 });
 
 test("the post renders the byline, formatting, and structured data", async ({ page }) => {
@@ -166,6 +174,121 @@ test("post images are served as pngs and the old screenshot URLs redirect", asyn
     expect(response.status()).toBe(301);
     expect(response.headers().location).toContain(to);
   }
+});
+
+test("the Oct 23 Show & Tell post renders tool icons and a member card at the top", async ({ page }) => {
+  const showAndTellPath = "/blog/show-and-tell-proactive-agents";
+  const response = await page.goto(showAndTellPath);
+  expect(response?.ok()).toBe(true);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Show & Tell: Proactive Agents, Jev and Agent Marketing",
+  );
+
+  const toolIcons = page.locator(".tool-icon");
+  const toolNames = [
+    "Grok Bot",
+    "Jev",
+    "Notion",
+    "Hermes",
+    "Claude",
+    "Instinct",
+    "OpenRouter",
+    "Webflow",
+    "Wispr Flow",
+  ];
+  await expect(toolIcons).toHaveCount(toolNames.length);
+  for (const [index, name] of toolNames.entries()) {
+    await expect(toolIcons.nth(index)).toHaveAccessibleName(name);
+    await expect(toolIcons.nth(index).locator("img")).toHaveAttribute("src", new RegExp(`^/tool-icons/.+\\.(svg|png)$`));
+  }
+  await expect(page.getByRole("link", { name: "Notion" })).toHaveAttribute("href", "https://www.notion.so");
+
+  const memberCards = page.locator(".post-members-list .blog-author");
+  const members = [
+    ["Nick Lafferty", "/people/nicklafferty", "/community/members/nick-lafferty.jpeg"],
+    ["Lucy Hoyle", "/people/lucy-jane-hoyle", "/community/members/lucy-hoyle.png"],
+    ["Andy Dabinett", "https://www.linkedin.com/in/andy-dabinett", "/community/members/andy-dabinett.jpg"],
+    ["David Ronen", "https://www.linkedin.com/in/david-ronen", "/community/members/david-ronen.jpg"],
+    ["Rohit Khanna", "https://www.linkedin.com/in/rohitkkhanna", "/community/members/rohit-khanna.jpg"],
+    ["Will Leatherman", "https://www.linkedin.com/in/willleatherman", "/community/members/will-leatherman.jpg"],
+    ["Felicia Baskin", "https://www.linkedin.com/in/feliciabaskin", "/community/members/felicia-baskin.jpg"],
+    ["Daphne Earp Hoppenot", "https://www.linkedin.com/in/daphneearp", "/community/members/daphne-earp-hoppenot.jpg"],
+    ["Hayley Brunetto", "https://www.linkedin.com/in/hayley-brunetto/", "/community/members/hayley-brunetto.jpg"],
+  ] as const;
+  await expect(memberCards).toHaveCount(members.length);
+  for (const [index, [name, href, photo]] of members.entries()) {
+    const card = memberCards.nth(index);
+    await expect(card.getByRole("link", { name, exact: true })).toHaveAttribute("href", href);
+    await expect(card.getByRole("img", { name, exact: true })).toHaveAttribute("src", photo);
+  }
+  await expect(memberCards.getByText("Andy McCutcheon")).toHaveCount(0);
+  await expect(memberCards.getByText("Technical PM, Brand Networks")).toBeVisible();
+  await expect(memberCards.getByText("Agentic Growth Architect")).toBeVisible();
+  await expect(memberCards.filter({ hasText: "Hayley Brunetto" }).locator(".blog-author-role")).toHaveCount(0);
+  await expect(memberCards.filter({ hasText: "David Ronen" }).locator(".blog-author-role")).toHaveText("Agentic Growth Architect");
+  await expect(memberCards.filter({ hasText: "Felicia Baskin" }).locator(".blog-author-role")).toHaveText("Content and SEO leader");
+
+  // The tool icon row and member card sit at the top, in the post header, not lower in the body.
+  const header = page.locator(".blog-post-header");
+  await expect(header.locator(".tool-icon").first()).toBeVisible();
+  await expect(header.locator(".post-members-list").first()).toBeVisible();
+});
+
+test("Oct 23 attendees are not listed on the homepage, the member directory, or the sitemap", async ({ page, request }) => {
+  const names = [
+    "Andy Dabinett",
+    "David Ronen",
+    "Rohit Khanna",
+    "Will Leatherman",
+    "Felicia Baskin",
+    "Daphne Earp Hoppenot",
+    "Hayley Brunetto",
+  ];
+  const handles = [
+    "andy-dabinett",
+    "david-ronen",
+    "rohit-khanna",
+    "will-leatherman",
+    "felicia-baskin",
+    "daphne-earp-hoppenot",
+    "hayley-brunetto",
+  ];
+
+  await page.goto("/");
+  for (const name of names) {
+    await expect(page.locator("#members").getByRole("heading", { name, exact: true })).toHaveCount(0);
+  }
+  await expect(page.locator("#members").getByRole("heading", { name: "Andy McCutcheon", exact: true })).toBeVisible();
+
+  await page.goto("/people");
+  for (const name of names) {
+    await expect(page.getByRole("heading", { name, exact: true })).toHaveCount(0);
+  }
+  await expect(page.getByRole("heading", { name: "Nick Lafferty", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lucy Hoyle", exact: true })).toBeVisible();
+
+  for (const handle of handles) {
+    expect((await request.get(`/people/${handle}`, { maxRedirects: 0 })).status()).toBe(404);
+  }
+
+  const index = await request.get("/sitemap-index.xml");
+  expect(index.ok()).toBe(true);
+  let combined = await index.text();
+  const children = [...combined.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname);
+  for (const pathname of children) {
+    const child = await request.get(pathname);
+    expect(child.ok()).toBe(true);
+    combined += await child.text();
+  }
+  for (const handle of handles) {
+    expect(combined).not.toContain(`/people/${handle}`);
+  }
+});
+
+test("the tool icon row and member card leave an existing post unchanged", async ({ page }) => {
+  await page.goto(postPath);
+  await expect(page.locator(".tool-icon")).toHaveCount(0);
+  await expect(page.locator(".post-members-list")).toHaveCount(0);
 });
 
 test("the blog feed and sitemap include the post", async ({ request }) => {

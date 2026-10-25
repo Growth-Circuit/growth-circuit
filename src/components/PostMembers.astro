@@ -1,0 +1,64 @@
+---
+import { communityMemberHref } from "@/data/community-members";
+import { resolvePostMembers } from "@/lib/blog";
+
+type Props = { members?: string[] };
+const { members: ids = [] } = Astro.props;
+const members = resolvePostMembers(ids);
+---
+
+{
+  members.length > 0 && (
+    <ul class="blog-author-list post-members-list" role="list">
+      {members.map((member) => {
+        const href = communityMemberHref(member);
+        const internal = Boolean(member.github);
+        return (
+          <li class="blog-author">
+            {member.photo ? (
+              <img class="blog-author-photo" src={member.photo} alt={member.name} width="48" height="48" loading="lazy" />
+            ) : (
+              <span class="blog-author-photo post-member-initials" aria-hidden="true">
+                {(member.initials ?? member.name.slice(0, 1)).toUpperCase()}
+              </span>
+            )}
+            <div class="blog-author-copy">
+              <p class="blog-author-name-line">
+                {href ? (
+                  <a
+                    class="blog-author-name"
+                    href={href}
+                    target={internal ? undefined : "_blank"}
+                    rel={internal ? undefined : "noopener noreferrer"}
+                  >
+                    {member.name}
+                  </a>
+                ) : (
+                  <span class="blog-author-name">{member.name}</span>
+                )}
+              </p>
+              {(member.role || member.company) && (
+                <p class="blog-author-role">{[member.role, member.company].filter(Boolean).join(", ")}</p>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  )
+}
+
+<style>
+  .post-members-list {
+    margin-top: 14px;
+  }
+
+  .post-member-initials {
+    display: grid;
+    place-items: center;
+    background: #dceef5;
+    color: #355e49;
+    font-size: 17px;
+    font-weight: 700;
+  }
+</style>

@@ -1,5 +1,7 @@
 ---
 import BlogAuthors from "@/components/BlogAuthors.astro";
+import PostMembers from "@/components/PostMembers.astro";
+import ToolIcons from "@/components/ToolIcons.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import {
   assertBlogBody,
@@ -80,6 +82,8 @@ if (faq.length) jsonLd.push(faqPageJsonLd(faq));
       </div>
       <h1>{post.data.title}</h1>
       <BlogAuthors authors={people} />
+      <ToolIcons tools={post.data.tools ?? []} />
+      <PostMembers members={post.data.members ?? []} />
     </header>
     <div class="shell blog-post-body">
       <Content />
