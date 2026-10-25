@@ -45,6 +45,9 @@ const jsonLd: unknown[] = [
   }),
 ];
 if (faq.length) jsonLd.push(faqPageJsonLd(faq));
+
+const isShowAndTell = post.data.category === "Show & Tell";
+const hasToolsOrMembers = (post.data.tools?.length ?? 0) > 0 || (post.data.members?.length ?? 0) > 0;
 ---
 
 <BaseLayout
@@ -82,12 +85,106 @@ if (faq.length) jsonLd.push(faqPageJsonLd(faq));
       </div>
       <h1>{post.data.title}</h1>
       <BlogAuthors authors={people} />
-      <ToolIcons tools={post.data.tools ?? []} />
-      <PostMembers members={post.data.members ?? []} />
+      {!isShowAndTell && <ToolIcons tools={post.data.tools ?? []} />}
+      {!isShowAndTell && <PostMembers members={post.data.members ?? []} />}
     </header>
-    <div class="shell blog-post-body">
-      <Content />
-    </div>
+
+    {isShowAndTell && hasToolsOrMembers ? (
+      <div class="shell blog-post-with-sidebar">
+        <div class="blog-post-main">
+          <div class="blog-post-body">
+            <Content />
+          </div>
+        </div>
+        <aside class="blog-post-sidebar" aria-label="Tools and speakers">
+          {(post.data.tools?.length ?? 0) > 0 && (
+            <section class="sidebar-section">
+              <h2 class="sidebar-heading">Tools we talked about</h2>
+              <ToolIcons tools={post.data.tools ?? []} />
+            </section>
+          )}
+          {(post.data.members?.length ?? 0) > 0 && (
+            <section class="sidebar-section">
+              <h2 class="sidebar-heading">Who was there</h2>
+              <PostMembers members={post.data.members ?? []} />
+            </section>
+          )}
+        </aside>
+      </div>
+    ) : (
+      <div class="shell blog-post-body">
+        <Content />
+      </div>
+    )}
+
     <p class="shell blog-post-back"><a href="/blog">All posts →</a></p>
   </article>
 </BaseLayout>
+
+<style>
+  .blog-post-with-sidebar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+    padding-bottom: 48px;
+  }
+
+  @media (min-width: 1024px) {
+    .blog-post-with-sidebar {
+      grid-template-columns: 1fr 320px;
+      gap: 64px;
+    }
+  }
+
+  .blog-post-main {
+    min-width: 0;
+  }
+
+  .blog-post-with-sidebar .blog-post-body {
+    max-width: 100%;
+    padding-bottom: 0;
+  }
+
+  .blog-post-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  @media (min-width: 1024px) {
+    .blog-post-sidebar {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+    }
+  }
+
+  .sidebar-section {
+    padding: 20px;
+    background: #fff;
+    border: 1px solid var(--pivot-line);
+    border-radius: 12px;
+  }
+
+  .sidebar-heading {
+    margin: 0 0 16px;
+    color: var(--pivot-navy);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-section :global(.tool-icons) {
+    margin-top: 0;
+  }
+
+  .sidebar-section :global(.blog-author-list) {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sidebar-section :global(.post-members-list) {
+    margin-top: 0;
+  }
+</style>

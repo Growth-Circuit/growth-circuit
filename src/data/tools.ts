@@ -39,9 +39,9 @@ export const tools: Tool[] = [
   {
     slug: "jev",
     name: "Jev",
-    url: "https://www.jevtypesafeai.com",
+    url: "https://typesafe.ai",
     icon: "/tool-icons/jev.png",
-    source: "Favicon for jevtypesafeai.com via Google's favicon service (google.com/s2/favicons), downloaded into the repo. Jev has no Simple Icons entry.",
+    source: "Favicon for typesafe.ai via Google's favicon service (google.com/s2/favicons), downloaded into the repo. Jev has no Simple Icons entry.",
     license: "Mark © TypeSafe AI. Used only to identify the Jev tool by name, unaltered. Fallback source approved by Nick.",
   },
   {

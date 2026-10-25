@@ -146,20 +146,30 @@ describe("blog posts", () => {
     expect(assertBlogBody("show-and-tell-proactive-agents", content)).toBeUndefined();
   });
 
-  it("features the newest featured post and still works with no posts", () => {
-    const posts = [
+  it("features the newest post only when it is marked featured", () => {
+    const postsNewestNotFeatured = [
       item({ id: "older", publishDate: "2026-01-02", featured: false }),
       item({ id: "newer", publishDate: "2026-03-04", featured: false }),
       item({ id: "featured-old", publishDate: "2026-02-02", featured: true }),
       item({ id: "featured-new", publishDate: "2026-02-20", featured: true }),
     ];
-    expect(selectFeaturedPost(posts)?.id).toBe("featured-new");
-    expect(selectFeaturedPost(posts.filter((post) => !post.featured))?.id).toBe("newer");
+    expect(selectFeaturedPost(postsNewestNotFeatured)).toBeNull();
+    expect(postsBelowFeatured(postsNewestNotFeatured, null)).toEqual(postsNewestNotFeatured);
+
+    const postsNewestIsFeatured = [
+      item({ id: "older", publishDate: "2026-01-02", featured: false }),
+      item({ id: "newest-featured", publishDate: "2026-04-01", featured: true }),
+      item({ id: "featured-old", publishDate: "2026-02-02", featured: true }),
+    ];
+    expect(selectFeaturedPost(postsNewestIsFeatured)?.id).toBe("newest-featured");
+    expect(postsBelowFeatured(postsNewestIsFeatured, selectFeaturedPost(postsNewestIsFeatured)).map((post) => post.id)).toEqual([
+      "older",
+      "featured-old",
+    ]);
+
     expect(selectFeaturedPost([])).toBeNull();
-    const featured = selectFeaturedPost(posts);
-    expect(postsBelowFeatured(posts, featured).map((post) => post.id)).toEqual(["older", "newer", "featured-old"]);
     expect(postsBelowFeatured([], null)).toEqual([]);
-    expect(sortPostsNewestFirst(posts).map((post) => post.id)).toEqual([
+    expect(sortPostsNewestFirst(postsNewestNotFeatured).map((post) => post.id)).toEqual([
       "newer",
       "featured-new",
       "featured-old",

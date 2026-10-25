@@ -66,11 +66,16 @@ export function sortPostsNewestFirst<T extends Pick<BlogListItem, "publishDate" 
   );
 }
 
-/** Newest featured post, or the newest post when none are featured. */
+/**
+ * Returns the newest post if it is marked featured, so featured treatment
+ * never buries newer posts. When the newest post is not featured, returns
+ * null and the index page shows all posts chronologically without a hero.
+ */
 export function selectFeaturedPost<T extends Pick<BlogListItem, "featured" | "publishDate" | "id">>(posts: T[]) {
   if (!posts.length) return null;
-  const featured = posts.filter((post) => post.featured);
-  return sortPostsNewestFirst(featured.length ? featured : posts)[0] ?? null;
+  const sorted = sortPostsNewestFirst(posts);
+  const newest = sorted[0];
+  return newest?.featured ? newest : null;
 }
 
 /** Listing cards under the featured block. The featured post is not repeated. */
