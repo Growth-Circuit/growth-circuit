@@ -24,7 +24,7 @@ const members = resolvePostMembers(memberIds);
 const hasShowAndTellContent = isShowAndTell && (tools.length > 0 || members.length > 0);
 ---
 
-<aside class="blog-sidebar" aria-label="Article navigation and resources">
+<aside class="blog-post-sidebar" aria-label="Article navigation and resources">
   <div class="blog-sidebar-content">
     {headings.filter((h) => h.depth === 2).length > 0 && <TableOfContents headings={headings} />}
 
@@ -32,67 +32,71 @@ const hasShowAndTellContent = isShowAndTell && (tools.length > 0 || members.leng
       hasShowAndTellContent && (
         <div class="sidebar-show-tell">
           {tools.length > 0 && (
-            <div class="sidebar-section">
-              <h2 class="sidebar-section-title">Tools mentioned</h2>
-              <ul class="sidebar-tool-list" role="list">
+            <section class="sidebar-section">
+              <h2 class="sidebar-heading">Tools we talked about</h2>
+              <ul class="tool-icons" role="list">
                 {tools.map((tool) => (
                   <li>
-                    <a href={tool.url} target="_blank" rel="noopener noreferrer" class="sidebar-tool">
+                    <a href={tool.url} target="_blank" rel="noopener noreferrer" class="tool-icon">
                       <img src={tool.icon} alt="" width="18" height="18" loading="lazy" />
                       <span>{tool.name}</span>
                     </a>
                   </li>
                 ))}
               </ul>
-            </div>
+            </section>
           )}
           {members.length > 0 && (
-            <div class="sidebar-section">
-              <h2 class="sidebar-section-title">People on the call</h2>
-              <ul class="sidebar-member-list" role="list">
+            <section class="sidebar-section">
+              <h2 class="sidebar-heading">Who was there</h2>
+              <ul class="post-members-list blog-author-list" role="list">
                 {members.map((member) => {
                   const href = communityMemberHref(member);
                   const internal = Boolean(member.github);
                   return (
-                    <li class="sidebar-member">
+                    <li class="blog-author">
                       {member.photo ? (
                         <img
-                          class="sidebar-member-photo"
+                          class="blog-author-photo"
                           src={member.photo}
                           alt={member.name}
-                          width="32"
-                          height="32"
+                          width="48"
+                          height="48"
                           loading="lazy"
                         />
                       ) : (
-                        <span class="sidebar-member-initials" aria-hidden="true">
+                        <span class="blog-author-photo post-member-initials" aria-hidden="true">
                           {(member.initials ?? member.name.slice(0, 1)).toUpperCase()}
                         </span>
                       )}
-                      <div class="sidebar-member-info">
+                      <div class="blog-author-copy">
                         {href ? (
-                          <a
-                            class="sidebar-member-name"
-                            href={href}
-                            target={internal ? undefined : "_blank"}
-                            rel={internal ? undefined : "noopener noreferrer"}
-                          >
-                            {member.name}
-                          </a>
+                          <p class="blog-author-name-line">
+                            <a
+                              class="blog-author-name"
+                              href={href}
+                              target={internal ? undefined : "_blank"}
+                              rel={internal ? undefined : "noopener noreferrer"}
+                            >
+                              {member.name}
+                            </a>
+                          </p>
                         ) : (
-                          <span class="sidebar-member-name">{member.name}</span>
+                          <p class="blog-author-name-line">
+                            <span class="blog-author-name">{member.name}</span>
+                          </p>
                         )}
                         {(member.role || member.company) && (
-                          <span class="sidebar-member-role">
+                          <p class="blog-author-role">
                             {[member.role, member.company].filter(Boolean).join(", ")}
-                          </span>
+                          </p>
                         )}
                       </div>
                     </li>
                   );
                 })}
               </ul>
-            </div>
+            </section>
           )}
         </div>
       )
@@ -103,7 +107,7 @@ const hasShowAndTellContent = isShowAndTell && (tools.length > 0 || members.leng
 </aside>
 
 <style>
-  .blog-sidebar {
+  .blog-post-sidebar {
     position: relative;
   }
 
@@ -129,16 +133,16 @@ const hasShowAndTellContent = isShowAndTell && (tools.length > 0 || members.leng
     margin-bottom: 0;
   }
 
-  .sidebar-section-title {
-    margin: 0 0 12px;
+  .sidebar-heading {
+    margin: 0 0 16px;
     color: var(--pivot-navy);
-    font-size: 14px;
-    font-weight: 750;
+    font-size: 15px;
+    font-weight: 700;
     letter-spacing: 0.02em;
     text-transform: uppercase;
   }
 
-  .sidebar-tool-list {
+  .sidebar-show-tell .tool-icons {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -147,7 +151,7 @@ const hasShowAndTellContent = isShowAndTell && (tools.length > 0 || members.leng
     padding: 0;
   }
 
-  .sidebar-tool {
+  .sidebar-show-tell .tool-icon {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -163,16 +167,16 @@ const hasShowAndTellContent = isShowAndTell && (tools.length > 0 || members.leng
     text-decoration: none;
   }
 
-  .sidebar-tool:hover {
+  .sidebar-show-tell .tool-icon:hover {
     border-color: var(--sky-deep);
   }
 
-  .sidebar-tool:focus-visible {
+  .sidebar-show-tell .tool-icon:focus-visible {
     outline: 2px solid var(--sky-deep);
     outline-offset: 2px;
   }
 
-  .sidebar-tool img {
+  .sidebar-show-tell .tool-icon img {
     display: block;
     width: 18px;
     height: 18px;
@@ -180,62 +184,24 @@ const hasShowAndTellContent = isShowAndTell && (tools.length > 0 || members.leng
     object-fit: contain;
   }
 
-  .sidebar-member-list {
-    display: grid;
-    gap: 10px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .sidebar-show-tell .post-members-list {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 0;
   }
 
-  .sidebar-member {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  .sidebar-show-tell .blog-author-photo {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
   }
 
-  .sidebar-member-photo,
-  .sidebar-member-initials {
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  .sidebar-member-initials {
+  .sidebar-show-tell .post-member-initials {
     display: grid;
     place-items: center;
     background: #dceef5;
     color: #355e49;
-    font-size: 13px;
+    font-size: 17px;
     font-weight: 700;
-  }
-
-  .sidebar-member-info {
-    min-width: 0;
-    line-height: 1.3;
-  }
-
-  .sidebar-member-name {
-    display: block;
-    color: var(--pivot-navy);
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-  }
-
-  a.sidebar-member-name:hover {
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-
-  .sidebar-member-role {
-    display: block;
-    color: var(--sky-muted);
-    font-size: 11px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 </style>
