@@ -1,5 +1,7 @@
 import rss from "@astrojs/rss";
 import { authorById, type Author } from "../data/authors";
+import { communityMemberById, type CommunityMemberRef } from "../data/community-members";
+import { toolBySlug, type Tool } from "../data/tools";
 import { escapeXml } from "./xml";
 
 export const BLOG_DESCRIPTION =
@@ -105,6 +107,22 @@ export function formatAuthorNames(people: Array<Pick<Author, "name">>) {
 
 export function authorSameAs(author: Pick<Author, "website" | "linkedin">) {
   return [author.website, author.linkedin].filter((value): value is string => Boolean(value));
+}
+
+export function resolveTools(slugs: string[]): Tool[] {
+  return slugs.map((slug) => {
+    const tool = toolBySlug(slug);
+    if (!tool) throw new Error(`Unknown tool slug "${slug}". Add it to src/data/tools.ts.`);
+    return tool;
+  });
+}
+
+export function resolvePostMembers(ids: string[]): CommunityMemberRef[] {
+  return ids.map((id) => {
+    const member = communityMemberById(id);
+    if (!member) throw new Error(`Unknown member id "${id}". Add them to src/data/featured-community.ts or src/content/members.`);
+    return member;
+  });
 }
 
 export type FaqItem = { question: string; answer: string };

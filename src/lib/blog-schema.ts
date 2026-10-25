@@ -1,5 +1,7 @@
 import { z } from "astro/zod";
 import { unknownAuthorIds } from "../data/authors";
+import { unknownCommunityMemberIds } from "../data/community-members";
+import { unknownToolSlugs } from "../data/tools";
 
 /** Calendar dates stay `YYYY-MM-DD` even when YAML parses them as Date objects. */
 const calendarDate = z.preprocess((value) => {
@@ -26,6 +28,10 @@ export const blogPostSchema = z
      * is detected automatically.
      */
     faq: z.boolean().optional(),
+    /** Tool slugs from `src/data/tools.ts`, rendered as an icon row near the top. */
+    tools: z.array(z.string().trim().min(1)).optional(),
+    /** Attendee ids from `src/data/community-members.ts`, rendered near the top. */
+    members: z.array(z.string().trim().min(1)).optional(),
   })
   .superRefine((data, ctx) => {
     for (const id of unknownAuthorIds(data.authors)) {
@@ -35,6 +41,24 @@ export const blogPostSchema = z
         path: ["authors"],
       });
     }
+    (data.tools ?? []).forEach((slug, index) => {
+      if (unknownToolSlugs([slug]).length) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Unknown tool slug "${slug}". Add it to src/data/tools.ts.`,
+          path: ["tools", index],
+        });
+      }
+    });
+    (data.members ?? []).forEach((id, index) => {
+      if (unknownCommunityMemberIds([id]).length) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Unknown member id "${id}". Add them to src/data/featured-community.ts or src/content/members.`,
+          path: ["members", index],
+        });
+      }
+    });
     if (data.heroImage && !data.heroImageAlt) {
       ctx.addIssue({
         code: "custom",
