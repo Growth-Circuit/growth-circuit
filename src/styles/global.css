@@ -3900,9 +3900,9 @@ h1 {
 }
 
 .blog-author-name-line {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
   color: var(--pivot-navy);
   font-size: 15px;
@@ -3916,16 +3916,31 @@ h1 {
 
 a.blog-author-name {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration-color: rgba(23, 49, 58, 0.35);
+  text-underline-offset: 2px;
+}
+
+a.blog-author-name:hover {
+  text-decoration-color: var(--pivot-navy);
 }
 
 .blog-author-linkedin {
   display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
   color: var(--pivot-navy);
+  opacity: 0.72;
+  transition: opacity 160ms ease;
+}
+
+.blog-author-linkedin:hover {
+  opacity: 1;
 }
 
 .blog-author-linkedin svg {
   display: block;
+  width: 14px;
+  height: 14px;
 }
 
 .blog-author-role {
