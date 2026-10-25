@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const postPath = "/blog/how-we-run-growth-circuit-with-grok-bot";
 const title = "How We Run Growth Circuit With Grok Bot";
 
-test("the blog features the published post once and lists the rest", async ({ page }) => {
+test("the blog lists posts newest-first without a featured hero when the newest post is not featured", async ({ page }) => {
   const response = await page.goto("/blog");
 
   expect(response?.ok()).toBe(true);
@@ -18,25 +18,33 @@ test("the blog features the published post once and lists the rest", async ({ pa
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Community notes.");
   await expect(page.locator(".gc-nav").getByRole("link", { name: "Blog", exact: true })).toHaveAttribute("href", "/blog");
 
+  // No featured section when the newest post is not marked featured
   const featured = page.getByRole("region", { name: "Featured post" });
-  await expect(featured.getByRole("heading", { name: title })).toBeVisible();
-  await expect(page.getByRole("heading", { name: title })).toHaveCount(1);
-  await expect(featured.getByText("Nick Lafferty and Lucy Hoyle")).toBeVisible();
-  await expect(featured.getByRole("link", { name: new RegExp(title) })).toHaveAttribute("href", postPath);
-  await expect(featured.locator("p").nth(1)).toHaveText(
-    "Growth Circuit runs on a small team of Grok Bot specialists plus one supervisor bot. Here's what each bot does and what Lucy and I still decide.",
-  );
-  await expect(featured.locator(".keep-together")).toHaveCount(0);
+  await expect(featured).toHaveCount(0);
 
+  // All posts appear in the list, newest first
   const listed = page.getByRole("region", { name: "All posts" });
   await expect(listed).toBeVisible();
   await expect(page.getByText("No posts yet.")).toHaveCount(0);
+
   const showAndTellTitle = "Show & Tell: Proactive Agents, Jev and Agent Marketing";
+  const grokBotTitle = "How We Run Growth Circuit With Grok Bot";
+
+  // Both posts should be in the list
   await expect(listed.getByRole("heading", { name: showAndTellTitle })).toBeVisible();
+  await expect(listed.getByRole("heading", { name: grokBotTitle })).toBeVisible();
+
+  // Verify newest-first ordering: Show & Tell (Oct 25) should appear before Grok Bot (Oct 7)
+  const cards = listed.locator(".blog-index-card");
+  await expect(cards).toHaveCount(2);
+  await expect(cards.first().getByRole("heading")).toHaveText(showAndTellTitle);
+  await expect(cards.nth(1).getByRole("heading")).toHaveText(grokBotTitle);
+
   await expect(listed.getByRole("link", { name: new RegExp(showAndTellTitle) })).toHaveAttribute(
     "href",
     "/blog/show-and-tell-proactive-agents",
   );
+  await expect(listed.getByRole("link", { name: new RegExp(grokBotTitle) })).toHaveAttribute("href", postPath);
 });
 
 test("the post renders the byline, formatting, and structured data", async ({ page }) => {
@@ -176,7 +184,7 @@ test("post images are served as pngs and the old screenshot URLs redirect", asyn
   }
 });
 
-test("the Oct 23 Show & Tell post renders tool icons and a member card at the top", async ({ page }) => {
+test("the Oct 23 Show & Tell post renders tool icons and members in a sidebar", async ({ page }) => {
   const showAndTellPath = "/blog/show-and-tell-proactive-agents";
   const response = await page.goto(showAndTellPath);
   expect(response?.ok()).toBe(true);
@@ -184,7 +192,13 @@ test("the Oct 23 Show & Tell post renders tool icons and a member card at the to
     "Show & Tell: Proactive Agents, Jev and Agent Marketing",
   );
 
-  const toolIcons = page.locator(".tool-icon");
+  // Show & Tell posts use a sidebar layout for tools and members
+  const sidebar = page.locator(".blog-post-sidebar");
+  await expect(sidebar).toBeVisible();
+  await expect(sidebar.getByRole("heading", { name: "Tools we talked about" })).toBeVisible();
+  await expect(sidebar.getByRole("heading", { name: "Who was there" })).toBeVisible();
+
+  const toolIcons = sidebar.locator(".tool-icon");
   const toolNames = [
     "Grok Bot",
     "Jev",
@@ -201,9 +215,9 @@ test("the Oct 23 Show & Tell post renders tool icons and a member card at the to
     await expect(toolIcons.nth(index)).toHaveAccessibleName(name);
     await expect(toolIcons.nth(index).locator("img")).toHaveAttribute("src", new RegExp(`^/tool-icons/.+\\.(svg|png)$`));
   }
-  await expect(page.getByRole("link", { name: "Notion" })).toHaveAttribute("href", "https://www.notion.so");
+  await expect(sidebar.getByRole("link", { name: "Notion" })).toHaveAttribute("href", "https://www.notion.so");
 
-  const memberCards = page.locator(".post-members-list .blog-author");
+  const memberCards = sidebar.locator(".post-members-list .blog-author");
   const members = [
     ["Nick Lafferty", "/people/nicklafferty", "/community/members/nick-lafferty.jpeg"],
     ["Lucy Hoyle", "/people/lucy-jane-hoyle", "/community/members/lucy-hoyle.png"],
@@ -228,10 +242,10 @@ test("the Oct 23 Show & Tell post renders tool icons and a member card at the to
   await expect(memberCards.filter({ hasText: "David Ronen" }).locator(".blog-author-role")).toHaveText("Agentic Growth Architect");
   await expect(memberCards.filter({ hasText: "Felicia Baskin" }).locator(".blog-author-role")).toHaveText("Content and SEO leader");
 
-  // The tool icon row and member card sit at the top, in the post header, not lower in the body.
+  // Tools and members are NOT in the header for Show & Tell posts (they're in the sidebar)
   const header = page.locator(".blog-post-header");
-  await expect(header.locator(".tool-icon").first()).toBeVisible();
-  await expect(header.locator(".post-members-list").first()).toBeVisible();
+  await expect(header.locator(".tool-icon")).toHaveCount(0);
+  await expect(header.locator(".post-members-list")).toHaveCount(0);
 });
 
 test("Oct 23 attendees are not listed on the homepage, the member directory, or the sitemap", async ({ page, request }) => {
