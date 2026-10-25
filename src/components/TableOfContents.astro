@@ -1,0 +1,90 @@
+---
+interface HeadingItem {
+  slug: string;
+  text: string;
+  depth: number;
+}
+
+interface Props {
+  headings: HeadingItem[];
+}
+
+const { headings } = Astro.props;
+const tocHeadings = headings.filter((h) => h.depth === 2);
+---
+
+{
+  tocHeadings.length > 0 && (
+    <nav class="toc" aria-labelledby="toc-title">
+      <h2 id="toc-title" class="toc-title">In this post</h2>
+      <ol class="toc-list" role="list">
+        {tocHeadings.map((heading) => (
+          <li>
+            <a href={`#${heading.slug}`}>{heading.text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<style>
+  .toc {
+    border: 1px solid var(--pivot-line);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.72);
+    padding: 20px 22px;
+  }
+
+  .toc-title {
+    margin: 0 0 14px;
+    color: var(--pivot-navy);
+    font-size: 14px;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: toc-counter;
+  }
+
+  .toc-list li {
+    counter-increment: toc-counter;
+    margin-bottom: 10px;
+  }
+
+  .toc-list li:last-child {
+    margin-bottom: 0;
+  }
+
+  .toc-list a {
+    display: flex;
+    gap: 10px;
+    color: var(--sky-muted);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.45;
+    text-decoration: none;
+  }
+
+  .toc-list a::before {
+    content: counter(toc-counter) ".";
+    flex-shrink: 0;
+    width: 1.6em;
+    color: var(--pivot-navy);
+    font-weight: 750;
+  }
+
+  .toc-list a:hover {
+    color: var(--pivot-navy);
+  }
+
+  .toc-list a:focus-visible {
+    outline: 2px solid var(--sky-deep);
+    outline-offset: 3px;
+  }
+</style>

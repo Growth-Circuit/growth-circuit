@@ -1,0 +1,241 @@
+---
+import TableOfContents from "./TableOfContents.astro";
+import SidebarEmailCta from "./SidebarEmailCta.astro";
+import { resolveTools } from "@/lib/blog";
+import { communityMemberHref } from "@/data/community-members";
+import { resolvePostMembers } from "@/lib/blog";
+
+interface HeadingItem {
+  slug: string;
+  text: string;
+  depth: number;
+}
+
+interface Props {
+  headings: HeadingItem[];
+  tools?: string[];
+  members?: string[];
+  isShowAndTell?: boolean;
+}
+
+const { headings, tools: toolSlugs = [], members: memberIds = [], isShowAndTell = false } = Astro.props;
+const tools = resolveTools(toolSlugs);
+const members = resolvePostMembers(memberIds);
+const hasShowAndTellContent = isShowAndTell && (tools.length > 0 || members.length > 0);
+---
+
+<aside class="blog-sidebar" aria-label="Article navigation and resources">
+  <div class="blog-sidebar-content">
+    {headings.filter((h) => h.depth === 2).length > 0 && <TableOfContents headings={headings} />}
+
+    {
+      hasShowAndTellContent && (
+        <div class="sidebar-show-tell">
+          {tools.length > 0 && (
+            <div class="sidebar-section">
+              <h2 class="sidebar-section-title">Tools mentioned</h2>
+              <ul class="sidebar-tool-list" role="list">
+                {tools.map((tool) => (
+                  <li>
+                    <a href={tool.url} target="_blank" rel="noopener noreferrer" class="sidebar-tool">
+                      <img src={tool.icon} alt="" width="18" height="18" loading="lazy" />
+                      <span>{tool.name}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {members.length > 0 && (
+            <div class="sidebar-section">
+              <h2 class="sidebar-section-title">People on the call</h2>
+              <ul class="sidebar-member-list" role="list">
+                {members.map((member) => {
+                  const href = communityMemberHref(member);
+                  const internal = Boolean(member.github);
+                  return (
+                    <li class="sidebar-member">
+                      {member.photo ? (
+                        <img
+                          class="sidebar-member-photo"
+                          src={member.photo}
+                          alt={member.name}
+                          width="32"
+                          height="32"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span class="sidebar-member-initials" aria-hidden="true">
+                          {(member.initials ?? member.name.slice(0, 1)).toUpperCase()}
+                        </span>
+                      )}
+                      <div class="sidebar-member-info">
+                        {href ? (
+                          <a
+                            class="sidebar-member-name"
+                            href={href}
+                            target={internal ? undefined : "_blank"}
+                            rel={internal ? undefined : "noopener noreferrer"}
+                          >
+                            {member.name}
+                          </a>
+                        ) : (
+                          <span class="sidebar-member-name">{member.name}</span>
+                        )}
+                        {(member.role || member.company) && (
+                          <span class="sidebar-member-role">
+                            {[member.role, member.company].filter(Boolean).join(", ")}
+                          </span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    <SidebarEmailCta />
+  </div>
+</aside>
+
+<style>
+  .blog-sidebar {
+    position: relative;
+  }
+
+  .blog-sidebar-content {
+    position: sticky;
+    top: 100px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .sidebar-show-tell {
+    border: 1px solid var(--pivot-line);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.72);
+    padding: 20px 22px;
+  }
+
+  .sidebar-section {
+    margin-bottom: 18px;
+  }
+
+  .sidebar-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .sidebar-section-title {
+    margin: 0 0 12px;
+    color: var(--pivot-navy);
+    font-size: 14px;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-tool-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sidebar-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 4px 10px 4px 6px;
+    border: 1px solid var(--pivot-line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--pivot-navy);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  .sidebar-tool:hover {
+    border-color: var(--sky-deep);
+  }
+
+  .sidebar-tool:focus-visible {
+    outline: 2px solid var(--sky-deep);
+    outline-offset: 2px;
+  }
+
+  .sidebar-tool img {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    object-fit: contain;
+  }
+
+  .sidebar-member-list {
+    display: grid;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sidebar-member {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sidebar-member-photo,
+  .sidebar-member-initials {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .sidebar-member-initials {
+    display: grid;
+    place-items: center;
+    background: #dceef5;
+    color: #355e49;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .sidebar-member-info {
+    min-width: 0;
+    line-height: 1.3;
+  }
+
+  .sidebar-member-name {
+    display: block;
+    color: var(--pivot-navy);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  a.sidebar-member-name:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .sidebar-member-role {
+    display: block;
+    color: var(--sky-muted);
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>

@@ -1,0 +1,173 @@
+---
+interface Props {
+  id?: string;
+}
+const { id = "sidebar-newsletter" } = Astro.props;
+---
+
+<aside class="sidebar-email-cta" aria-labelledby={`${id}-title`}>
+  <h2 id={`${id}-title`} class="sidebar-email-title">Get the NYC events email</h2>
+  <p class="sidebar-email-desc">
+    Weekly picks from Nick and Lucy for marketers in growth and AI.
+  </p>
+  <form method="post" action="/api/newsletter" class="sidebar-email-form" aria-label="Subscribe to the NYC newsletter">
+    <label for={`${id}-email`} class="sr-only">Email address</label>
+    <input
+      id={`${id}-email`}
+      name="email"
+      type="email"
+      autocomplete="email"
+      maxlength="254"
+      placeholder="you@example.com"
+      required
+    />
+    <button class="button matcha" type="submit">Subscribe</button>
+    <label class="sidebar-email-consent">
+      <input name="consent" type="checkbox" checked required />
+      <span>Send me the weekly events email. I can unsubscribe anytime.</span>
+    </label>
+    <div class="sidebar-email-trap" aria-hidden="true">
+      <label>Website <input name="website" tabindex="-1" autocomplete="off" /></label>
+    </div>
+    <p class="sidebar-email-status" role="status" aria-live="polite"></p>
+  </form>
+</aside>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>(".sidebar-email-form").forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+      const status = form.querySelector<HTMLElement>(".sidebar-email-status")!;
+      const fields = new FormData(form);
+      button.disabled = true;
+      status.textContent = "Sending…";
+      try {
+        const response = await fetch("/api/newsletter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: fields.get("email"),
+            consent: fields.get("consent") === "on",
+            website: fields.get("website"),
+          }),
+        });
+        const result = (await response.json().catch(() => ({
+          error: "This is temporarily unavailable. Please try again shortly.",
+        }))) as { error?: string };
+        if (!response.ok) throw new Error(result.error || "Signup is temporarily unavailable. Please try again shortly.");
+        status.textContent = "Check your inbox to confirm.";
+        form.reset();
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : "Please try again shortly.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script>
+
+<style>
+  .sidebar-email-cta {
+    position: sticky;
+    top: 100px;
+    border: 1px solid var(--pivot-line);
+    border-radius: 20px;
+    background: var(--sky-blue);
+    padding: 22px;
+  }
+
+  .sidebar-email-title {
+    margin: 0 0 8px;
+    color: var(--pivot-navy);
+    font-size: 18px;
+    font-weight: 760;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .sidebar-email-desc {
+    margin: 0 0 16px;
+    color: var(--sky-muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .sidebar-email-form {
+    display: grid;
+    gap: 10px;
+  }
+
+  .sidebar-email-form input[type="email"] {
+    width: 100%;
+    border: 1px solid var(--pivot-line);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.86);
+    padding: 11px 12px;
+    font-size: 14px;
+    color: var(--pivot-navy);
+  }
+
+  .sidebar-email-form input[type="email"]::placeholder {
+    color: rgba(82, 107, 115, 0.6);
+  }
+
+  .sidebar-email-form input[type="email"]:focus {
+    border-color: var(--sky-deep);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(119, 183, 203, 0.2);
+  }
+
+  .sidebar-email-form .button {
+    width: 100%;
+    min-height: 42px;
+    font-size: 14px;
+  }
+
+  .sidebar-email-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--sky-muted);
+    cursor: pointer;
+  }
+
+  .sidebar-email-consent input {
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--pivot-navy);
+  }
+
+  .sidebar-email-status {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--pivot-navy);
+  }
+
+  .sidebar-email-status:empty {
+    display: none;
+  }
+
+  .sidebar-email-trap {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

@@ -1,7 +1,6 @@
 ---
 import BlogAuthors from "@/components/BlogAuthors.astro";
-import PostMembers from "@/components/PostMembers.astro";
-import ToolIcons from "@/components/ToolIcons.astro";
+import BlogSidebar from "@/components/BlogSidebar.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import {
   assertBlogBody,
@@ -23,11 +22,12 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const body = post.body ?? "";
 assertBlogBody(post.id, body);
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 const people = resolveAuthors(post.data.authors);
 const path = blogPostPath(post.id);
 const faq = post.data.faq === false ? [] : extractFaq(body);
 const image = post.data.heroImage ?? "/growth-circuit-og-v4.png";
+const isShowAndTell = post.data.category === "Show & Tell";
 const jsonLd: unknown[] = [
   breadcrumbJsonLd([
     { name: "Home", path: "/" },
@@ -45,9 +45,6 @@ const jsonLd: unknown[] = [
   }),
 ];
 if (faq.length) jsonLd.push(faqPageJsonLd(faq));
-
-const isShowAndTell = post.data.category === "Show & Tell";
-const hasToolsOrMembers = (post.data.tools?.length ?? 0) > 0 || (post.data.members?.length ?? 0) > 0;
 ---
 
 <BaseLayout
@@ -85,106 +82,49 @@ const hasToolsOrMembers = (post.data.tools?.length ?? 0) > 0 || (post.data.membe
       </div>
       <h1>{post.data.title}</h1>
       <BlogAuthors authors={people} />
-      {!isShowAndTell && <ToolIcons tools={post.data.tools ?? []} />}
-      {!isShowAndTell && <PostMembers members={post.data.members ?? []} />}
     </header>
-
-    {isShowAndTell && hasToolsOrMembers ? (
-      <div class="shell blog-post-with-sidebar">
-        <div class="blog-post-main">
-          <div class="blog-post-body">
-            <Content />
-          </div>
-        </div>
-        <aside class="blog-post-sidebar" aria-label="Tools and speakers">
-          {(post.data.tools?.length ?? 0) > 0 && (
-            <section class="sidebar-section">
-              <h2 class="sidebar-heading">Tools we talked about</h2>
-              <ToolIcons tools={post.data.tools ?? []} />
-            </section>
-          )}
-          {(post.data.members?.length ?? 0) > 0 && (
-            <section class="sidebar-section">
-              <h2 class="sidebar-heading">Who was there</h2>
-              <PostMembers members={post.data.members ?? []} />
-            </section>
-          )}
-        </aside>
-      </div>
-    ) : (
-      <div class="shell blog-post-body">
+    <div class="shell blog-post-layout">
+      <div class="blog-post-body">
         <Content />
       </div>
-    )}
-
+      <BlogSidebar
+        headings={headings}
+        tools={post.data.tools}
+        members={post.data.members}
+        isShowAndTell={isShowAndTell}
+      />
+    </div>
     <p class="shell blog-post-back"><a href="/blog">All posts →</a></p>
   </article>
 </BaseLayout>
 
 <style>
-  .blog-post-with-sidebar {
+  .blog-post-layout {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 760px) 280px;
     gap: 48px;
+    align-items: start;
     padding-bottom: 48px;
   }
 
-  @media (min-width: 1024px) {
-    .blog-post-with-sidebar {
-      grid-template-columns: 1fr 320px;
-      gap: 64px;
+  @media (max-width: 1100px) {
+    .blog-post-layout {
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 32px;
     }
   }
 
-  .blog-post-main {
-    min-width: 0;
-  }
-
-  .blog-post-with-sidebar .blog-post-body {
-    max-width: 100%;
-    padding-bottom: 0;
-  }
-
-  .blog-post-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-  }
-
-  @media (min-width: 1024px) {
-    .blog-post-sidebar {
-      position: sticky;
-      top: 24px;
-      align-self: start;
+  @media (max-width: 900px) {
+    .blog-post-layout {
+      grid-template-columns: 1fr;
     }
-  }
 
-  .sidebar-section {
-    padding: 20px;
-    background: #fff;
-    border: 1px solid var(--pivot-line);
-    border-radius: 12px;
-  }
+    .blog-post-layout :global(.blog-sidebar) {
+      order: -1;
+    }
 
-  .sidebar-heading {
-    margin: 0 0 16px;
-    color: var(--pivot-navy);
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-  }
-
-  .sidebar-section :global(.tool-icons) {
-    margin-top: 0;
-  }
-
-  .sidebar-section :global(.blog-author-list) {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .sidebar-section :global(.post-members-list) {
-    margin-top: 0;
+    .blog-post-layout :global(.blog-sidebar-content) {
+      position: static;
+    }
   }
 </style>
