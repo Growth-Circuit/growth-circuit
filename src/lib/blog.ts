@@ -120,7 +120,7 @@ export function resolveTools(slugs: string[]): Tool[] {
 export function resolvePostMembers(ids: string[]): CommunityMemberRef[] {
   return ids.map((id) => {
     const member = communityMemberById(id);
-    if (!member) throw new Error(`Unknown member id "${id}". Add them to src/data/featured-community.ts or src/content/members.`);
+    if (!member) throw new Error(`Unknown member id "${id}". Add them to src/data/blog-attendees.ts, src/data/featured-community.ts, or src/content/members.`);
     return member;
   });
 }

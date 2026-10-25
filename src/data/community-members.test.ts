@@ -1,10 +1,13 @@
+import { readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { blogAttendees } from "./blog-attendees";
 import {
   communityMemberById,
   communityMemberHref,
   slugifyName,
   unknownCommunityMemberIds,
 } from "./community-members";
+import { featuredMembers } from "./featured-community";
 
 describe("blog post attendee references", () => {
   it("slugifies names into stable ids", () => {
@@ -30,5 +33,30 @@ describe("blog post attendee references", () => {
     expect(communityMemberById("someone-new")).toBeNull();
     expect(unknownCommunityMemberIds(["andy-mccutcheon", "someone-new"])).toEqual(["someone-new"]);
     expect(unknownCommunityMemberIds(["andy-mccutcheon", "nick-lafferty"])).toEqual([]);
+  });
+
+  it("links Oct 23 attendees to LinkedIn and does not publish a profile", () => {
+    const featuredNames = new Set(featuredMembers.map((member) => member.name));
+    const profileFiles = readdirSync(new URL("../content/members/", import.meta.url))
+      .filter((name) => name.endsWith(".json"))
+      .sort();
+    expect(profileFiles).toEqual(["lucy-jane-hoyle.json", "nicklafferty.json"]);
+
+    for (const attendee of blogAttendees) {
+      const member = communityMemberById(attendee.id);
+      expect(member?.name).toBe(attendee.name);
+      expect(member?.github).toBeUndefined();
+      expect(member?.photo).toBeUndefined();
+      expect(member?.linkedin).toBe(attendee.linkedin);
+      expect(communityMemberHref(member!)).toBe(attendee.linkedin);
+      expect(featuredNames.has(attendee.name)).toBe(false);
+    }
+
+    expect(communityMemberById("david-ronen")?.company).toBeUndefined();
+    expect(communityMemberById("felicia-baskin")?.company).toBeUndefined();
+    expect(communityMemberById("hayley-brunetto")?.role).toBeUndefined();
+    expect(communityMemberById("hayley-brunetto")?.company).toBeUndefined();
+    expect(communityMemberById("lucy-hoyle")?.github).toBe("lucy-jane-hoyle");
+    expect(communityMemberHref(communityMemberById("lucy-hoyle")!)).toBe("/people/lucy-jane-hoyle");
   });
 });

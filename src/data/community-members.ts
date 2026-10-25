@@ -1,19 +1,24 @@
+import { blogAttendees } from "./blog-attendees";
 import { featuredMembers } from "./featured-community";
 
 /**
  * Attendees named in blog posts, rendered via `PostMembers.astro` the same
  * way `src/data/authors.ts` backs the post byline.
  *
- * The id space is a slug of the person's name (`"andy-mccutcheon"`) so a
- * post can reference someone from `featured-community.ts` even when they
- * have no `src/content/members` profile. Only people already listed in
- * `featured-community.ts` or with a profile in `src/content/members` are
- * valid ids: this file never invents a new attendee, photo, or bio.
+ * Valid ids come from three places:
+ * - `featured-community.ts` (homepage cards; slug of the person's name)
+ * - `src/content/members` (a real `/people/<github>` profile)
+ * - `blog-attendees.ts` (post-only names with a LinkedIn URL and no GitHub)
+ *
+ * Blog attendees are not merged into the homepage list or the member
+ * collection. An id that already belongs to a featured member or a profile
+ * is left as-is, so this file never overwrites a photo, company, or link.
  */
 export type CommunityMemberRef = {
   id: string;
   name: string;
   company?: string;
+  role?: string;
   detail?: string;
   photo?: string;
   initials?: string;
@@ -72,6 +77,20 @@ for (const profile of profiles) {
   const id = slugifyName(profile.name);
   if (registry.has(id)) continue;
   registry.set(id, { id, name: profile.name, photo: profile.photo, linkedin: profile.linkedin, github: profile.github });
+}
+
+for (const attendee of blogAttendees) {
+  if (registry.has(attendee.id)) {
+    throw new Error(`Blog attendee id "${attendee.id}" is already a featured member or a member profile.`);
+  }
+  registry.set(attendee.id, {
+    id: attendee.id,
+    name: attendee.name,
+    company: attendee.company,
+    role: attendee.role,
+    initials: attendee.initials,
+    linkedin: attendee.linkedin,
+  });
 }
 
 export const communityMembers = [...registry.values()];

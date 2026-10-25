@@ -19,7 +19,15 @@ tools:
   - webflow
   - wispr-flow
 members:
-  - andy-mccutcheon
+  - nick-lafferty
+  - lucy-hoyle
+  - andy-dabinett
+  - david-ronen
+  - rohit-khanna
+  - will-leatherman
+  - felicia-baskin
+  - daphne-earp-hoppenot
+  - hayley-brunetto
 ---
 
 Show & Tell is our casual Friday call. Growth Circuit members show what they're building with AI and talk through what's working, and anyone can bring something but nobody has to.

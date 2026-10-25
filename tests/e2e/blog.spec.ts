@@ -203,18 +203,85 @@ test("the Oct 23 Show & Tell post renders tool icons and a member card at the to
   }
   await expect(page.getByRole("link", { name: "Notion" })).toHaveAttribute("href", "https://www.notion.so");
 
-  const memberCard = page.locator(".post-members-list .blog-author");
-  await expect(memberCard).toHaveCount(1);
-  await expect(memberCard.getByRole("link", { name: "Andy McCutcheon" })).toHaveAttribute(
-    "href",
-    "https://www.linkedin.com/in/andysmccutcheon/",
-  );
-  await expect(memberCard.getByText("Toast")).toBeVisible();
+  const memberCards = page.locator(".post-members-list .blog-author");
+  const members = [
+    ["Nick Lafferty", "/people/nicklafferty"],
+    ["Lucy Hoyle", "/people/lucy-jane-hoyle"],
+    ["Andy Dabinett", "https://www.linkedin.com/in/andy-dabinett"],
+    ["David Ronen", "https://www.linkedin.com/in/david-ronen"],
+    ["Rohit Khanna", "https://www.linkedin.com/in/rohitkkhanna"],
+    ["Will Leatherman", "https://www.linkedin.com/in/willleatherman"],
+    ["Felicia Baskin", "https://www.linkedin.com/in/feliciabaskin"],
+    ["Daphne Earp Hoppenot", "https://www.linkedin.com/in/daphneearp"],
+    ["Hayley Brunetto", "https://www.linkedin.com/in/hayley-brunetto/"],
+  ] as const;
+  await expect(memberCards).toHaveCount(members.length);
+  for (const [index, [name, href]] of members.entries()) {
+    const card = memberCards.nth(index);
+    await expect(card.getByRole("link", { name, exact: true })).toHaveAttribute("href", href);
+  }
+  await expect(memberCards.getByText("Andy McCutcheon")).toHaveCount(0);
+  await expect(memberCards.getByText("Technical PM, Brand Networks")).toBeVisible();
+  await expect(memberCards.getByText("Agentic Growth Architect")).toBeVisible();
+  await expect(memberCards.filter({ hasText: "Hayley Brunetto" }).locator(".blog-author-role")).toHaveCount(0);
+  await expect(memberCards.filter({ hasText: "David Ronen" }).locator(".blog-author-role")).toHaveText("Agentic Growth Architect");
+  await expect(memberCards.filter({ hasText: "Felicia Baskin" }).locator(".blog-author-role")).toHaveText("Content and SEO leader");
 
   // The tool icon row and member card sit at the top, in the post header, not lower in the body.
   const header = page.locator(".blog-post-header");
   await expect(header.locator(".tool-icon").first()).toBeVisible();
   await expect(header.locator(".post-members-list").first()).toBeVisible();
+});
+
+test("Oct 23 attendees are not listed on the homepage, the member directory, or the sitemap", async ({ page, request }) => {
+  const names = [
+    "Andy Dabinett",
+    "David Ronen",
+    "Rohit Khanna",
+    "Will Leatherman",
+    "Felicia Baskin",
+    "Daphne Earp Hoppenot",
+    "Hayley Brunetto",
+  ];
+  const handles = [
+    "andy-dabinett",
+    "david-ronen",
+    "rohit-khanna",
+    "will-leatherman",
+    "felicia-baskin",
+    "daphne-earp-hoppenot",
+    "hayley-brunetto",
+  ];
+
+  await page.goto("/");
+  for (const name of names) {
+    await expect(page.locator("#members").getByRole("heading", { name, exact: true })).toHaveCount(0);
+  }
+  await expect(page.locator("#members").getByRole("heading", { name: "Andy McCutcheon", exact: true })).toBeVisible();
+
+  await page.goto("/people");
+  for (const name of names) {
+    await expect(page.getByRole("heading", { name, exact: true })).toHaveCount(0);
+  }
+  await expect(page.getByRole("heading", { name: "Nick Lafferty", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lucy Hoyle", exact: true })).toBeVisible();
+
+  for (const handle of handles) {
+    expect((await request.get(`/people/${handle}`, { maxRedirects: 0 })).status()).toBe(404);
+  }
+
+  const index = await request.get("/sitemap-index.xml");
+  expect(index.ok()).toBe(true);
+  let combined = await index.text();
+  const children = [...combined.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname);
+  for (const pathname of children) {
+    const child = await request.get(pathname);
+    expect(child.ok()).toBe(true);
+    combined += await child.text();
+  }
+  for (const handle of handles) {
+    expect(combined).not.toContain(`/people/${handle}`);
+  }
 });
 
 test("the tool icon row and member card leave an existing post unchanged", async ({ page }) => {

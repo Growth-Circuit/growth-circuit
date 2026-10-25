@@ -54,7 +54,7 @@ export const blogPostSchema = z
       if (unknownCommunityMemberIds([id]).length) {
         ctx.addIssue({
           code: "custom",
-          message: `Unknown member id "${id}". Add them to src/data/featured-community.ts or src/content/members.`,
+          message: `Unknown member id "${id}". Add them to src/data/blog-attendees.ts, src/data/featured-community.ts, or src/content/members.`,
           path: ["members", index],
         });
       }

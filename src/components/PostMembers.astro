@@ -37,7 +37,9 @@ const members = resolvePostMembers(ids);
                   <span class="blog-author-name">{member.name}</span>
                 )}
               </p>
-              {member.company && <p class="blog-author-role">{member.company}</p>}
+              {(member.role || member.company) && (
+                <p class="blog-author-role">{[member.role, member.company].filter(Boolean).join(", ")}</p>
+              )}
             </div>
           </li>
         );

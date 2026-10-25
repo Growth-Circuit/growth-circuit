@@ -130,7 +130,18 @@ describe("blog posts", () => {
       "webflow",
       "wispr-flow",
     ]);
-    expect(data.members).toEqual(["andy-mccutcheon"]);
+    expect(data.members).toEqual([
+      "nick-lafferty",
+      "lucy-hoyle",
+      "andy-dabinett",
+      "david-ronen",
+      "rohit-khanna",
+      "will-leatherman",
+      "felicia-baskin",
+      "daphne-earp-hoppenot",
+      "hayley-brunetto",
+    ]);
+    expect(data.members).not.toContain("andy-mccutcheon");
     expect(content.trimStart().startsWith("Show & Tell is our casual Friday call.")).toBe(true);
     expect(assertBlogBody("show-and-tell-proactive-agents", content)).toBeUndefined();
   });
