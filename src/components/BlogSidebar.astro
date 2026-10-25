@@ -1,0 +1,207 @@
+---
+import TableOfContents from "./TableOfContents.astro";
+import SidebarEmailCta from "./SidebarEmailCta.astro";
+import { resolveTools } from "@/lib/blog";
+import { communityMemberHref } from "@/data/community-members";
+import { resolvePostMembers } from "@/lib/blog";
+
+interface HeadingItem {
+  slug: string;
+  text: string;
+  depth: number;
+}
+
+interface Props {
+  headings: HeadingItem[];
+  tools?: string[];
+  members?: string[];
+  isShowAndTell?: boolean;
+}
+
+const { headings, tools: toolSlugs = [], members: memberIds = [], isShowAndTell = false } = Astro.props;
+const tools = resolveTools(toolSlugs);
+const members = resolvePostMembers(memberIds);
+const hasShowAndTellContent = isShowAndTell && (tools.length > 0 || members.length > 0);
+---
+
+<aside class="blog-post-sidebar" aria-label="Article navigation and resources">
+  <div class="blog-sidebar-content">
+    {headings.filter((h) => h.depth === 2).length > 0 && <TableOfContents headings={headings} />}
+
+    {
+      hasShowAndTellContent && (
+        <div class="sidebar-show-tell">
+          {tools.length > 0 && (
+            <section class="sidebar-section">
+              <h2 class="sidebar-heading">Tools we talked about</h2>
+              <ul class="tool-icons" role="list">
+                {tools.map((tool) => (
+                  <li>
+                    <a href={tool.url} target="_blank" rel="noopener noreferrer" class="tool-icon">
+                      <img src={tool.icon} alt="" width="18" height="18" loading="lazy" />
+                      <span>{tool.name}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {members.length > 0 && (
+            <section class="sidebar-section">
+              <h2 class="sidebar-heading">Who was there</h2>
+              <ul class="post-members-list blog-author-list" role="list">
+                {members.map((member) => {
+                  const href = communityMemberHref(member);
+                  const internal = Boolean(member.github);
+                  return (
+                    <li class="blog-author">
+                      {member.photo ? (
+                        <img
+                          class="blog-author-photo"
+                          src={member.photo}
+                          alt={member.name}
+                          width="48"
+                          height="48"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span class="blog-author-photo post-member-initials" aria-hidden="true">
+                          {(member.initials ?? member.name.slice(0, 1)).toUpperCase()}
+                        </span>
+                      )}
+                      <div class="blog-author-copy">
+                        {href ? (
+                          <p class="blog-author-name-line">
+                            <a
+                              class="blog-author-name"
+                              href={href}
+                              target={internal ? undefined : "_blank"}
+                              rel={internal ? undefined : "noopener noreferrer"}
+                            >
+                              {member.name}
+                            </a>
+                          </p>
+                        ) : (
+                          <p class="blog-author-name-line">
+                            <span class="blog-author-name">{member.name}</span>
+                          </p>
+                        )}
+                        {(member.role || member.company) && (
+                          <p class="blog-author-role">
+                            {[member.role, member.company].filter(Boolean).join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+        </div>
+      )
+    }
+
+    <SidebarEmailCta />
+  </div>
+</aside>
+
+<style>
+  .blog-post-sidebar {
+    position: relative;
+  }
+
+  .blog-sidebar-content {
+    position: sticky;
+    top: 100px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .sidebar-show-tell {
+    border: 1px solid var(--pivot-line);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.72);
+    padding: 20px 22px;
+  }
+
+  .sidebar-section {
+    margin-bottom: 18px;
+  }
+
+  .sidebar-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .sidebar-heading {
+    margin: 0 0 16px;
+    color: var(--pivot-navy);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-show-tell .tool-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sidebar-show-tell .tool-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 4px 10px 4px 6px;
+    border: 1px solid var(--pivot-line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--pivot-navy);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  .sidebar-show-tell .tool-icon:hover {
+    border-color: var(--sky-deep);
+  }
+
+  .sidebar-show-tell .tool-icon:focus-visible {
+    outline: 2px solid var(--sky-deep);
+    outline-offset: 2px;
+  }
+
+  .sidebar-show-tell .tool-icon img {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    object-fit: contain;
+  }
+
+  .sidebar-show-tell .post-members-list {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 0;
+  }
+
+  .sidebar-show-tell .blog-author-photo {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+  }
+
+  .sidebar-show-tell .post-member-initials {
+    display: grid;
+    place-items: center;
+    background: #dceef5;
+    color: #355e49;
+    font-size: 17px;
+    font-weight: 700;
+  }
+</style>

@@ -3952,8 +3952,6 @@ a.blog-author-name:hover {
 }
 
 .blog-post-body {
-  max-width: min(760px, calc(100% - 32px));
-  padding-bottom: 48px;
   color: var(--sky-muted);
   font-size: 18px;
   line-height: 1.7;
