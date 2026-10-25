@@ -101,14 +101,16 @@ const hasShowAndTellContent = isShowAndTell && (tools.length > 0 || members.leng
         </div>
       )
     }
-
-    <SidebarEmailCta />
   </div>
+  <SidebarEmailCta />
 </aside>
 
 <style>
   .blog-post-sidebar {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
   }
 
   .blog-sidebar-content {
