@@ -46,7 +46,7 @@ describe("blog post attendee references", () => {
       const member = communityMemberById(attendee.id);
       expect(member?.name).toBe(attendee.name);
       expect(member?.github).toBeUndefined();
-      expect(member?.photo).toBeUndefined();
+      expect(member?.photo).toBe(`/community/members/${attendee.id}.jpg`);
       expect(member?.linkedin).toBe(attendee.linkedin);
       expect(communityMemberHref(member!)).toBe(attendee.linkedin);
       expect(featuredNames.has(attendee.name)).toBe(false);

@@ -205,20 +205,21 @@ test("the Oct 23 Show & Tell post renders tool icons and a member card at the to
 
   const memberCards = page.locator(".post-members-list .blog-author");
   const members = [
-    ["Nick Lafferty", "/people/nicklafferty"],
-    ["Lucy Hoyle", "/people/lucy-jane-hoyle"],
-    ["Andy Dabinett", "https://www.linkedin.com/in/andy-dabinett"],
-    ["David Ronen", "https://www.linkedin.com/in/david-ronen"],
-    ["Rohit Khanna", "https://www.linkedin.com/in/rohitkkhanna"],
-    ["Will Leatherman", "https://www.linkedin.com/in/willleatherman"],
-    ["Felicia Baskin", "https://www.linkedin.com/in/feliciabaskin"],
-    ["Daphne Earp Hoppenot", "https://www.linkedin.com/in/daphneearp"],
-    ["Hayley Brunetto", "https://www.linkedin.com/in/hayley-brunetto/"],
+    ["Nick Lafferty", "/people/nicklafferty", "/community/members/nick-lafferty.jpeg"],
+    ["Lucy Hoyle", "/people/lucy-jane-hoyle", "/community/members/lucy-hoyle.png"],
+    ["Andy Dabinett", "https://www.linkedin.com/in/andy-dabinett", "/community/members/andy-dabinett.jpg"],
+    ["David Ronen", "https://www.linkedin.com/in/david-ronen", "/community/members/david-ronen.jpg"],
+    ["Rohit Khanna", "https://www.linkedin.com/in/rohitkkhanna", "/community/members/rohit-khanna.jpg"],
+    ["Will Leatherman", "https://www.linkedin.com/in/willleatherman", "/community/members/will-leatherman.jpg"],
+    ["Felicia Baskin", "https://www.linkedin.com/in/feliciabaskin", "/community/members/felicia-baskin.jpg"],
+    ["Daphne Earp Hoppenot", "https://www.linkedin.com/in/daphneearp", "/community/members/daphne-earp-hoppenot.jpg"],
+    ["Hayley Brunetto", "https://www.linkedin.com/in/hayley-brunetto/", "/community/members/hayley-brunetto.jpg"],
   ] as const;
   await expect(memberCards).toHaveCount(members.length);
-  for (const [index, [name, href]] of members.entries()) {
+  for (const [index, [name, href, photo]] of members.entries()) {
     const card = memberCards.nth(index);
     await expect(card.getByRole("link", { name, exact: true })).toHaveAttribute("href", href);
+    await expect(card.getByRole("img", { name, exact: true })).toHaveAttribute("src", photo);
   }
   await expect(memberCards.getByText("Andy McCutcheon")).toHaveCount(0);
   await expect(memberCards.getByText("Technical PM, Brand Networks")).toBeVisible();

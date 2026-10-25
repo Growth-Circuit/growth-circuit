@@ -89,6 +89,7 @@ for (const attendee of blogAttendees) {
     company: attendee.company,
     role: attendee.role,
     initials: attendee.initials,
+    photo: attendee.photo,
     linkedin: attendee.linkedin,
   });
 }
