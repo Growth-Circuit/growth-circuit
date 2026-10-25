@@ -9,13 +9,14 @@ test("the newsletter archive lists published issues and signup", async ({ page }
   await expect(page.locator(".listing-hero > p:not(.eyebrow)")).toHaveText(
     "A short, highly curated weekly email of the best NYC and virtual events for marketers in growth and AI, sourced by Nick Lafferty from Profound and Lucy Hoyle from Carta. We also host our own events :)",
   );
+  await expect(page.getByRole("heading", { name: "NYC marketing events 10/25" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/18" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/11" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/5" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 9/28" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 9/21" })).toBeVisible();
   const issueLinks = page.getByRole("link", { name: /Read this issue/ });
-  const issueHrefs = ["/newsletter/2026-10-18", "/newsletter/2026-10-11", "/newsletter/2026-10-04", "/newsletter/2026-09-28", "/newsletter/2026-09-21"];
+  const issueHrefs = ["/newsletter/2026-10-25", "/newsletter/2026-10-18", "/newsletter/2026-10-11", "/newsletter/2026-10-04", "/newsletter/2026-09-28", "/newsletter/2026-09-21"];
   await expect(issueLinks).toHaveCount(issueHrefs.length);
   for (const [index, href] of issueHrefs.entries()) {
     await expect(issueLinks.nth(index)).toHaveAttribute("href", href);
@@ -89,6 +90,19 @@ test("published issues render and unpublished slugs stay unpublished", async ({ 
     "href",
     "https://luma.com/pa7cs7uv",
   );
+
+  const oct25 = await page.goto("/newsletter/2026-10-25/");
+  expect(oct25?.ok()).toBe(true);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("NYC marketing events 10/25");
+  await expect(page.getByRole("heading", { name: /Upcoming Growth Circuit Events/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cool NYC Events This Week" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Growth Circuit Friendsgiving" })).toHaveAttribute(
+    "href",
+    "https://luma.com/0a9ihccs",
+  );
+  await expect(
+    page.getByRole("link", { name: "Wine Tasting With Webflow & BX Studio | NYC Tech Marketers" }),
+  ).toHaveAttribute("href", "https://luma.com/bx-shbl");
 
   const missing = await page.goto("/newsletter/2099-01-01/");
   expect(missing?.status()).toBe(404);
