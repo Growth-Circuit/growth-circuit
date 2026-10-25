@@ -14,6 +14,8 @@ import {
   postsBelowFeatured,
   renderBlogRss,
   resolveAuthors,
+  resolvePostMembers,
+  resolveTools,
   selectFeaturedPost,
   sortPostsNewestFirst,
   type BlogListItem,
@@ -21,6 +23,7 @@ import {
 import { blogPostSchema } from "./blog-schema";
 
 const postFile = new URL("../content/blog/how-we-run-growth-circuit-with-grok-bot.md", import.meta.url);
+const showAndTellFile = new URL("../content/blog/show-and-tell-proactive-agents.md", import.meta.url);
 
 const validPost = {
   title: "How We Run Growth Circuit With Grok Bot",
@@ -72,6 +75,64 @@ describe("blog posts", () => {
     });
     expect(parsed.publishDate).toBe("2026-10-07");
     expect(parsed.authors).toEqual(["nick", "lucy"]);
+  });
+
+  it("accepts a post with no tools or members, and rejects unknown ones", () => {
+    expect(blogPostSchema.safeParse(validPost).success).toBe(true);
+    expect(blogPostSchema.parse(validPost).tools).toBeUndefined();
+    expect(blogPostSchema.parse(validPost).members).toBeUndefined();
+
+    const withKnown = blogPostSchema.safeParse({ ...validPost, tools: ["notion"], members: ["andy-mccutcheon"] });
+    expect(withKnown.success).toBe(true);
+    if (withKnown.success) {
+      expect(withKnown.data.tools).toEqual(["notion"]);
+      expect(withKnown.data.members).toEqual(["andy-mccutcheon"]);
+    }
+
+    const unknownTool = blogPostSchema.safeParse({ ...validPost, tools: ["not-a-real-tool"] });
+    expect(unknownTool.success).toBe(false);
+    if (!unknownTool.success) {
+      expect(unknownTool.error.issues[0].message).toMatch(/Unknown tool slug/);
+    }
+
+    const unknownMember = blogPostSchema.safeParse({ ...validPost, members: ["not-a-real-person"] });
+    expect(unknownMember.success).toBe(false);
+    if (!unknownMember.success) {
+      expect(unknownMember.error.issues[0].message).toMatch(/Unknown member id/);
+    }
+  });
+
+  it("resolves tool and member references for the post-top icon row", () => {
+    const [notion] = resolveTools(["notion"]);
+    expect(notion.name).toBe("Notion");
+    expect(notion.icon).toBe("/tool-icons/notion.svg");
+    expect(() => resolveTools(["nobody"])).toThrow(/Unknown tool slug/);
+
+    const [andy] = resolvePostMembers(["andy-mccutcheon"]);
+    expect(andy.name).toBe("Andy McCutcheon");
+    expect(andy.github).toBeUndefined();
+    expect(andy.linkedin).toBe("https://www.linkedin.com/in/andysmccutcheon/");
+    expect(() => resolvePostMembers(["nobody"])).toThrow(/Unknown member id/);
+  });
+
+  it("reads the Oct 23 Show & Tell post's new tools and members frontmatter", () => {
+    const source = readFileSync(showAndTellFile, "utf8");
+    const { frontmatter, content } = parseFrontmatter(source);
+    const data = blogPostSchema.parse(frontmatter);
+    expect(data.tools).toEqual([
+      "grok-bot",
+      "jev",
+      "notion",
+      "hermes",
+      "claude",
+      "instinct",
+      "openrouter",
+      "webflow",
+      "wispr-flow",
+    ]);
+    expect(data.members).toEqual(["andy-mccutcheon"]);
+    expect(content.trimStart().startsWith("Show & Tell is our casual Friday call.")).toBe(true);
+    expect(assertBlogBody("show-and-tell-proactive-agents", content)).toBeUndefined();
   });
 
   it("features the newest featured post and still works with no posts", () => {

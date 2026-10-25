@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const postPath = "/blog/how-we-run-growth-circuit-with-grok-bot";
 const title = "How We Run Growth Circuit With Grok Bot";
 
-test("the blog features the published post once", async ({ page }) => {
+test("the blog features the published post once and lists the rest", async ({ page }) => {
   const response = await page.goto("/blog");
 
   expect(response?.ok()).toBe(true);
@@ -27,8 +27,16 @@ test("the blog features the published post once", async ({ page }) => {
     "Growth Circuit runs on a small team of Grok Bot specialists plus one supervisor bot. Here's what each bot does and what Lucy and I still decide.",
   );
   await expect(featured.locator(".keep-together")).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "All posts" })).toHaveCount(0);
+
+  const listed = page.getByRole("region", { name: "All posts" });
+  await expect(listed).toBeVisible();
   await expect(page.getByText("No posts yet.")).toHaveCount(0);
+  const showAndTellTitle = "Show & Tell: Proactive Agents, Jev and Agent Marketing";
+  await expect(listed.getByRole("heading", { name: showAndTellTitle })).toBeVisible();
+  await expect(listed.getByRole("link", { name: new RegExp(showAndTellTitle) })).toHaveAttribute(
+    "href",
+    "/blog/show-and-tell-proactive-agents",
+  );
 });
 
 test("the post renders the byline, formatting, and structured data", async ({ page }) => {
@@ -166,6 +174,53 @@ test("post images are served as pngs and the old screenshot URLs redirect", asyn
     expect(response.status()).toBe(301);
     expect(response.headers().location).toContain(to);
   }
+});
+
+test("the Oct 23 Show & Tell post renders tool icons and a member card at the top", async ({ page }) => {
+  const showAndTellPath = "/blog/show-and-tell-proactive-agents";
+  const response = await page.goto(showAndTellPath);
+  expect(response?.ok()).toBe(true);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Show & Tell: Proactive Agents, Jev and Agent Marketing",
+  );
+
+  const toolIcons = page.locator(".tool-icon");
+  const toolNames = [
+    "Grok Bot",
+    "Jev",
+    "Notion",
+    "Hermes",
+    "Claude",
+    "Instinct",
+    "OpenRouter",
+    "Webflow",
+    "Wispr Flow",
+  ];
+  await expect(toolIcons).toHaveCount(toolNames.length);
+  for (const [index, name] of toolNames.entries()) {
+    await expect(toolIcons.nth(index)).toHaveAccessibleName(name);
+    await expect(toolIcons.nth(index).locator("img")).toHaveAttribute("src", new RegExp(`^/tool-icons/.+\\.(svg|png)$`));
+  }
+  await expect(page.getByRole("link", { name: "Notion" })).toHaveAttribute("href", "https://www.notion.so");
+
+  const memberCard = page.locator(".post-members-list .blog-author");
+  await expect(memberCard).toHaveCount(1);
+  await expect(memberCard.getByRole("link", { name: "Andy McCutcheon" })).toHaveAttribute(
+    "href",
+    "https://www.linkedin.com/in/andysmccutcheon/",
+  );
+  await expect(memberCard.getByText("Toast")).toBeVisible();
+
+  // The tool icon row and member card sit at the top, in the post header, not lower in the body.
+  const header = page.locator(".blog-post-header");
+  await expect(header.locator(".tool-icon").first()).toBeVisible();
+  await expect(header.locator(".post-members-list").first()).toBeVisible();
+});
+
+test("the tool icon row and member card leave an existing post unchanged", async ({ page }) => {
+  await page.goto(postPath);
+  await expect(page.locator(".tool-icon")).toHaveCount(0);
+  await expect(page.locator(".post-members-list")).toHaveCount(0);
 });
 
 test("the blog feed and sitemap include the post", async ({ request }) => {
