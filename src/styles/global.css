@@ -1829,6 +1829,11 @@ h1 {
   overflow: hidden;
 }
 
+/* Clip blog overflow without creating a scroll container that traps the sticky CTA. */
+.pivot-page.blog-page main {
+  overflow: clip;
+}
+
 .pivot-header {
   position: relative;
   z-index: 5;

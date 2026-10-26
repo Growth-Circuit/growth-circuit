@@ -3,6 +3,32 @@ import { expect, test } from "@playwright/test";
 const postPath = "/blog/how-we-run-growth-circuit-with-grok-bot";
 const title = "How We Run Growth Circuit With Grok Bot";
 
+test("the sidebar email CTA stays visible through the article on desktop", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/blog/show-and-tell-proactive-agents/");
+  const cta = page.locator(".sidebar-email-cta");
+  const initial = await cta.boundingBox();
+  expect(initial).not.toBeNull();
+
+  for (const offset of [200, 1000, 2500]) {
+    await page.evaluate((y) => window.scrollTo(0, y), initial!.y + offset);
+    await expect.poll(async () => (await cta.boundingBox())?.y).toBe(100);
+    await expect(cta.getByRole("button", { name: "Subscribe" })).toBeInViewport();
+  }
+
+  await page.locator(".blog-post-body").evaluate((body) => {
+    window.scrollTo(0, body.getBoundingClientRect().bottom + window.scrollY - window.innerHeight);
+  });
+  await expect(cta.getByRole("button", { name: "Subscribe" })).toBeInViewport();
+});
+
+test("the sidebar email CTA stays in normal flow on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/blog/show-and-tell-proactive-agents/");
+  await expect(page.locator(".sidebar-email-cta")).toHaveCSS("position", "static");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});
+
 test("the blog lists posts newest-first without a featured hero when the newest post is not featured", async ({ page }) => {
   const response = await page.goto("/blog");
 
