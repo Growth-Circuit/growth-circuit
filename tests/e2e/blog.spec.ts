@@ -13,13 +13,13 @@ test("the sidebar email CTA stays visible through the article on desktop", async
   for (const offset of [200, 1000, 2500]) {
     await page.evaluate((y) => window.scrollTo(0, y), initial!.y + offset);
     await expect.poll(async () => (await cta.boundingBox())?.y).toBe(100);
-    await expect(cta.getByRole("button", { name: "Subscribe" })).toBeInViewport();
+    await expect(cta.getByRole("button", { name: "Email me the events" })).toBeInViewport();
   }
 
   await page.locator(".blog-post-body").evaluate((body) => {
     window.scrollTo(0, body.getBoundingClientRect().bottom + window.scrollY - window.innerHeight);
   });
-  await expect(cta.getByRole("button", { name: "Subscribe" })).toBeInViewport();
+  await expect(cta.getByRole("button", { name: "Email me the events" })).toBeInViewport();
 });
 
 test("the sidebar email CTA stays in normal flow on mobile", async ({ page }) => {
