@@ -13,13 +13,15 @@ test("the newsletter archive lists published issues and signup", async ({ page }
     "href",
     "/jobs",
   );
+  await expect(page.getByRole("heading", { name: "NYC marketing events this week" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NYC marketing events 10/25" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/18" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/11" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/5" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 9/28" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 9/21" })).toBeVisible();
   const issueLinks = page.getByRole("link", { name: /Read this issue/ });
-  const issueHrefs = ["/newsletter/2026-10-18", "/newsletter/2026-10-11", "/newsletter/2026-10-04", "/newsletter/2026-09-28", "/newsletter/2026-09-21"];
+  const issueHrefs = ["/newsletter/2026-11-02", "/newsletter/2026-10-25", "/newsletter/2026-10-18", "/newsletter/2026-10-11", "/newsletter/2026-10-04", "/newsletter/2026-09-28", "/newsletter/2026-09-21"];
   await expect(issueLinks).toHaveCount(issueHrefs.length);
   for (const [index, href] of issueHrefs.entries()) {
     await expect(issueLinks.nth(index)).toHaveAttribute("href", href);
@@ -93,6 +95,47 @@ test("published issues render and unpublished slugs stay unpublished", async ({ 
     "href",
     "https://luma.com/pa7cs7uv",
   );
+
+  const oct25 = await page.goto("/newsletter/2026-10-25/");
+  expect(oct25?.ok()).toBe(true);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("NYC marketing events 10/25");
+  await expect(page.getByRole("heading", { name: /Upcoming Growth Circuit Events/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cool NYC Events This Week" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Growth Circuit Friendsgiving" })).toHaveAttribute(
+    "href",
+    "https://luma.com/0a9ihccs",
+  );
+  await expect(
+    page.getByRole("link", { name: "Wine Tasting With Webflow & BX Studio | NYC Tech Marketers" }),
+  ).toHaveAttribute("href", "https://luma.com/bx-shbl");
+
+  const nov2 = await page.goto("/newsletter/2026-11-02/");
+  expect(nov2?.ok()).toBe(true);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("NYC marketing events this week");
+  await expect(page.getByRole("heading", { name: "Upcoming Growth Circuit Events", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NYC Events This Week", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Coming up", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Best thing I read this week", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Growth Circuit Friendsgiving" })).toHaveAttribute(
+    "href",
+    "https://luma.com/0a9ihccs",
+  );
+  await expect(page.getByRole("link", { name: "Behind the Brands: A Fireside Chat with Emma Grede" })).toHaveAttribute(
+    "href",
+    "https://luma.com/0xg3ugkh",
+  );
+  await expect(
+    page.getByRole("link", { name: "Brainlabs x TikTok: What's Next for Creators & Brands" }),
+  ).toHaveAttribute("href", "https://luma.com/jky6ghuj");
+  await expect(page.locator(".newsletter-issue-body")).toContainText("5:30–8:30pm");
+  await expect(page.locator(".newsletter-issue-body")).toContainText("2–5pm —");
+  const hrefs = await page.locator("a").evaluateAll((links) => links.map((link) => link.getAttribute("href") || ""));
+  expect(hrefs.join("\n")).not.toMatch(/chat\.whatsapp\.com|wa\.me|loops\.so|app\.loops/i);
+  await expect(page.locator(".newsletter-issue-body")).not.toContainText(/draft/i);
+  const growthCircuitLinks = page.locator(".newsletter-issue-body").getByRole("link", { name: "Growth Circuit", exact: true });
+  await expect(growthCircuitLinks).toHaveCount(2);
+  await expect(growthCircuitLinks.nth(0)).toHaveAttribute("href", "https://growthcircuit.club/");
+  await expect(growthCircuitLinks.nth(1)).toHaveAttribute("href", "https://growthcircuit.club/");
 
   const missing = await page.goto("/newsletter/2099-01-01/");
   expect(missing?.status()).toBe(404);

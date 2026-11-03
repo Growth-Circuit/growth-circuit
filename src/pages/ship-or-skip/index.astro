@@ -1,0 +1,744 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NewsletterSignup from "@/components/NewsletterSignup.astro";
+import {
+  rubricAreas,
+  gtmTasks,
+  modelScorecards,
+  modelReviews,
+  comingSoonModels,
+  formatRunDate,
+  formatCost,
+  formatAgreement,
+} from "@/data/ship-or-skip";
+import { breadcrumbJsonLd } from "@/lib/seo";
+
+export const prerender = true;
+
+const description = "Ship or Skip: AI model evals for GTM tasks. A verdict in 10 seconds on which model to ship for which marketing task.";
+const sortedReviews = [...modelReviews].sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
+---
+
+<BaseLayout
+  title="Ship or Skip"
+  description={description}
+  path="/ship-or-skip"
+  bodyClass="sky-page pivot-page"
+  jsonLd={[breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Ship or Skip", path: "/ship-or-skip" }])]}
+>
+  <section class="shell sos-hero">
+    <p class="eyebrow">Model evals for GTM</p>
+    <h1>Ship or Skip</h1>
+    <p class="sos-hero-lead">
+      AI gets me 90% of the way. I'm measuring the last 10%.
+    </p>
+    <p class="sos-hero-criteria">
+      <strong>Ship</strong> = 5 minutes of edit time or less.
+    </p>
+    <p class="sos-hero-byline">
+      Nick Lafferty, Founding Marketing Engineer at <a href="https://profound.ai" target="_blank" rel="noopener">Profound</a>,
+      co-runs <a href="/">Growth Circuit</a>.
+    </p>
+  </section>
+
+  <section class="shell sos-section" id="rubric" aria-labelledby="rubric-title">
+    <div class="sos-section-head">
+      <h2 id="rubric-title">The Rubric</h2>
+      <p>Seven areas I grade every output on. A model ships if it passes all seven in under 5 minutes of edits.</p>
+    </div>
+
+    <div class="sos-rubric-grid">
+      {rubricAreas.map((area) => (
+        <div class="sos-rubric-card">
+          <span class="sos-rubric-number">{rubricAreas.indexOf(area) + 1}</span>
+          <h3>{area.name}</h3>
+          <p>{area.description}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="sos-tasks-section">
+      <h3>GTM Tasks I Test</h3>
+      <ul class="sos-tasks-list">
+        {gtmTasks.map((task) => (
+          <li>
+            <strong>{task.name}</strong>
+            <span>{task.description}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="sos-rubric-cta">
+      <h3>Steal the rubric</h3>
+      <p>Get the full evaluation template I use. Same consent as the newsletter.</p>
+      <form method="post" action="/api/newsletter" class="sos-rubric-form" aria-label="Get the rubric">
+        <div class="sos-rubric-fields">
+          <input name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@company.com" required />
+          <button class="button matcha" type="submit">Send me the rubric</button>
+        </div>
+        <label class="sos-rubric-consent"><input name="consent" type="checkbox" checked required /> <span>I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime.</span></label>
+        <div class="sos-rubric-trap" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
+        <p class="sos-rubric-status" role="status" aria-live="polite"></p>
+        <noscript>Please enable JavaScript to use this form.</noscript>
+      </form>
+    </div>
+  </section>
+
+  <section class="shell sos-section" id="scorecard" aria-labelledby="scorecard-title">
+    <div class="sos-section-head">
+      <h2 id="scorecard-title">Latest Scorecard</h2>
+      <p class="sos-placeholder-notice">Example data. Replace after first real run.</p>
+    </div>
+
+    <div class="sos-scorecard-wrapper">
+      <div class="sos-scorecard-scroll">
+        <table class="sos-scorecard-table">
+          <thead>
+            <tr>
+              <th class="sos-scorecard-task-col">Task</th>
+              {modelScorecards.map((scorecard) => (
+                <th class="sos-scorecard-model-col">
+                  <a href={`/ship-or-skip/${scorecard.modelSlug}`}>{scorecard.model}</a>
+                </th>
+              ))}
+              <th class="sos-scorecard-soon-col">Coming Soon</th>
+            </tr>
+          </thead>
+          <tbody>
+            {gtmTasks.map((task) => (
+              <tr>
+                <td class="sos-scorecard-task-cell">
+                  <strong>{task.name}</strong>
+                </td>
+                {modelScorecards.map((scorecard) => {
+                  const taskScore = scorecard.taskScores.find((ts) => ts.task === task.slug);
+                  return (
+                    <td class={`sos-scorecard-cell sos-scorecard-${taskScore?.verdict || "skip"}`}>
+                      <span class="sos-verdict">{taskScore?.verdict === "ship" ? "Ship" : "Skip"}</span>
+                      <span class="sos-edit-time">{taskScore?.editMinutes}m</span>
+                    </td>
+                  );
+                })}
+                <td class="sos-scorecard-soon-cell">
+                  <span class="sos-soon-badge">TBD</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr class="sos-scorecard-meta-row">
+              <td>Cost / task</td>
+              {modelScorecards.map((scorecard) => (
+                <td>{formatCost(scorecard.costPerTask)}</td>
+              ))}
+              <td></td>
+            </tr>
+            <tr class="sos-scorecard-meta-row">
+              <td>Judge agreement</td>
+              {modelScorecards.map((scorecard) => (
+                <td>{formatAgreement(scorecard.judgeAgreement)}</td>
+              ))}
+              <td></td>
+            </tr>
+            <tr class="sos-scorecard-meta-row">
+              <td>Run date</td>
+              {modelScorecards.map((scorecard) => (
+                <td>{formatRunDate(scorecard.runDate)}</td>
+              ))}
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="sos-coming-soon">
+      <h3>Coming Soon: v2 Assistants</h3>
+      <div class="sos-coming-soon-list">
+        {comingSoonModels.map((model) => (
+          <div class="sos-coming-soon-card">
+            <strong>{model.name}</strong>
+            <span>{model.description}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="shell sos-section" id="reviews" aria-labelledby="reviews-title">
+    <div class="sos-section-head">
+      <h2 id="reviews-title">Model Reviews</h2>
+      <p>Deep dives on each model's strengths and weaknesses.</p>
+    </div>
+
+    {sortedReviews.length > 0 ? (
+      <ul class="sos-reviews-list">
+        {sortedReviews.map((review) => (
+          <li class={`sos-review-card ${review.isPlaceholder ? "sos-review-placeholder" : ""}`}>
+            {review.isPlaceholder && <span class="sos-placeholder-badge">Example entry</span>}
+            <div class="sos-review-content">
+              <h3>
+                <a href={`/ship-or-skip/${review.modelSlug}`}>{review.model}</a>
+              </h3>
+              <p>{review.oneLineVerdict}</p>
+              <div class="sos-review-meta">
+                <time datetime={review.publishDate}>{formatRunDate(review.publishDate)}</time>
+                {review.xLink && (
+                  <a href={review.xLink} target="_blank" rel="noopener" aria-label={`${review.model} review on X`}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                  </a>
+                )}
+                {review.linkedInLink && (
+                  <a href={review.linkedInLink} target="_blank" rel="noopener" aria-label={`${review.model} review on LinkedIn`}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                  </a>
+                )}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <div class="sos-reviews-empty">
+        <p>Reviews coming after the first evaluation run.</p>
+      </div>
+    )}
+  </section>
+
+  <NewsletterSignup id="newsletter" showArchiveLink />
+</BaseLayout>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>(".sos-rubric-form").forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+      const status = form.querySelector<HTMLElement>(".sos-rubric-status")!;
+      const fields = new FormData(form);
+      button.disabled = true;
+      status.textContent = "Sending...";
+      try {
+        const response = await fetch("/api/newsletter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: fields.get("email"),
+            consent: fields.get("consent") === "on",
+            website: fields.get("website"),
+          }),
+        });
+        const result = await response.json().catch(() => ({ error: "Please try again shortly." })) as { error?: string };
+        if (!response.ok) throw new Error(result.error || "Please try again shortly.");
+        status.textContent = "Check your inbox to confirm. The rubric download link will be in the welcome email.";
+        form.reset();
+        const consent = form.querySelector<HTMLInputElement>('input[name="consent"]');
+        if (consent) consent.checked = true;
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : "Please try again shortly.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script>
+
+<style>
+  .sos-hero {
+    padding: clamp(80px, 11vw, 140px) 0 clamp(60px, 8vw, 100px);
+  }
+
+  .sos-hero h1 {
+    margin: 16px 0 24px;
+    color: var(--pivot-navy);
+    font-size: clamp(58px, 8vw, 104px);
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+  }
+
+  .sos-hero-lead {
+    max-width: 680px;
+    margin: 0 0 16px;
+    color: var(--sky-muted);
+    font-size: clamp(20px, 2.5vw, 26px);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .sos-hero-criteria {
+    margin: 0 0 24px;
+    color: var(--pivot-navy);
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .sos-hero-criteria strong {
+    color: var(--sky-green);
+  }
+
+  .sos-hero-byline {
+    margin: 0;
+    color: var(--sky-muted);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .sos-hero-byline a {
+    color: var(--pivot-navy);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .sos-section {
+    padding: clamp(60px, 8vw, 100px) 0;
+    border-top: 1px solid var(--pivot-line);
+  }
+
+  .sos-section-head {
+    margin-bottom: 36px;
+  }
+
+  .sos-section-head h2 {
+    margin: 0 0 12px;
+    color: var(--pivot-navy);
+    font-size: clamp(36px, 5vw, 54px);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .sos-section-head p {
+    max-width: 600px;
+    margin: 0;
+    color: var(--sky-muted);
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .sos-placeholder-notice {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 12px;
+    border: 1px solid var(--sky-coral);
+    border-radius: 6px;
+    background: rgba(212, 119, 98, 0.1);
+    color: var(--sky-coral);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .sos-rubric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .sos-rubric-card {
+    border: 1px solid var(--pivot-line);
+    border-radius: 12px;
+    background: white;
+    padding: 24px;
+  }
+
+  .sos-rubric-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-bottom: 12px;
+    border-radius: 50%;
+    background: var(--sky-green);
+    color: white;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .sos-rubric-card h3 {
+    margin: 0 0 8px;
+    color: var(--pivot-navy);
+    font-size: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .sos-rubric-card p {
+    margin: 0;
+    color: var(--sky-muted);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .sos-tasks-section {
+    margin-bottom: 48px;
+  }
+
+  .sos-tasks-section h3 {
+    margin: 0 0 20px;
+    color: var(--pivot-navy);
+    font-size: 24px;
+    letter-spacing: -0.02em;
+  }
+
+  .sos-tasks-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sos-tasks-list li {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-left: 3px solid var(--sky-green);
+    padding: 12px 16px;
+    background: rgba(99, 140, 114, 0.06);
+  }
+
+  .sos-tasks-list strong {
+    color: var(--pivot-navy);
+    font-size: 15px;
+  }
+
+  .sos-tasks-list span {
+    color: var(--sky-muted);
+    font-size: 14px;
+  }
+
+  .sos-rubric-cta {
+    max-width: 520px;
+    border: 1px solid var(--pivot-line);
+    border-radius: 16px;
+    background: var(--pivot-blue);
+    padding: 28px;
+  }
+
+  .sos-rubric-cta h3 {
+    margin: 0 0 8px;
+    color: var(--pivot-navy);
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+
+  .sos-rubric-cta > p {
+    margin: 0 0 20px;
+    color: var(--sky-muted);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .sos-rubric-fields {
+    display: flex;
+    gap: 10px;
+  }
+
+  .sos-rubric-fields input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--pivot-line);
+    border-radius: 8px;
+    padding: 12px;
+    font: inherit;
+    background: white;
+    color: var(--pivot-navy);
+  }
+
+  .sos-rubric-fields button {
+    white-space: nowrap;
+  }
+
+  .sos-rubric-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--sky-muted);
+    line-height: 1.5;
+  }
+
+  .sos-rubric-consent input {
+    margin-top: 3px;
+    accent-color: var(--pivot-navy);
+  }
+
+  .sos-rubric-trap {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .sos-rubric-status {
+    margin-top: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pivot-navy);
+  }
+
+  .sos-rubric-status:empty {
+    display: none;
+  }
+
+  .sos-scorecard-wrapper {
+    margin-bottom: 48px;
+  }
+
+  .sos-scorecard-scroll {
+    overflow-x: auto;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  .sos-scorecard-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .sos-scorecard-table th,
+  .sos-scorecard-table td {
+    border: 1px solid var(--pivot-line);
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .sos-scorecard-table thead th {
+    background: var(--pivot-blue);
+    color: var(--pivot-navy);
+    font-size: 13px;
+    font-weight: 750;
+  }
+
+  .sos-scorecard-table thead th a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .sos-scorecard-task-col {
+    width: 180px;
+    white-space: nowrap;
+  }
+
+  .sos-scorecard-model-col {
+    width: auto;
+    min-width: 130px;
+    text-align: center !important;
+  }
+
+  .sos-scorecard-soon-col {
+    width: 100px;
+    text-align: center !important;
+    background: var(--sky-moss) !important;
+  }
+
+  .sos-scorecard-task-cell strong {
+    color: var(--pivot-navy);
+    font-weight: 650;
+  }
+
+  .sos-scorecard-cell {
+    text-align: center !important;
+  }
+
+  .sos-scorecard-ship {
+    background: rgba(99, 140, 114, 0.12);
+  }
+
+  .sos-scorecard-skip {
+    background: rgba(212, 119, 98, 0.12);
+  }
+
+  .sos-verdict {
+    display: block;
+    font-weight: 750;
+  }
+
+  .sos-scorecard-ship .sos-verdict {
+    color: var(--sky-green);
+  }
+
+  .sos-scorecard-skip .sos-verdict {
+    color: var(--sky-coral);
+  }
+
+  .sos-edit-time {
+    display: block;
+    font-size: 12px;
+    color: var(--sky-muted);
+  }
+
+  .sos-scorecard-soon-cell {
+    text-align: center !important;
+    background: rgba(214, 229, 210, 0.3);
+  }
+
+  .sos-soon-badge {
+    color: var(--sky-muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .sos-scorecard-meta-row td {
+    background: rgba(23, 49, 58, 0.03);
+    color: var(--sky-muted);
+    font-size: 13px;
+  }
+
+  .sos-scorecard-meta-row td:first-child {
+    font-weight: 650;
+    color: var(--pivot-navy);
+  }
+
+  .sos-coming-soon h3 {
+    margin: 0 0 20px;
+    color: var(--pivot-navy);
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+
+  .sos-coming-soon-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .sos-coming-soon-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px dashed var(--pivot-line);
+    border-radius: 10px;
+    padding: 16px 20px;
+    background: rgba(214, 229, 210, 0.2);
+  }
+
+  .sos-coming-soon-card strong {
+    color: var(--pivot-navy);
+    font-size: 15px;
+  }
+
+  .sos-coming-soon-card span {
+    color: var(--sky-muted);
+    font-size: 13px;
+  }
+
+  .sos-reviews-list {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sos-review-card {
+    position: relative;
+    border: 1px solid var(--pivot-line);
+    border-radius: 12px;
+    background: white;
+    padding: 24px;
+    transition: transform 160ms ease, box-shadow 160ms ease;
+  }
+
+  .sos-review-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(45, 91, 103, 0.1);
+  }
+
+  .sos-review-placeholder {
+    border-style: dashed;
+  }
+
+  .sos-placeholder-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(212, 119, 98, 0.12);
+    color: var(--sky-coral);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .sos-review-content h3 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+
+  .sos-review-content h3 a {
+    color: var(--pivot-navy);
+    text-decoration: none;
+  }
+
+  .sos-review-content h3 a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .sos-review-content p {
+    margin: 0 0 16px;
+    color: var(--sky-muted);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .sos-review-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--sky-muted);
+    font-size: 13px;
+  }
+
+  .sos-review-meta a {
+    display: flex;
+    align-items: center;
+    color: var(--pivot-navy);
+    opacity: 0.7;
+    transition: opacity 150ms ease;
+  }
+
+  .sos-review-meta a:hover {
+    opacity: 1;
+  }
+
+  .sos-reviews-empty {
+    border: 1px dashed var(--pivot-line);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .sos-reviews-empty p {
+    margin: 0;
+    color: var(--sky-muted);
+    font-size: 16px;
+  }
+
+  @media (max-width: 620px) {
+    .sos-hero h1 {
+      font-size: 48px;
+    }
+
+    .sos-rubric-fields {
+      flex-direction: column;
+    }
+
+    .sos-scorecard-table {
+      min-width: 650px;
+    }
+  }
+</style>
