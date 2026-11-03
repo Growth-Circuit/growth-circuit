@@ -107,6 +107,10 @@ if (faq.length) jsonLd.push(faqPageJsonLd(faq));
     padding-bottom: 48px;
   }
 
+  .blog-post-layout :global(.blog-post-sidebar) {
+    align-self: stretch;
+  }
+
   @media (max-width: 1100px) {
     .blog-post-layout {
       grid-template-columns: minmax(0, 1fr) 260px;
