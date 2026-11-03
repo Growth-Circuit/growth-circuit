@@ -2495,6 +2495,13 @@ h1 {
   margin-top: 0.45rem;
 }
 
+.jobs-issue-body p > strong:only-child {
+  color: var(--pivot-navy);
+  font-size: clamp(22px, 2.6vw, 28px);
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+}
+
 .newsletter-issue-back {
   padding-bottom: 24px;
 }

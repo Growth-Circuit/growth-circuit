@@ -240,37 +240,57 @@ export function faqPageJsonLd(items: Array<{ question: string; answer: string }>
   };
 }
 
-export function newsletterIssueJsonLd(issue: {
+type ArchiveIssue = {
   title: string;
   description: string;
   publishedAt: string;
   slug: string;
-}) {
+};
+
+function archiveIssueJsonLd(
+  issue: ArchiveIssue,
+  path: string,
+  authors: Array<{ "@type": "Person"; name: string; sameAs: string }>,
+) {
   return {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: issue.title,
     description: issue.description,
     datePublished: issue.publishedAt,
-    url: canonical(`/newsletter/${issue.slug}`),
-    author: [
-      {
-        "@type": "Person",
-        name: "Nick Lafferty",
-        sameAs: "https://www.linkedin.com/in/nicklafferty/",
-      },
-      {
-        "@type": "Person",
-        name: "Lucy Hoyle",
-        sameAs: "https://www.linkedin.com/in/lucyjanehoyle",
-      },
-    ],
+    url: canonical(path),
+    author: authors,
     publisher: {
       "@type": "Organization",
       name: "Growth Circuit",
       url: siteUrl,
     },
   };
+}
+
+export function newsletterIssueJsonLd(issue: ArchiveIssue) {
+  return archiveIssueJsonLd(issue, `/newsletter/${issue.slug}`, [
+    {
+      "@type": "Person",
+      name: "Nick Lafferty",
+      sameAs: "https://www.linkedin.com/in/nicklafferty/",
+    },
+    {
+      "@type": "Person",
+      name: "Lucy Hoyle",
+      sameAs: "https://www.linkedin.com/in/lucyjanehoyle",
+    },
+  ]);
+}
+
+export function jobsIssueJsonLd(issue: ArchiveIssue) {
+  return archiveIssueJsonLd(issue, `/jobs/${issue.slug}`, [
+    {
+      "@type": "Person",
+      name: "Lucy Hoyle",
+      sameAs: "https://www.linkedin.com/in/lucyjanehoyle",
+    },
+  ]);
 }
 
 export function communityExcerpt(markdown: string, maxLength = 180) {

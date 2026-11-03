@@ -140,25 +140,29 @@ function sortNewestFirst(left: NewsletterIssueSource, right: NewsletterIssueSour
   return Date.parse(right.publishedAt) - Date.parse(left.publishedAt) || right.slug.localeCompare(left.slug);
 }
 
-export function loadNewsletterIssueSources(files: Record<string, string>) {
+export function loadNewsletterIssueSources(files: Record<string, string>, duplicateLabel = "newsletter") {
   const issues = Object.entries(files)
     .filter(([file]) => !shouldSkipFile(file))
     .map(([file, raw]) => parseNewsletterIssueFile(file, raw));
   const slugs = new Set<string>();
   for (const issue of issues) {
-    if (slugs.has(issue.slug)) throw new NewsletterIssueError(`Duplicate newsletter slug: ${issue.slug}`);
+    if (slugs.has(issue.slug)) throw new NewsletterIssueError(`Duplicate ${duplicateLabel} slug: ${issue.slug}`);
     slugs.add(issue.slug);
   }
   return issues.sort(sortNewestFirst);
 }
 
-export async function publishedNewsletterIssuesFrom(files: Record<string, string>) {
-  const published = loadNewsletterIssueSources(files).filter((issue) => !issue.draft);
+export async function publishedNewsletterIssuesFrom(
+  files: Record<string, string>,
+  options: { pathPrefix?: string; duplicateLabel?: string } = {},
+) {
+  const pathPrefix = options.pathPrefix ?? "/newsletter";
+  const published = loadNewsletterIssueSources(files, options.duplicateLabel).filter((issue) => !issue.draft);
   return Promise.all(
     published.map(async (issue) => ({
       ...issue,
       html: await renderNewsletterMarkdown(issue.body),
-      path: `/newsletter/${issue.slug}`,
+      path: `${pathPrefix}/${issue.slug}`,
     })),
   );
 }

@@ -1,0 +1,44 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NewsletterSignup from "@/components/NewsletterSignup.astro";
+import { formatNewsletterIssueDate } from "@/lib/newsletter-issues";
+import { getPublishedJobsIssue, listPublishedJobsIssues } from "@/lib/jobs-issues";
+import { breadcrumbJsonLd, jobsIssueJsonLd } from "@/lib/seo";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  return (await listPublishedJobsIssues()).map((issue) => ({ params: { slug: issue.slug } }));
+}
+
+const slug = String(Astro.params.slug || "");
+const issue = await getPublishedJobsIssue(slug);
+if (!issue) return new Response("Not found", { status: 404 });
+---
+
+<BaseLayout
+  title={issue.title}
+  description={issue.description}
+  path={issue.path}
+  bodyClass="sky-page pivot-page"
+  socialType="article"
+  jsonLd={[
+    breadcrumbJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Jobs", path: "/jobs" },
+      { name: issue.title, path: issue.path },
+    ]),
+    jobsIssueJsonLd(issue),
+  ]}
+>
+  <article class="shell listing-hero">
+    <p class="eyebrow">Jobs newsletter · {formatNewsletterIssueDate(issue.publishedAt)}</p>
+    <h1>{issue.title}</h1>
+    <p>{issue.description}</p>
+    <p class="newsletter-issue-byline">From Lucy</p>
+    <p class="newsletter-issue-signup"><a href="#newsletter">Get the jobs newsletter →</a></p>
+  </article>
+  <div class="shell newsletter-issue-body jobs-issue-body" set:html={issue.html} />
+  <p class="shell newsletter-issue-back"><a href="/jobs">All issues →</a></p>
+  <NewsletterSignup />
+</BaseLayout>
