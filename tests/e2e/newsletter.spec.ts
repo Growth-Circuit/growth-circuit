@@ -6,8 +6,12 @@ test("the newsletter archive lists published issues and signup", async ({ page }
   expect(response?.ok()).toBe(true);
   await expect(page).toHaveTitle(/Newsletter/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("A list of the best NYC events for marketers");
-  await expect(page.locator(".listing-hero > p:not(.eyebrow)")).toHaveText(
+  await expect(page.locator(".listing-hero > p:not(.eyebrow):not(.newsletter-issue-signup)")).toHaveText(
     "A short, highly curated weekly email of the best NYC and virtual events for marketers in growth and AI, sourced by Nick Lafferty from Profound and Lucy Hoyle from Carta. We also host our own events :)",
+  );
+  await expect(page.locator(".listing-hero").getByRole("link", { name: "Read the jobs newsletter →" })).toHaveAttribute(
+    "href",
+    "/jobs",
   );
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/18" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/11" })).toBeVisible();

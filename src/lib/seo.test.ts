@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { blogPostingJsonLd, faqPageJsonLd, newsletterIssueJsonLd, serializeJsonLd } from "@/lib/seo";
+import { blogPostingJsonLd, faqPageJsonLd, jobsIssueJsonLd, newsletterIssueJsonLd, serializeJsonLd } from "@/lib/seo";
 
 describe("JSON-LD serialization", () => {
   it("cannot close the containing script element", () => {
@@ -24,6 +24,25 @@ describe("JSON-LD serialization", () => {
       "@type": "NewsArticle",
       url: "https://growthcircuit.club/newsletter/2026-09-21",
       datePublished: "2026-09-21",
+    });
+  });
+
+  it("describes a jobs issue as Lucy’s newsletter", () => {
+    const serialized = serializeJsonLd(
+      jobsIssueJsonLd({
+        title: "The best jobs in growth and marketing – 11/3",
+        description: "Profound, Clay, Vercel, and more",
+        publishedAt: "2026-11-03",
+        slug: "2026-11-03",
+      }),
+    );
+
+    expect(serialized).not.toContain("<");
+    expect(JSON.parse(serialized)).toMatchObject({
+      "@type": "NewsArticle",
+      url: "https://growthcircuit.club/jobs/2026-11-03",
+      datePublished: "2026-11-03",
+      author: [{ "@type": "Person", name: "Lucy Hoyle" }],
     });
   });
 
