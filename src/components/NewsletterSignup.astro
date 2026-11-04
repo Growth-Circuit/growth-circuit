@@ -21,7 +21,7 @@ const allCopy = {
   headline: "Stay in the circuit",
   body: "Events worth showing up to and jobs worth applying for, delivered to your inbox.",
   button: "Email me the newsletter",
-  note: "Get the latest note when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.",
+  note: "Get the latest event and job news when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.",
 };
 const copy = adaptive ? allCopy : eventsCopy;
 const consent = adaptive
@@ -45,7 +45,7 @@ const consent = adaptive
     <div class="newsletter-trap" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
     <p class="newsletter-status" role="status" aria-live="polite"></p>
     <noscript>Please enable JavaScript to use this signup form.</noscript>
-    {!formOnly && <p class="newsletter-note" data-copy-all={adaptive ? allCopy.note : undefined} data-copy-events={adaptive ? eventsCopy.note : undefined} data-copy-jobs={adaptive ? jobsCopy.note : undefined}>{copy.note}</p>}
+    {!formOnly && <p class="newsletter-note" data-copy-all={adaptive ? allCopy.note : undefined} data-copy-events={adaptive ? allCopy.note : undefined} data-copy-jobs={adaptive ? allCopy.note : undefined}>{copy.note}</p>}
   </form>
 </section>
 <script>
