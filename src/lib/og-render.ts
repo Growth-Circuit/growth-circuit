@@ -2,7 +2,8 @@ import { readFile } from "node:fs/promises";
 import { extname, join, normalize, sep } from "node:path";
 import { Resvg } from "@resvg/resvg-js";
 import satori from "satori";
-import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH, ogText, truncateOgText, type OgCard, type OgVisual } from "@/lib/og";
+import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH, ogText, type OgCard, type OgVisual } from "@/lib/og";
+import { layoutText, measureText, parseFontMetrics, type FontMetrics } from "@/lib/og-text-layout";
 
 const colors = {
   ink: "#17313a",
@@ -29,10 +30,16 @@ function img(src: string, style: Record<string, unknown>): Node {
   return { type: "img", props: { src, style, width: style.width, height: style.height } };
 }
 
-let assetsPromise: Promise<{ fonts: Array<{ name: string; data: Buffer; weight: 500 | 700; style: "normal" }>; logo: string }> | undefined;
+interface OgAssets {
+  fonts: Array<{ name: string; data: Buffer; weight: 500 | 700; style: "normal" }>;
+  metrics: { medium: FontMetrics; bold: FontMetrics };
+  logo: string;
+}
+
+let assetsPromise: Promise<OgAssets> | undefined;
 
 function loadAssets() {
-  assetsPromise ??= (async () => {
+  assetsPromise ??= (async (): Promise<OgAssets> => {
     const [medium, bold, logo] = await Promise.all([
       readFile(join(root, "src/assets/og/parkinsans-500.ttf")),
       readFile(join(root, "src/assets/og/parkinsans-700.ttf")),
@@ -43,6 +50,7 @@ function loadAssets() {
         { name: "Parkinsans", data: medium, weight: 500, style: "normal" },
         { name: "Parkinsans", data: bold, weight: 700, style: "normal" },
       ],
+      metrics: { medium: parseFontMetrics(medium), bold: parseFontMetrics(bold) },
       logo: `data:image/svg+xml;base64,${Buffer.from(resolvePathLength(logo)).toString("base64")}`,
     };
   })();
@@ -79,12 +87,44 @@ async function heroDataUri(src: string) {
   }
 }
 
+const TITLE_SIZES = [92, 80, 76, 68, 60, 54, 50, 44];
+/** Measured widths ignore kerning, so lines get a little room to spare. */
+const WIDTH_SAFETY = 0.97;
+const TITLE_TRACKING = -0.035;
+const CONTENT_WIDTH = OG_IMAGE_WIDTH - 40 - 112;
+const FOOTER_GAP = 32;
+const PILL_PADDING = 48;
+const EYEBROW_TRACKING = 0.04;
+
 function titleSize(title: string, narrow: boolean) {
   const length = title.length;
   if (length <= 22) return narrow ? 80 : 92;
   if (length <= 40) return narrow ? 60 : 76;
   if (length <= 64) return narrow ? 50 : 60;
   return narrow ? 44 : 52;
+}
+
+function fitTitle(title: string, metrics: FontMetrics, narrow: boolean, maxWidth: number) {
+  const layouts = TITLE_SIZES.filter((size) => size <= titleSize(title, narrow)).map((fontSize) => ({
+    ...layoutText(title, { metrics, fontSize, letterSpacing: TITLE_TRACKING, maxWidth, maxLines: 3 }),
+    fontSize,
+  }));
+  return (
+    layouts.find((layout) => !layout.isTruncated && !layout.penalty) ??
+    layouts.find((layout) => !layout.isTruncated) ??
+    layouts.at(-1)!
+  );
+}
+
+function fitLine(text: string, options: { metrics: FontMetrics; fontSize: number; maxWidth: number }) {
+  if (measureText(text, options) <= options.maxWidth) return text;
+  const chars = Array.from(text);
+  while (chars.length && measureText(`${chars.join("")}…`, options) > options.maxWidth) chars.pop();
+  return `${chars.join("").replace(/[-/.\s]+$/, "")}…`;
+}
+
+function lines(text: string[], style: Record<string, unknown>): Node {
+  return h("div", { display: "flex", flexDirection: "column", ...style }, ...text.map((line) => h("div", { display: "flex", whiteSpace: "nowrap" }, line)));
 }
 
 function rings(): Node {
@@ -157,15 +197,29 @@ function sideVisual(visual: OgVisual, hero: string | null): Node | null {
   return null;
 }
 
+/** Explicit lines for each text block, so satori never re-wraps them. */
+export async function layoutOgCard(card: OgCard, narrow: boolean) {
+  const { metrics } = await loadAssets();
+  const textWidth = (narrow ? 640 : 860) * WIDTH_SAFETY;
+  const eyebrow = layoutText(ogText(card.eyebrow), { metrics: metrics.bold, fontSize: 24, letterSpacing: EYEBROW_TRACKING, maxWidth: textWidth, maxLines: 2 });
+  const title = fitTitle(ogText(card.title), metrics.bold, narrow, textWidth);
+  const isLongTitle = title.lines.length >= 3;
+  const descriptionSize = isLongTitle ? 26 : 28;
+  const description = layoutText(ogText(card.description), { metrics: metrics.medium, fontSize: descriptionSize, maxWidth: textWidth, maxLines: 3 });
+  return { eyebrow, title, description, descriptionSize, isLongTitle };
+}
+
 export async function renderOgSvg(card: OgCard) {
-  const { fonts, logo } = await loadAssets();
+  const { fonts, metrics, logo } = await loadAssets();
   const hero = card.visual.kind === "hero" ? await heroDataUri(card.visual.src) : null;
   const side = sideVisual(card.visual, hero);
   const narrow = Boolean(side);
-  const title = truncateOgText(card.title, 96);
-  const isLongTitle = title.length > (narrow ? 32 : 44);
-  const description = truncateOgText(card.description, isLongTitle ? (narrow ? 110 : 150) : narrow ? 150 : 170);
-  const url = truncateOgText(`growthcircuit.club${card.path === "/" ? "" : card.path}`, 56);
+  const { eyebrow, title, description, descriptionSize, isLongTitle } = await layoutOgCard(card, narrow);
+  const url = fitLine(`growthcircuit.club${card.path === "/" ? "" : card.path}`, {
+    metrics: metrics.medium,
+    fontSize: 22,
+    maxWidth: (CONTENT_WIDTH - FOOTER_GAP - PILL_PADDING - measureText(card.cta, { metrics: metrics.bold, fontSize: 22 })) * WIDTH_SAFETY,
+  });
 
   const tree = h(
     "div",
@@ -186,9 +240,9 @@ export async function renderOgSvg(card: OgCard) {
         h(
           "div",
           { display: "flex", flexDirection: "column", flex: 1, minWidth: 0, maxWidth: narrow ? 640 : 860 },
-          h("div", { display: "flex", fontSize: 24, fontWeight: 700, color: colors.sun, letterSpacing: "0.04em", marginBottom: 18 }, ogText(card.eyebrow)),
-          h("div", { display: "flex", fontSize: titleSize(title, narrow), fontWeight: 700, lineHeight: 1.05, letterSpacing: "-0.035em", color: "white", textWrap: "balance" }, title),
-          h("div", { display: "flex", fontSize: isLongTitle ? 26 : 28, fontWeight: 500, lineHeight: 1.45, color: colors.mist, marginTop: isLongTitle ? 20 : 24, textWrap: "pretty" }, description),
+          lines(eyebrow.lines, { fontSize: 24, fontWeight: 700, lineHeight: 1.3, color: colors.sun, letterSpacing: `${EYEBROW_TRACKING}em`, marginBottom: 18 }),
+          lines(title.lines, { fontSize: title.fontSize, fontWeight: 700, lineHeight: 1.05, letterSpacing: `${TITLE_TRACKING}em`, color: "white" }),
+          lines(description.lines, { fontSize: descriptionSize, fontWeight: 500, lineHeight: 1.45, color: colors.mist, marginTop: isLongTitle ? 20 : 24 }),
         ),
         side && h("div", { display: "flex", flexShrink: 0, justifyContent: "center", width: 360 }, side),
       ),

@@ -115,14 +115,6 @@ export function ogText(value: string) {
     .trim();
 }
 
-export function truncateOgText(value: string, maxLength: number) {
-  const text = ogText(value);
-  if (text.length <= maxLength) return text;
-  const cut = text.slice(0, maxLength - 1);
-  const lastSpace = cut.lastIndexOf(" ");
-  return `${(lastSpace > maxLength * 0.6 ? cut.slice(0, lastSpace) : cut).replace(/[\s,.;:]+$/, "")}…`;
-}
-
 export function ogImageAlt(card: OgCard) {
   const parts = [`Growth Circuit social card: ${ogText(card.title)}`, ogText(card.eyebrow)];
   if (card.visual.kind === "hero") parts.push(ogText(card.visual.alt));

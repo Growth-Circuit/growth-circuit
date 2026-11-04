@@ -10,7 +10,6 @@ import {
   ogImageAlt,
   ogImagePath,
   ogText,
-  truncateOgText,
   type OgSources,
 } from "@/lib/og";
 import { renderOgImage } from "@/lib/og-render";
@@ -64,7 +63,6 @@ describe("OG image paths", () => {
 describe("OG image copy", () => {
   it("never shows em dashes or links", () => {
     expect(ogText("Ship it \u2014 today, see https://luma.com/private-invite now")).toBe("Ship it, today, see now");
-    expect(truncateOgText("one two three four five six", 15)).toBe("one two three…");
   });
 
   it("gives every page type its own card, image, and alt text", async () => {
