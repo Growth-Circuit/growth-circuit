@@ -34,6 +34,56 @@ test('both homepage forms submit through the newsletter API', async ({ page }) =
   expect(requests).toEqual(Array(2).fill({ email: 'preview@example.com', consent: true, website: '' }));
 });
 
+// Generic newsletter rules from Fanboy's Annoyance list, which iOS content blockers apply to every site.
+const contentBlockerRules = '.newsletter-fields,#newsletter-inline,#newsletter-form-footer,.footer__newsletter-form,.newsletter-form-wrap,.newsletter-inline-wrapper{display:none!important}';
+
+function contrastRatio([r1, g1, b1]: number[], [r2, g2, b2]: number[]) {
+  const luminance = (...rgb: number[]) => {
+    const [r, g, b] = rgb.map(value => { const c = value / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [light, dark] = [luminance(r1, g1, b1), luminance(r2, g2, b2)].sort((a, b) => b - a);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+for (const width of [375, 390, 768]) {
+  test(`hero and closing signups show their email field and button at ${width}px`, async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width, height: width < 768 ? 812 : 1024 }, isMobile: true, hasTouch: true });
+    const page = await context.newPage();
+    await page.goto('/');
+    await page.addStyleTag({ content: contentBlockerRules });
+    const hero = page.locator('#hero-newsletter');
+    for (const control of [hero.getByRole('textbox', { name: 'Email address' }), hero.getByRole('button', { name: 'Email me the events' }), hero.getByText('I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.')]) {
+      await expect(control).toBeVisible();
+      await expect(control).toBeInViewport();
+    }
+    const closing = page.locator('#closing-newsletter');
+    await closing.scrollIntoViewIfNeeded();
+    for (const control of [closing.getByRole('textbox', { name: 'Email address' }), closing.getByRole('button', { name: 'Email me the events' })]) {
+      await expect(control).toBeVisible();
+      await expect(control).toBeInViewport();
+    }
+    await context.close();
+  });
+}
+
+test('closing signup consent text meets WCAG AA contrast on the night scene', async ({ page }) => {
+  for (const size of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(size);
+    await page.goto('/');
+    const consent = page.locator('#closing-newsletter .newsletter-consent');
+    await expect(consent).toBeVisible();
+    const { text, background } = await consent.evaluate(label => {
+      const parse = (value: string) => value.match(/[\d.]+/g)!.map(Number);
+      return { text: parse(getComputedStyle(label.querySelector('span')!).color), background: parse(getComputedStyle(label).backgroundColor) };
+    });
+    const alpha = background[3] ?? 1;
+    // Composite the translucent box over white, the lightest thing the scene can show behind it.
+    const worstCase = background.slice(0, 3).map(channel => channel * alpha + 255 * (1 - alpha));
+    expect(contrastRatio(text, worstCase), `${size.width}px`).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
 test('small screens and reduced motion retain accessible content', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
