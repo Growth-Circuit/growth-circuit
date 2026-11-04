@@ -1,9 +1,11 @@
 ---
 import { communityCompanies, featuredMembers, memberAnchor } from "@/data/featured-community";
+interface Props { preview?: boolean; }
+const { preview = false } = Astro.props;
 ---
 <section class="community-companies" aria-labelledby="companies-title">
   <div class="shell">
-    <h2 id="companies-title">Growth Circuit members <span class="keep-together">include marketers from</span></h2>
+    <h2 id="companies-title">Growth Circuit members <span class="keep-together">include marketers from{preview ? "..." : ""}</span></h2>
     <ul class="company-wall" role="list">
       {communityCompanies.map((company) => {
         const member = featuredMembers.find((person) => company.connection.startsWith(person.name));

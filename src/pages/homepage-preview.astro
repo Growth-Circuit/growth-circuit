@@ -34,13 +34,13 @@ import { featuredMembers, memberAnchor } from "@/data/featured-community";
 
     <section class="travel" data-travel="1">
       <div class="caption wrap" data-caption="1">
-        <h2>A little closer to your kind of people.</h2>
-        <p>Starting in New York.</p>
+        <h2>Bringing you closer to your kind of people.</h2>
+        <p>Starting in New York, but not stopping there.</p>
       </div>
     </section>
 
     <section class="panel">
-      <CommunityLogoWall />
+      <CommunityLogoWall preview />
     </section>
 
     <div class="gap" data-gap1="1" aria-hidden="true"></div>
@@ -63,7 +63,6 @@ import { featuredMembers, memberAnchor } from "@/data/featured-community";
       <div class="long wrap">
         <div id="how-it-works">
           <h2 class="big">Growth is better in good company</h2>
-          <p class="intro">Come for an event. Meet someone who gets excited about the same things you do. Keep the conversation going between meetups.</p>
           <div class="ways">
             <div class="way"><h3>Meet your people.</h3><p>Come to a public NYC event. Talk about what you’re working on. Leave with someone you want to keep in touch with.</p></div>
             <div class="way"><h3>Get another perspective.</h3><p>A question about your stack. An experiment that surprised you. WhatsApp is where the conversation carries on between events.</p></div>
@@ -282,6 +281,7 @@ html{scroll-behavior:smooth}body{margin:0}.gc .shell{width:min(100% - 64px,1240p
 .gc .stop{scroll-margin-top:100px}.gc .stop:target{background:#e8f3f6;border-radius:8px}.gc .stop:focus-visible{outline:3px solid var(--sun)}
 .skip{position:absolute;top:-80px;left:16px;z-index:10;background:white;padding:12px;color:#17313a}.skip:focus{top:12px}
 @media(max-width:760px){.gc .shell{width:calc(100% - 40px)}.gc .community-companies{padding:40px 0}.gc .newsletter-fields{flex-direction:column}.hero{min-height:max(900px,100svh)}.gc .hero .newsletter-inline{margin-top:14px}.gc .newsletter-consent{margin-top:8px}.gc .keep-together{white-space:normal}}
+@media(max-width:760px){.gc .community-companies h2{text-align:left}.gc .community-companies h2 .keep-together{display:block}.boardlinks{display:grid;grid-template-columns:minmax(0,1fr)}.boardlinks .pill{width:100%;justify-content:center;text-align:center}}
 @media(max-width:370px){.nav .brand{font-size:16px;gap:6px}.nav .pill{font-size:13px;padding:0 12px}.nav{gap:8px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
