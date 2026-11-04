@@ -1,16 +1,18 @@
 ---
+import { jobsCopy } from "@/lib/newsletter-copy";
 interface Props {
+  variant?: "events" | "jobs";
   id?: string;
 }
-const { id = "sidebar-newsletter" } = Astro.props;
+const { id = "sidebar-newsletter", variant = "events" } = Astro.props;
 ---
 
 <aside class="sidebar-email-cta" aria-labelledby={`${id}-title`}>
-  <h2 id={`${id}-title`} class="sidebar-email-title">Find the best NYC events for marketers</h2>
+  <h2 id={`${id}-title`} class="sidebar-email-title">{variant === "jobs" ? jobsCopy.headline : "Find the best NYC events for marketers"}</h2>
   <p class="sidebar-email-desc">
-    Public talks, demos, meetups, and Growth Circuit gatherings. A short list from Nick and Lucy for people building things in marketing, growth, and AI.
+    {variant === "jobs" ? jobsCopy.body : "Public talks, demos, meetups, and Growth Circuit gatherings. A short list from Nick and Lucy for people building things in marketing, growth, and AI."}
   </p>
-  <form method="post" action="/api/newsletter" class="sidebar-email-form" aria-label="Subscribe to the NYC newsletter">
+  <form method="post" action="/api/newsletter" class="sidebar-email-form" aria-label={variant === "jobs" ? "Subscribe to the jobs newsletter" : "Subscribe to the NYC newsletter"}>
     <label for={`${id}-email`} class="sr-only">Email address</label>
     <input
       id={`${id}-email`}
@@ -21,10 +23,10 @@ const { id = "sidebar-newsletter" } = Astro.props;
       placeholder="you@example.com"
       required
     />
-    <button class="button matcha" type="submit">Email me the events</button>
+    <button class="button matcha" type="submit">{variant === "jobs" ? jobsCopy.button : "Email me the events"}</button>
     <label class="sidebar-email-consent">
       <input name="consent" type="checkbox" checked required />
-      <span>I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime.</span>
+      <span>{variant === "jobs" ? "I’d like to receive emails from Growth Circuit" : "I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime."}</span>
     </label>
     <div class="sidebar-email-trap" aria-hidden="true">
       <label>Website <input name="website" tabindex="-1" autocomplete="off" /></label>

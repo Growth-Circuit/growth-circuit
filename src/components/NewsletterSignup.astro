@@ -1,6 +1,7 @@
 ---
-interface Props { id?: string; showArchiveLink?: boolean; formOnly?: boolean; adaptive?: boolean; }
-const { id = "newsletter", showArchiveLink = false, formOnly = false, adaptive = false } = Astro.props;
+import { jobsCopy } from "@/lib/newsletter-copy";
+interface Props { variant?: "events" | "jobs"; id?: string; showArchiveLink?: boolean; formOnly?: boolean; adaptive?: boolean; }
+const { id = "newsletter", showArchiveLink = false, formOnly = false, adaptive = false, variant = "events" } = Astro.props;
 
 const eventsCopy = {
   eyebrow: "A few good reasons to leave the apartment",
@@ -9,13 +10,6 @@ const eventsCopy = {
   button: "Email me the events",
   note: "Get the latest event list when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.",
 };
-const jobsCopy = {
-  eyebrow: "Find your next role today",
-  headline: "Let the hottest jobs come to you",
-  body: "Caught the builder bug? Turn it into a career at one of the leading tech companies.",
-  button: "Email me the jobs",
-  note: "Get the latest jobs list when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.",
-};
 const allCopy = {
   eyebrow: "The best of growth and marketing",
   headline: "Stay in the circuit",
@@ -23,19 +17,19 @@ const allCopy = {
   button: "Email me the newsletter",
   note: "Get the latest note when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.",
 };
-const copy = adaptive ? allCopy : eventsCopy;
-const consent = adaptive
+const copy = adaptive ? allCopy : variant === "jobs" ? jobsCopy : eventsCopy;
+const consent = adaptive || variant === "jobs"
   ? "I’d like to receive emails from Growth Circuit"
   : "I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.";
 ---
 <section class:list={["newsletter-section", { shell: !formOnly, "newsletter-inline": formOnly }]} id={id} aria-labelledby={formOnly ? undefined : `${id}-title`} aria-label={formOnly ? "Newsletter signup" : undefined}>
-  {!formOnly && <div class:list={[{ "newsletter-signup-copy": adaptive }]}>
+  {!formOnly && <div class:list={[{ "newsletter-signup-copy": adaptive || variant === "jobs" }]}>
     <p class="eyebrow" data-copy-all={adaptive ? allCopy.eyebrow : undefined} data-copy-events={adaptive ? eventsCopy.eyebrow : undefined} data-copy-jobs={adaptive ? jobsCopy.eyebrow : undefined}>{copy.eyebrow}</p>
     <h2 id={`${id}-title`} data-copy-all={adaptive ? allCopy.headline : undefined} data-copy-events={adaptive ? eventsCopy.headline : undefined} data-copy-jobs={adaptive ? jobsCopy.headline : undefined}>{copy.headline}</h2>
     <p data-copy-all={adaptive ? allCopy.body : undefined} data-copy-events={adaptive ? eventsCopy.body : undefined} data-copy-jobs={adaptive ? jobsCopy.body : undefined}>{copy.body}</p>
     {showArchiveLink && <p><a class="newsletter-archive-link" href="/newsletter">Read past newsletters →</a></p>}
   </div>}
-  <form method="post" action="/api/newsletter" class="newsletter-form" aria-label="Subscribe to the NYC newsletter">
+  <form method="post" action="/api/newsletter" class="newsletter-form" aria-label={variant === "jobs" ? "Subscribe to the jobs newsletter" : "Subscribe to the NYC newsletter"}>
     <label for={`${id}-email`}>Email address</label>
     <div class="newsletter-fields">
       <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="254" placeholder={formOnly ? "your email address" : "you@example.com"} required />
