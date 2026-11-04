@@ -41,3 +41,30 @@ test('small screens and reduced motion retain accessible content', async ({ page
   await page.getByText('Do I have to live in New York?', { exact: true }).click();
   await expect(page.getByText('No. The newsletter includes NYC and virtual events', { exact: false })).toBeVisible();
 });
+
+test('timeline member previews support hover, keyboard dismissal, and touch', async ({ page, browser }) => {
+  await page.goto('/homepage-preview');
+  const links = page.locator('.timeline-member-link');
+  for (const link of [links.first(), links.last()]) {
+    await link.hover();
+    const card = link.locator('.member-reveal');
+    await expect(card).toBeVisible();
+    const box = await card.boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(15);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(page.viewportSize()!.width - 15);
+  }
+  await links.first().focus();
+  await expect(links.first().locator('.member-reveal')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(links.first().locator('.member-reveal')).toBeHidden();
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const mobile = await context.newPage();
+  await mobile.goto('/homepage-preview');
+  const nick = mobile.locator('.timeline-member-link').first();
+  await nick.tap();
+  await expect(nick.locator('.member-reveal')).toBeVisible();
+  await expect(mobile).toHaveURL(/\/homepage-preview$/);
+  await nick.locator('.reveal-invitation').tap();
+  await expect(mobile).toHaveURL(/\/homepage-preview\/people\/nicklafferty$/);
+  await context.close();
+});
