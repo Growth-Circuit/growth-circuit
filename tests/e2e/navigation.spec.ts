@@ -9,7 +9,7 @@ for (const path of ["/", "/newsletter", "/newsletter/2026-09-28", "/events", "/n
     const prefix = path === "/" ? "" : "/";
     await expect(nav.getByRole("link", { name: "Community", exact: true })).toHaveAttribute("href", `${prefix}#how-it-works`);
     await expect(nav.getByRole("link", { name: "Newsletter", exact: true })).toHaveAttribute("href", "/newsletter");
-    await expect(nav.getByRole("link", { name: "Jobs", exact: true })).toHaveAttribute("href", "/jobs");
+    await expect(nav.getByRole("link", { name: "Jobs", exact: true })).toHaveAttribute("href", "/newsletter?type=jobs");
     await expect(nav.getByRole("link", { name: "Blog", exact: true })).toHaveAttribute("href", "/blog");
     await expect(nav.getByRole("link", { name: "Events", exact: true })).toHaveAttribute("href", `${prefix}#events`);
     await expect(nav.getByRole("link", { name: "Subscribe free", exact: true })).toHaveAttribute("href", `${prefix}#newsletter`);
@@ -121,8 +121,9 @@ test("mobile menu opens, closes, and stays out of the desktop header", async ({ 
 
   await button.click();
   await nav.getByRole("link", { name: "Jobs", exact: true }).click();
-  await expect(page).toHaveURL(/\/jobs\/?$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("The best jobs in growth and marketing");
+  await expect(page).toHaveURL(/\/newsletter\/?\?type=jobs$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("A list of the best NYC events for marketers");
+  await expect(page.getByRole("navigation", { name: "Filter issues" }).getByRole("link", { name: "Jobs", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(button).toHaveAttribute("aria-expanded", "false");
   await expect(menu).toBeHidden();
 
@@ -130,8 +131,8 @@ test("mobile menu opens, closes, and stays out of the desktop header", async ({ 
   await expect(page.locator(".gc-menu-button")).toBeHidden();
   await expect(nav.getByRole("link")).toHaveText(["Community", "Newsletter", "Jobs", "Blog", "Events", "Subscribe free"]);
   await nav.getByRole("link", { name: "Jobs", exact: true }).click();
-  await expect(page).toHaveURL(/\/jobs\/?$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("The best jobs in growth and marketing");
+  await expect(page).toHaveURL(/\/newsletter\/?\?type=jobs$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("A list of the best NYC events for marketers");
   await expect(nav.getByRole("link", { name: "Community", exact: true })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Events", exact: true })).toBeVisible();
 });

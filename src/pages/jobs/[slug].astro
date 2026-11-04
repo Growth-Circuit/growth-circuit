@@ -25,7 +25,7 @@ if (!issue) return new Response("Not found", { status: 404 });
   jsonLd={[
     breadcrumbJsonLd([
       { name: "Home", path: "/" },
-      { name: "Jobs", path: "/jobs" },
+      { name: "Jobs", path: "/newsletter?type=jobs" },
       { name: issue.title, path: issue.path },
     ]),
     jobsIssueJsonLd(issue),
@@ -39,6 +39,6 @@ if (!issue) return new Response("Not found", { status: 404 });
     <p class="newsletter-issue-signup"><a href="#newsletter">Get the jobs newsletter →</a></p>
   </article>
   <div class="shell newsletter-issue-body jobs-issue-body" set:html={issue.html} />
-  <p class="shell newsletter-issue-back"><a href="/jobs">All issues →</a></p>
+  <p class="shell newsletter-issue-back"><a href="/newsletter?type=jobs">All issues →</a></p>
   <NewsletterSignup />
 </BaseLayout>

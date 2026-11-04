@@ -2395,11 +2395,62 @@ h1 {
   padding-bottom: 24px;
 }
 
+.newsletter-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 28px;
+}
+
+.newsletter-filter a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(23, 49, 58, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #17313a;
+  font-size: 14px;
+  font-weight: 760;
+  text-decoration: none;
+}
+
+.newsletter-filter a[aria-current="page"] {
+  border-color: #17313a;
+  background: #17313a;
+  color: #fff;
+}
+
+.newsletter-filter a:hover {
+  background: #fff;
+}
+
+.newsletter-filter a[aria-current="page"]:hover {
+  border-color: #355e49;
+  background: #355e49;
+}
+
+.newsletter-filter-empty {
+  margin: 0;
+  color: var(--sky-muted);
+  font-size: 18px;
+}
+
+.newsletter-filter-empty[hidden] {
+  display: none;
+}
+
 .newsletter-issue-list {
   list-style: none;
   margin: 0;
   padding: 0;
   border-top: 1px solid var(--pivot-line);
+}
+
+.newsletter-issue-list > li[hidden] {
+  display: none;
 }
 
 .newsletter-issue-card {
@@ -2417,12 +2468,56 @@ h1 {
   letter-spacing: -0.045em;
 }
 
-.newsletter-issue-card p:not(.eyebrow) {
+.newsletter-issue-card p:not(.eyebrow):not(.newsletter-issue-type) {
   max-width: 680px;
   margin: 0 0 18px;
   color: var(--sky-muted);
   font-size: 18px;
   line-height: 1.6;
+}
+
+.newsletter-issue-list:has(.newsletter-issue-card--events),
+.newsletter-issue-list:has(.newsletter-issue-card--jobs) {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 0;
+}
+
+.newsletter-issue-card--events,
+.newsletter-issue-card--jobs {
+  border-bottom: 0;
+  border-radius: 18px;
+  padding: 28px 24px 32px;
+}
+
+.newsletter-issue-card--events {
+  background: #efe8f7;
+}
+
+.newsletter-issue-card--jobs {
+  background: #f6eccd;
+}
+
+.newsletter-issue-card--events .eyebrow,
+.newsletter-issue-card--jobs .eyebrow,
+.newsletter-issue-type {
+  color: #17313a;
+}
+
+.newsletter-issue-card--events .eyebrow,
+.newsletter-issue-card--jobs .eyebrow {
+  border-color: transparent;
+  background: transparent;
+}
+
+.newsletter-issue-type {
+  width: fit-content;
+  margin: -6px 0 14px;
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .newsletter-issue-card span {
@@ -2766,6 +2861,11 @@ h1 {
   font-weight: 760;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.sky-page .newsletter-issue-card--events .eyebrow,
+.sky-page .newsletter-issue-card--jobs .eyebrow {
+  color: #17313a;
 }
 
 .home-sky-page .ink-hero {
