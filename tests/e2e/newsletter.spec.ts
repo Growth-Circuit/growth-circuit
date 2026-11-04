@@ -155,6 +155,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(page.locator(".newsletter-issue-card--events .newsletter-issue-type").first()).toHaveText("Events");
 
   const signup = page.locator("#newsletter");
+  await expect(signup.locator(".eyebrow")).toHaveText("The best of growth and marketing");
   await expect(signup.locator("#newsletter-title")).toHaveText("Stay in the circuit");
   await expect(signup.locator("[data-copy-all]").nth(2)).toHaveText(
     "Events worth showing up to and jobs worth applying for, delivered to your inbox.",
@@ -197,6 +198,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
     "aria-current",
     "page",
   );
+  await expect(plain.locator("#newsletter .eyebrow")).toHaveText("The best of growth and marketing");
   await expect(plain.locator("#newsletter-title")).toHaveText("Stay in the circuit");
   await expect(plain.getByRole("button", { name: "Email me the newsletter" })).toBeVisible();
   await expect(plain.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
