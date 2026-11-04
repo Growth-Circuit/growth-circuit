@@ -30,10 +30,9 @@ test("the jobs archive stays reachable and off the events page", async ({ page, 
     "https://jobs.ashbyhq.com/claylabs/9f8067d1-61cf-42cd-aad7-0ac54de8b345",
   );
   await expect(page.getByRole("link", { name: "All issues →" })).toHaveAttribute("href", "/newsletter?type=jobs");
-  const heroSignup = page.locator(".listing-hero").getByRole("link", { name: "Get the jobs newsletter →" });
-  await expect(heroSignup).toHaveAttribute("href", "#newsletter");
-  await heroSignup.click();
-  await expect(page).toHaveURL(/\/jobs\/2026-11-03\/#newsletter$/);
+  await expect(page.getByRole("link", { name: "Get the jobs newsletter →" })).toHaveCount(0);
+  await expect(page.locator(".listing-hero .newsletter-issue-signup")).toHaveCount(0);
+  await expect(page.locator(".sidebar-email-cta").getByRole("form", { name: "Subscribe to the jobs newsletter" })).toBeVisible();
   await expect(page.locator("#newsletter").getByRole("form", { name: "Subscribe to the jobs newsletter" })).toBeVisible();
 
   const newsletter = await page.goto("/newsletter/");
