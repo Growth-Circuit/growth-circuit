@@ -70,7 +70,7 @@ function applySecurityHeaders(response: Response, requestUrl: URL, noStore: bool
     "default-src 'self'",
     "base-uri 'self'",
     "frame-ancestors 'none'",
-    `frame-src 'self'${["/", "/events", "/events/", "/homepage-preview", "/homepage-preview/", "/homepage-preview/events", "/homepage-preview/events/"].includes(requestUrl.pathname) ? " https://luma.com" : ""}`,
+    `frame-src 'self'${["/", "/events", "/events/"].includes(requestUrl.pathname) ? " https://luma.com" : ""}`,
     "form-action 'self'",
     "object-src 'none'",
     "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com",
@@ -116,7 +116,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (isCommunity || isCommunityDiscovery) {
     if (requestUrl.pathname.startsWith("/api/") || isCommunityDiscovery) return genericDenial();
 
-    const destination = new URL("/#members", requestUrl);
+    const destination = new URL("/#community", requestUrl);
     const response = new Response(null, { status: 302, headers: { Location: destination.toString() } });
     applySecurityHeaders(response, requestUrl, true);
     response.headers.set("X-Robots-Tag", "noindex, nofollow");

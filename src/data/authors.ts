@@ -1,9 +1,9 @@
 /**
  * Reusable bylines for blog posts.
  *
- * Role lines match the homepage host captions in `GrowthCircuitHome.astro`
- * (the short line under each name): Nick is "Profound", Lucy is "Carta".
- * Photos and LinkedIn URLs are the ones that homepage already uses.
+ * Role lines match the homepage host links in `src/pages/index.astro`
+ * (the short line beside each name): Nick is "Profound", Lucy is "Carta".
+ * LinkedIn URLs are the ones the homepage uses.
  * Lucy has no personal website in the repo, so `website` stays unset.
  */
 export type Author = {
