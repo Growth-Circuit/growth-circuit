@@ -3,7 +3,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
 declare module "cloudflare:workers" {
-  export const env: Record<string, string | undefined>;
+  export const env: Cloudflare.Env & Record<string, string | undefined>;
 }
 
 interface ImportMetaEnv {

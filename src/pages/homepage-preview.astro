@@ -1,4 +1,6 @@
 ---
+import SiteHeader from "@/components/SiteHeader.astro";
+import previewTheme from "@/styles/design-preview.css?raw";
 import CommunityLogoWall from "@/components/CommunityLogoWall.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import LumaCalendar from "@/components/LumaCalendar.astro";
@@ -11,7 +13,8 @@ import { featuredMembers, memberAnchor } from "@/data/featured-community";
 <link rel="icon" href="/growth-circuit-icon.svg" type="image/svg+xml" />
 <link rel="icon" href="/growth-circuit-favicon-256.png" type="image/png" sizes="256x256" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-</head><body><a class="skip" href="#main-content">Skip to content</a><main>
+<style is:inline set:html={previewTheme} />
+</head><body class="design-preview preview-home" id="design-preview"><a class="skip" href="#main-content">Skip to content</a><main>
 <div class="gc" data-homepage-scene>
   <div class="stage" data-stage="1" role="img" aria-label="An illustrated Brooklyn street beside Prospect Park, with the Manhattan skyline behind it, moving from morning to night as you scroll.">
     <canvas data-bg="1" aria-hidden="true"></canvas>
@@ -20,19 +23,7 @@ import { featuredMembers, memberAnchor } from "@/data/featured-community";
 
   <div class="flow">
     <section class="hero wrap" id="main-content">
-      <nav class="nav" aria-label="Main">
-        <a class="brand" href="/">
-          <img class="brand-logo" src="/growth-circuit-icon.svg" alt="" width="44" height="44" />
-          Growth Circuit
-        </a>
-        <div class="navlinks">
-          <a href="#how-it-works">Community</a>
-          <a href="/newsletter">Newsletter</a>
-          <a href="/blog">Blog</a>
-          <a href="#events">Events</a>
-        </div>
-        <a class="pill" href="#newsletter">Subscribe free</a>
-      </nav>
+      <SiteHeader preview />
 
       <h1 class="h1">Find the best NYC events for marketers</h1>
       <p class="lede">A short, highly curated weekly email of the best NYC and virtual events for marketers in growth and AI, sourced by Nick Lafferty from Profound and Lucy Hoyle from Carta. We also host our own events :)</p>
@@ -61,7 +52,7 @@ import { featuredMembers, memberAnchor } from "@/data/featured-community";
         <LumaCalendar />
         <div class="boardlinks">
           <a class="pill" href="https://luma.com/growth-circuit">View the calendar and subscribe on Luma</a>
-          <a class="pill ghost" href="/newsletter">Read the latest newsletter</a>
+          <a class="pill ghost" href="/homepage-preview/newsletter">Read the latest newsletter</a>
         </div>
       </div>
     </section>
@@ -85,12 +76,12 @@ import { featuredMembers, memberAnchor } from "@/data/featured-community";
             <h2 class="big">Meet the community</h2>
             <p class="intro">Meet some of the people you’ll find at our events and in the community.</p>
           </div>
-          <a class="textlink" href="/people">Explore member projects</a>
+          <a class="textlink" href="/homepage-preview/people">Explore member projects</a>
         </div>
         <ul class="strip" data-strip="1">
           <li class="car" aria-hidden="true"></li>
           {featuredMembers.map((member) => <li class="stop" id={memberAnchor(member.name)} tabindex="-1">
-            <a href={"github" in member ? `/people/${member.github}` : member.linkedin}>
+            <a href={"github" in member ? `/homepage-preview/people/${member.github}` : member.linkedin}>
               <span class="stopname">{member.name}</span>
               <span class="dot" aria-hidden="true"></span>
               <span class="stopinfo"><b>{member.company}</b>{member.detail}</span>
@@ -142,6 +133,7 @@ a{color:inherit}
 .stage{position:sticky;top:0;height:100vh;margin-bottom:-100vh;overflow:hidden;z-index:0;background:var(--sky)}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .flow{position:relative;z-index:1}
+.preview-home .gc-header{background:transparent}.preview-home .gc-header .shell{width:100%}.preview-home .gc-nav{min-height:100px}.preview-home .gc-nav-menu a{text-decoration:none}
 .wrap{width:min(100% - 64px,1240px);margin-inline:auto}
 
 .nav{display:flex;align-items:center;gap:32px;padding:22px 0}

@@ -1,0 +1,70 @@
+@font-face{font-family:Parkinsans;font-style:normal;font-weight:300 800;font-display:swap;src:url('/fonts/parkinsans-variable.ttf') format('truetype')}
+#design-preview{--preview-ink:#17313a;--preview-sky:#dceef5;--preview-paper:#f7fcfd;--preview-sun:#f6a93b;--preview-green:#6fb23f;--sky-muted:#4d6570;--pivot-navy:#17313a;--pivot-line:#b8ced3;background:var(--preview-paper);color:var(--preview-ink);font-family:Parkinsans,'Avenir Next',system-ui,sans-serif;-webkit-font-smoothing:antialiased;color-scheme:light}
+#design-preview .shell{width:min(100% - 64px,1240px);max-width:1240px}
+#design-preview main{overflow:clip}
+#design-preview h1,#design-preview h2,#design-preview h3,#design-preview button,#design-preview input{font-family:inherit}
+#design-preview a:focus-visible,#design-preview button:focus-visible,#design-preview summary:focus-visible{outline:3px solid var(--preview-sun);outline-offset:4px}
+#design-preview .gc-header{background:var(--preview-sky)}
+#design-preview .gc-nav{min-height:100px;gap:24px}
+#design-preview .gc-nav .brand{font-family:inherit;font-size:19px;font-weight:700;letter-spacing:-.02em;gap:10px}
+#design-preview .gc-nav nav a{font-size:15px;font-weight:500}
+#design-preview .gc-nav nav>.gc-subscribe{border-radius:999px;min-height:44px;padding:12px 22px;background:var(--preview-ink);font-weight:600}
+#design-preview .gc-menu-button{border-radius:50%;background:#ffffff65}
+#design-preview .listing-hero,#design-preview .sos-hero{position:relative;isolation:isolate;padding-top:70px;padding-bottom:78px;background:var(--preview-sky);box-shadow:0 0 0 100vmax var(--preview-sky);clip-path:inset(0 -100vmax -30px)}
+#design-preview .listing-hero::after,#design-preview .sos-hero::after{content:'';position:absolute;left:-50vw;right:-50vw;bottom:-1px;height:30px;background-image:radial-gradient(circle,var(--preview-paper) 1.6px,transparent 2.1px),radial-gradient(circle,var(--preview-paper) 2.6px,transparent 3.1px),radial-gradient(circle,var(--preview-paper) 4.1px,transparent 4.6px);background-size:12px 10px;background-repeat:repeat-x;background-position:0 0,6px 10px,0 20px;pointer-events:none}
+#design-preview .listing-hero h1,#design-preview .sos-hero h1{font-size:clamp(42px,6.7vw,96px);font-weight:700;letter-spacing:-.035em;line-height:1.04;text-wrap:balance;margin:18px 0 26px;max-width:1080px}
+#design-preview .listing-hero>p:not(.eyebrow){font-size:clamp(17px,1.5vw,20px);line-height:1.65;max-width:780px;color:var(--preview-ink)}
+#design-preview .eyebrow{font-family:inherit;letter-spacing:.06em;font-size:12px;font-weight:600;color:#2f6d52}
+#design-preview .newsletter-archive{padding-top:48px;padding-bottom:48px}
+#design-preview .newsletter-issue-list{border-top:2px solid var(--preview-ink)}
+#design-preview .newsletter-issue-card{padding:32px 0;border-bottom:1px solid #b8ced3;transition:background .2s}
+#design-preview .newsletter-issue-card:hover{background:#e8f3f6}
+#design-preview .newsletter-issue-card h2{font-size:clamp(26px,3.3vw,44px);line-height:1.15;font-weight:650;letter-spacing:-.03em;max-width:1050px}
+#design-preview .newsletter-issue-card p:not(.eyebrow){font-size:16px;line-height:1.65;max-width:820px}
+#design-preview .newsletter-issue-card span,#design-preview .newsletter-issue-signup a{color:#2f6d52}
+#design-preview .newsletter-issue-body{max-width:900px;padding-top:50px;font-size:18px;line-height:1.85}
+#design-preview .newsletter-issue-body h2{font-size:clamp(28px,3vw,40px);line-height:1.15;letter-spacing:-.03em}
+#design-preview .newsletter-issue-body a,#design-preview .blog-prose a{text-underline-offset:4px}
+#design-preview .newsletter-section:not(.newsletter-inline){margin-top:56px;margin-bottom:64px;padding:clamp(28px,4vw,56px);background:#0e2029;color:white;border:0;border-radius:28px;gap:40px}
+#design-preview .newsletter-section h2{font-size:clamp(30px,3.4vw,46px);letter-spacing:-.03em;line-height:1.1;color:white}
+#design-preview .newsletter-section .eyebrow,#design-preview .newsletter-section .newsletter-note{color:#c8dce0}
+#design-preview .newsletter-section p,#design-preview .newsletter-section label{color:inherit}
+#design-preview .newsletter-fields input{border:2px solid var(--preview-ink);border-radius:999px;padding:14px 18px;background:white;color:var(--preview-ink);font-size:16px}
+#design-preview .newsletter-fields button{border-radius:999px;padding:14px 22px;background:var(--preview-sun);color:var(--preview-ink);font-weight:650;font-size:14px}
+#design-preview .newsletter-consent{font-size:12px;line-height:1.6}
+#design-preview .newsletter-section .newsletter-archive-link{color:white}
+#design-preview .calendar-section{padding-top:60px;padding-bottom:30px}
+#design-preview .calendar-section h2{font-size:clamp(32px,4vw,54px);letter-spacing:-.035em;line-height:1.1}
+#design-preview .calendar-section .section-intro{max-width:740px;margin-bottom:32px}
+#design-preview .blog-index-card{border-radius:20px;box-shadow:none;background:#fffefb;border-color:#c6d8db}
+#design-preview .blog-index-card h2{font-size:clamp(26px,2.8vw,36px);letter-spacing:-.03em;line-height:1.15}
+#design-preview .blog-post-header h1{font-size:clamp(40px,5.6vw,80px);line-height:1.08}
+#design-preview .blog-content,#design-preview .blog-prose{font-size:18px;line-height:1.85}
+#design-preview .sidebar-email-cta{border-radius:22px;background:#e8f3f6;border-color:#c6d8db}
+#design-preview .people-page{padding-top:65px;padding-bottom:70px}
+#design-preview .people-heading{padding-bottom:35px;border-bottom:2px solid var(--preview-ink)}
+#design-preview .people-heading h1,#design-preview .people-profile-heading h1{font-size:clamp(42px,6vw,80px);font-weight:700;line-height:1.05;letter-spacing:-.035em}
+#design-preview .people-heading p{font-size:18px;line-height:1.65}
+#design-preview .people-summary,#design-preview .people-project{border-color:#b8ced3;border-radius:20px;background:#fffefb}
+#design-preview .people-button,#design-preview .people-project-action{border-radius:999px;background:var(--preview-ink);color:white;border-color:var(--preview-ink)}
+#design-preview .people-summary h2,#design-preview .people-project h3{letter-spacing:-.025em}
+#design-preview .footer{position:relative;background:#0e2029;color:#dceef5;border:0;margin:0;padding:64px 0 32px;font-size:14px}
+#design-preview .footer a{color:inherit;text-underline-offset:4px}
+#design-preview .preview-footer-title{font-size:clamp(36px,5vw,72px);font-weight:700;letter-spacing:-.035em;line-height:1.05;color:white;margin-bottom:30px}
+#design-preview .preview-footer-links{display:flex;gap:16px 28px;flex-wrap:wrap;margin:0 0 40px;font-size:16px}
+#design-preview .preview-footer-links a{min-height:44px;display:inline-flex;align-items:center}
+@media(min-width:1100px){#design-preview .newsletter-issue-card{display:grid;grid-template-columns:190px 1fr;column-gap:35px}#design-preview .newsletter-issue-card>.eyebrow{grid-row:1/4;align-self:start;margin-top:18px}#design-preview .newsletter-issue-card>h2,#design-preview .newsletter-issue-card>p:not(.eyebrow),#design-preview .newsletter-issue-card>span{grid-column:2}}
+@media(max-width:900px){#design-preview .newsletter-section:not(.newsletter-inline){grid-template-columns:1fr;gap:24px}#design-preview .gc-nav nav{gap:14px}}
+@media(max-width:760px){#design-preview .shell{width:calc(100% - 40px)}#design-preview .gc-nav{min-height:82px;gap:10px}#design-preview .gc-nav .brand{font-size:16px;gap:8px}#design-preview .gc-nav nav{gap:8px}#design-preview .gc-nav nav>.gc-subscribe{font-size:13px;padding:10px 14px;min-height:40px}#design-preview .listing-hero,#design-preview .sos-hero{padding-top:38px;padding-bottom:60px}#design-preview .listing-hero h1{font-size:clamp(38px,9vw,58px);line-height:1.06}#design-preview .newsletter-archive{padding-top:32px}#design-preview .newsletter-issue-card{padding:26px 0}#design-preview .newsletter-issue-body{font-size:17px;padding-top:36px}#design-preview .newsletter-section:not(.newsletter-inline){margin-top:36px;margin-bottom:40px;border-radius:22px}#design-preview .newsletter-fields{flex-direction:column}#design-preview .newsletter-fields button{min-height:50px}#design-preview .people-page{padding-top:36px}#design-preview .footer{padding-top:45px}}
+@media(max-width:370px){#design-preview .gc-nav .brand{font-size:13px;gap:6px}#design-preview .gc-nav nav>.gc-subscribe{font-size:12px;padding:10px}#design-preview .gc-nav .brand-logo{width:30px;height:30px;flex-basis:30px}#design-preview .gc-nav nav{gap:4px}}
+@media(prefers-reduced-motion:reduce){#design-preview .newsletter-issue-card{transition:none}}
+/* The homepage keeps its transparent scene header and original hero signup colors. */
+#design-preview.preview-home .gc-header{background:transparent}
+#design-preview.preview-home .gc-header .shell{width:100%}
+#design-preview .gc-header a{text-decoration:none}
+#design-preview.preview-home .hero .newsletter-fields button{background:#17313a;color:white}
+#design-preview .blog-index{padding-top:36px}
+#design-preview .blog-index-card{padding:32px;margin-bottom:20px}
+#design-preview .blog-post-body,#design-preview .blog-post-sidebar{min-width:0;overflow-wrap:anywhere}
+@media(max-width:900px){#design-preview .blog-post-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){#design-preview .blog-post-body .keep-together{white-space:normal}#design-preview .blog-index-card{padding:24px}#design-preview .blog-post-layout{padding-top:24px}}
