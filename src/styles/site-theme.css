@@ -71,3 +71,5 @@
 
 #gc-site .jobs-post-layout{padding-top:50px}
 #gc-site .jobs-post-layout .jobs-issue-body{padding-top:0}
+#gc-site .newsletter-issue-card--events,#gc-site .newsletter-issue-card--jobs{padding-right:32px;padding-left:32px}
+@media(max-width:760px){#gc-site .newsletter-issue-card--events,#gc-site .newsletter-issue-card--jobs{padding-right:26px;padding-left:26px}}
