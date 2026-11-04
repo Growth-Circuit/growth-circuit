@@ -52,10 +52,10 @@ export const OG_PAGE_TYPES = {
 export type OgPageType = keyof typeof OG_PAGE_TYPES;
 
 const OG_CTAS: Record<OgPageType, string> = {
-  home: "Get free NYC event picks",
-  events: "Get free NYC event picks",
-  newsletterIndex: "Get free NYC event picks",
-  newsletterIssue: "Get free NYC event picks",
+  home: "Find the best NYC marketing events",
+  events: "Find the best NYC marketing events",
+  newsletterIndex: "Find the best NYC marketing events",
+  newsletterIssue: "Find the best NYC marketing events",
   jobsIssue: "Jobs in growth and marketing",
   blogIndex: "Read the blog",
   blogPost: "Read the post",

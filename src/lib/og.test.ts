@@ -72,7 +72,7 @@ describe("OG image copy", () => {
     expect(new Set(cards.map(ogImageAlt)).size).toBe(cards.length);
     for (const card of cards) {
       const visible = [card.eyebrow, card.title, card.description, card.cta, ogImageAlt(card)].map(ogText).join(" ");
-      expect(visible, card.path).not.toMatch(/[\u2014\u2015]|https?:\/\//);
+      expect(visible, card.path).not.toMatch(/[\u2014\u2015]|https?:\/\/|event picks/i);
     }
   });
 
