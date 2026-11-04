@@ -69,7 +69,7 @@ test("reduced motion removes reveal transitions", async ({ page }) => {
 });
 
 for (const [name, role, slug] of [["Matt Ratchford", "Growth Marketing Lead", "matt-ratchford"], ["Obie Odom", "Head of Growth", "obie-odom"]]) {
-  test(`${name} is linked from the wall to a member card with a headshot`, async ({ page }) => {
+  test(`${name} is linked from the wall to a timeline stop with a headshot`, async ({ page }) => {
     await page.goto("/");
     const logo = page.getByRole("link", { name: `Meet ${name}, ${role}`, exact: true });
     await logo.hover();
@@ -78,7 +78,12 @@ for (const [name, role, slug] of [["Matt Ratchford", "Growth Marketing Lead", "m
     const card = page.locator(`#member-${slug}`);
     await expect(card).toBeFocused();
     await expect(card).toContainText(role);
-    await expect(card.getByRole("link", { name, exact: true })).toHaveAttribute("href", /linkedin\.com/);
-    expect(await card.locator("img").evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+    await expect(card.locator(".stopname")).toHaveText(name);
+    const stop = card.locator(".timeline-member-link");
+    await expect(stop).toHaveAttribute("href", /linkedin\.com/);
+    await stop.hover();
+    const photo = stop.locator(".member-reveal img");
+    await expect(photo).toBeVisible();
+    await expect.poll(() => photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
   });
 }

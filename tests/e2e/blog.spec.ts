@@ -296,9 +296,9 @@ test("Oct 23 attendees are not listed on the homepage, the member directory, or 
 
   await page.goto("/");
   for (const name of names) {
-    await expect(page.locator("#members").getByRole("heading", { name, exact: true })).toHaveCount(0);
+    await expect(page.locator(".strip .stopname").filter({ hasText: name })).toHaveCount(0);
   }
-  await expect(page.locator("#members").getByRole("heading", { name: "Andy McCutcheon", exact: true })).toBeVisible();
+  await expect(page.locator(".strip .stopname").filter({ hasText: /^Andy McCutcheon$/ })).toBeVisible();
 
   await page.goto("/people");
   for (const name of names) {
