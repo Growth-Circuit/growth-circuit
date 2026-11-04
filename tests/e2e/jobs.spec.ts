@@ -34,7 +34,7 @@ test("the jobs archive stays reachable and off the events page", async ({ page, 
   await expect(heroSignup).toHaveAttribute("href", "#newsletter");
   await heroSignup.click();
   await expect(page).toHaveURL(/\/jobs\/2026-11-03\/#newsletter$/);
-  await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
+  await expect(page.locator("#newsletter").getByRole("form", { name: "Subscribe to the jobs newsletter" })).toBeVisible();
 
   const newsletter = await page.goto("/newsletter/");
   expect(newsletter?.ok()).toBe(true);
@@ -54,3 +54,33 @@ test("the jobs archive stays reachable and off the events page", async ({ page, 
   const missing = await page.goto("/jobs/2099-01-01/");
   expect(missing?.status()).toBe(404);
 });
+
+for (const prefix of ["", "/homepage-preview"]) {
+  test(`jobs CTAs use Lucy's copy and stay usable on desktop and mobile: ${prefix || 'main'}`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(`${prefix}/jobs/2026-11-03/`);
+    const sidebar = page.locator('.sidebar-email-cta');
+    const bottom = page.locator('#newsletter');
+    const requests: unknown[] = [];
+    await page.route('**/api/newsletter', async route => {
+      requests.push(route.request().postDataJSON());
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+    });
+    for (const cta of [sidebar, bottom]) {
+      await expect(cta.getByRole('heading', { name: 'Let the hottest jobs come to you' })).toBeVisible();
+      await expect(cta.getByText('Caught the builder bug? Turn it into a career at one of the leading tech companies.', { exact: true })).toBeVisible();
+      await cta.getByRole('textbox', { name: 'Email address' }).fill('jobs-preview@example.com');
+      await cta.getByRole('button', { name: 'Email me the jobs' }).click();
+      await expect(cta.getByRole('status')).toContainText('Check your inbox to confirm');
+    }
+    expect(requests).toEqual(Array(2).fill({ email: 'jobs-preview@example.com', consent: true, website: '' }));
+    for (const scroll of [1200, 1800]) {
+      await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), scroll);
+      expect((await sidebar.boundingBox())!.y).toBeCloseTo(100, 0);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await sidebar.evaluate(el => getComputedStyle(el).position)).toBe('static');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+    await expect(bottom.getByRole('button', { name: 'Email me the jobs' })).toBeVisible();
+  });
+}

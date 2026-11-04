@@ -1,4 +1,5 @@
 ---
+import SidebarEmailCta from "@/components/SidebarEmailCta.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import { formatNewsletterIssueDate } from "@/lib/newsletter-issues";
@@ -20,7 +21,7 @@ if (!issue) return new Response("Not found", { status: 404 });
   title={issue.title}
   description={issue.description}
   path={issue.path}
-  bodyClass="sky-page pivot-page"
+  bodyClass="sky-page pivot-page jobs-page"
   socialType="article"
   jsonLd={[
     breadcrumbJsonLd([
@@ -38,7 +39,22 @@ if (!issue) return new Response("Not found", { status: 404 });
     <p class="newsletter-issue-byline">From Lucy</p>
     <p class="newsletter-issue-signup"><a href="#newsletter">Get the jobs newsletter →</a></p>
   </article>
-  <div class="shell newsletter-issue-body jobs-issue-body" set:html={issue.html} />
+  <div class="shell jobs-post-layout">
+    <div class="newsletter-issue-body jobs-issue-body" set:html={issue.html} />
+    <div class="jobs-post-sidebar"><SidebarEmailCta variant="jobs" /></div>
+  </div>
   <p class="shell newsletter-issue-back"><a href="/newsletter?type=jobs">All issues →</a></p>
-  <NewsletterSignup />
+  <NewsletterSignup variant="jobs" />
 </BaseLayout>
+
+<style>
+  .jobs-post-layout { display:grid; grid-template-columns:minmax(0,760px) 280px; gap:48px; justify-content:center; align-items:start; }
+  .jobs-post-layout .jobs-issue-body { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+  .jobs-post-sidebar { align-self:stretch; min-width:0; }
+  @media(max-width:1100px) { .jobs-post-layout { grid-template-columns:minmax(0,1fr) 260px; gap:32px; } }
+  @media(max-width:900px) {
+    .jobs-post-layout { grid-template-columns:minmax(0,1fr); }
+    .jobs-post-sidebar { order:-1; }
+    .jobs-post-sidebar :global(.sidebar-email-cta) { position:static; }
+  }
+</style>

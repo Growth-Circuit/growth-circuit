@@ -68,3 +68,6 @@
 #design-preview .blog-post-body,#design-preview .blog-post-sidebar{min-width:0;overflow-wrap:anywhere}
 @media(max-width:900px){#design-preview .blog-post-layout{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:760px){#design-preview .blog-post-body .keep-together{white-space:normal}#design-preview .blog-index-card{padding:24px}#design-preview .blog-post-layout{padding-top:24px}}
+
+#design-preview .jobs-post-layout{padding-top:50px}
+#design-preview .jobs-post-layout .jobs-issue-body{padding-top:0}

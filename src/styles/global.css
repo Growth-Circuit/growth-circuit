@@ -1829,8 +1829,9 @@ h1 {
   overflow: hidden;
 }
 
-/* Clip blog overflow without creating a scroll container that traps the sticky CTA. */
-.pivot-page.blog-page main {
+/* Clip article overflow without trapping sticky sidebar CTAs. */
+.pivot-page.blog-page main,
+.pivot-page.jobs-page main {
   overflow: clip;
 }
 
