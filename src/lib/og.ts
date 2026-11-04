@@ -26,6 +26,9 @@ export interface OgCard {
   /** Normalized page path, for example `/newsletter/2026-11-02`. */
   path: string;
   pageType: OgPageType;
+  /** Bold small-caps label, like JOBS or EVENTS on newsletter archive cards. Empty for none. */
+  label: string;
+  /** Green small-caps line above the title, usually the date. */
   eyebrow: string;
   title: string;
   description: string;
@@ -103,20 +106,21 @@ export function ogImagePath(pathname: string) {
 }
 
 /**
- * Removes em dashes and URLs from image copy. Em dashes are off-brand, and a
- * link in a description could point somewhere private.
+ * Removes em dashes, spaced en dashes, and URLs from image copy. Dashes used
+ * as separators are off-brand, and a link in a description could point
+ * somewhere private. Unspaced ranges like `10–12` stay.
  */
 export function ogText(value: string) {
   return value
     .replace(/\bhttps?:\/\/\S+/gi, "")
-    .replace(/\s*[\u2014\u2015]\s*/g, ", ")
+    .replace(/\s*[\u2014\u2015]\s*|\s+\u2013\s+/g, ", ")
     .replace(/\s+([,.;:])/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
 }
 
 export function ogImageAlt(card: OgCard) {
-  const parts = [`Growth Circuit social card: ${ogText(card.title)}`, ogText(card.eyebrow)];
+  const parts = [`Growth Circuit social card: ${ogText(card.title)}`, ogText(card.label), ogText(card.eyebrow)];
   if (card.visual.kind === "hero") parts.push(ogText(card.visual.alt));
   return `${parts.filter(Boolean).map((part) => part.replace(/[.\s]+$/, "")).join(". ")}.`;
 }
@@ -133,6 +137,7 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     {
       path: "/",
       pageType: "home",
+      label: "",
       eyebrow: "Growth Circuit · New York City",
       title: "Find the best NYC events for marketers",
       description: copy.homeDescription,
@@ -141,6 +146,7 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     {
       path: "/events",
       pageType: "events",
+      label: "Events",
       eyebrow: "Growth Circuit in New York",
       title: "Upcoming events and past event newsletters",
       description: copy.eventsDescription,
@@ -149,7 +155,8 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     {
       path: "/newsletter",
       pageType: "newsletterIndex",
-      eyebrow: "Growth Circuit newsletter",
+      label: "Newsletter",
+      eyebrow: "Events and jobs issues",
       title: "Catch up on past editions of our newsletter",
       description: copy.newsletterDescription,
       visual: { kind: "rings" },
@@ -157,7 +164,8 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     ...sources.newsletterIssues.map((issue): Omit<OgCard, "cta"> => ({
       path: `/newsletter/${issue.slug}`,
       pageType: "newsletterIssue",
-      eyebrow: `NYC newsletter · ${formatNewsletterIssueDate(issue.publishedAt)}`,
+      label: "Events",
+      eyebrow: formatNewsletterIssueDate(issue.publishedAt),
       title: issue.title,
       description: issue.description,
       visual: { kind: "date", isoDate: issue.publishedAt },
@@ -165,7 +173,8 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     ...sources.jobsIssues.map((issue): Omit<OgCard, "cta"> => ({
       path: `/jobs/${issue.slug}`,
       pageType: "jobsIssue",
-      eyebrow: `Jobs newsletter · ${formatNewsletterIssueDate(issue.publishedAt)}`,
+      label: "Jobs",
+      eyebrow: formatNewsletterIssueDate(issue.publishedAt),
       title: issue.title,
       description: issue.description,
       visual: { kind: "date", isoDate: issue.publishedAt },
@@ -173,7 +182,8 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     {
       path: "/blog",
       pageType: "blogIndex",
-      eyebrow: "Growth Circuit blog",
+      label: "Blog",
+      eyebrow: "Notes and Show & Tell recaps",
       title: "Community notes",
       description: copy.blogDescription,
       visual: { kind: "rings" },
@@ -181,7 +191,8 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     ...sources.blogPosts.map((post): Omit<OgCard, "cta"> => ({
       path: `/blog/${post.id}`,
       pageType: "blogPost",
-      eyebrow: [post.category, formatBlogDate(post.publishDate)].filter(Boolean).join(" · "),
+      label: post.category || "Blog",
+      eyebrow: formatBlogDate(post.publishDate),
       title: post.title,
       description: post.description,
       visual: post.heroImage && post.heroImageAlt
@@ -191,6 +202,7 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     {
       path: "/people",
       pageType: "peopleIndex",
+      label: "People",
       eyebrow: "Member projects",
       title: "People who build",
       description: copy.peopleDescription,
@@ -199,6 +211,7 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     {
       path: "/people/contribute",
       pageType: "peopleContribute",
+      label: "People",
       eyebrow: "Member projects",
       title: "Share your work",
       description: copy.contributeDescription,
@@ -207,6 +220,7 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     ...sources.members.map((member): Omit<OgCard, "cta"> => ({
       path: `/people/${member.github}`,
       pageType: "person",
+      label: "People",
       eyebrow: "Growth Circuit member",
       title: member.name,
       description: member.bio,
@@ -215,6 +229,7 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     {
       path: "/ship-or-skip",
       pageType: "shipOrSkip",
+      label: "Evals",
       eyebrow: "Model evals for GTM",
       title: "Ship or Skip",
       description: copy.shipOrSkipDescription,
@@ -223,7 +238,8 @@ export function buildOgCards(sources: OgSources): OgCard[] {
     ...sources.models.map((model): Omit<OgCard, "cta"> => ({
       path: `/ship-or-skip/${model.modelSlug}`,
       pageType: "shipOrSkipModel",
-      eyebrow: "Ship or Skip · Model evaluation",
+      label: "Ship or Skip",
+      eyebrow: "Model evaluation",
       title: model.model,
       description: model.verdict || `Ship or Skip evaluation of ${model.model} for GTM tasks.`,
       visual: { kind: "verdict", ship: model.ship, skip: model.skip },
