@@ -164,10 +164,22 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
     if (!eyebrow || !heading) return 99;
     return Math.abs(textLeft(eyebrow) - textLeft(heading));
   });
-  await page.setViewportSize({ width: 375, height: 812 });
+  const cardInset = async (width: number) => {
+    await page.setViewportSize({ width, height: 812 });
+    for (const selector of [".newsletter-issue-card--jobs", ".newsletter-issue-card--events"]) {
+      const pad = await page.locator(selector).first().evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { top: style.paddingTop, right: style.paddingRight, left: style.paddingLeft };
+      });
+      expect(pad.left, `${selector} at ${width}`).toBe(pad.top);
+      expect(pad.right, `${selector} at ${width}`).toBe(pad.top);
+      expect(parseFloat(pad.left), `${selector} at ${width}`).toBeGreaterThan(0);
+    }
+  };
+  await cardInset(375);
   expect(await eyebrowLinesUp(page.locator(".newsletter-archive-hero"))).toBeLessThan(1);
   expect(await eyebrowLinesUp(signup)).toBeLessThan(1);
-  await page.setViewportSize({ width: 1280, height: 800 });
+  await cardInset(1280);
   expect(await eyebrowLinesUp(page.locator(".newsletter-archive-hero"))).toBeLessThan(1);
   expect(await eyebrowLinesUp(signup)).toBeLessThan(1);
   await expect(signup.locator(".eyebrow")).toHaveText("The best of growth and marketing");
