@@ -25,7 +25,7 @@ category: Community ops
 - `publishDate` and `updatedDate` are calendar dates (`YYYY-MM-DD`). `updatedDate` cannot be earlier than `publishDate`.
 - `featured: true` promotes a post to the top of `/blog`. If several are featured, the newest one is shown there. If none are, the newest post is.
 - `category` is optional. It appears on the post next to the date.
-- `heroImage` is an optional site path (`/images/post.png`) or `https://` URL. When you set it, `heroImageAlt` is required. Posts without a hero use the site social image.
+- `heroImage` is an optional site path (`/images/post.png`) or `https://` URL. When you set it, `heroImageAlt` is required. Every post gets a generated social image with its title and description at `/og/blog/<slug>.png`. A PNG or JPEG hero appears beside the title in that image.
 - `faq: false` turns off FAQ structured data. Leave it unset to publish `FAQPage` JSON-LD whenever the post has an H2 titled `FAQ`.
 
 Do not set `slug` in frontmatter. The filename is the only slug.
