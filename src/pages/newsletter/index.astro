@@ -4,14 +4,14 @@ import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import { listPublishedJobsIssues } from "@/lib/jobs-issues";
 import { mergeArchiveIssues } from "@/lib/newsletter-archive";
 import { formatNewsletterIssueDate, listPublishedNewsletterIssues } from "@/lib/newsletter-issues";
+import { NEWSLETTER_DESCRIPTION } from "@/lib/page-copy";
 import { breadcrumbJsonLd } from "@/lib/seo";
 
 export const prerender = true;
 
 const [events, jobs] = await Promise.all([listPublishedNewsletterIssues(), listPublishedJobsIssues()]);
 const issues = mergeArchiveIssues(events, jobs);
-const description =
-  "A public archive of Growth Circuit’s weekly NYC events newsletter and Lucy Hoyle’s jobs newsletter.";
+const description = NEWSLETTER_DESCRIPTION;
 ---
 
 <BaseLayout

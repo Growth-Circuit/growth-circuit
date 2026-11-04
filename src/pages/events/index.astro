@@ -3,11 +3,12 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import LumaCalendar from "@/components/LumaCalendar.astro";
 import { formatNewsletterIssueDate, listPublishedNewsletterIssues } from "@/lib/newsletter-issues";
+import { EVENTS_DESCRIPTION } from "@/lib/page-copy";
 
 const issues = await listPublishedNewsletterIssues();
 ---
 
-<BaseLayout title="Events" description="Read past NYC event newsletters, then find upcoming Growth Circuit events and RSVP on Luma." path="/events" bodyClass="sky-page pivot-page">
+<BaseLayout title="Events" description={EVENTS_DESCRIPTION} path="/events" bodyClass="sky-page pivot-page">
   <section class="shell listing-hero">
     <p class="eyebrow">Growth Circuit in New York</p>
     <h1>Past event newsletters.</h1>

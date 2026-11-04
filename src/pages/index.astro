@@ -7,10 +7,11 @@ import CommunityLogoWall from "@/components/CommunityLogoWall.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import LumaCalendar from "@/components/LumaCalendar.astro";
 import { featuredMembers, memberAnchor } from "@/data/featured-community";
+import { HOME_DESCRIPTION, HOME_LEDE, HOME_TITLE } from "@/lib/page-copy";
 ---
 <!doctype html>
 <html lang="en"><head>
-<SiteHead title="Growth Circuit | A Global Community Of Marketing Engineers" appendSiteName={false} description="Find the best NYC events for marketers, delivered to your inbox. Join Nick and Lucy for in-person gatherings, online demos, and a community that gets what you do." />
+<SiteHead title={HOME_TITLE} appendSiteName={false} description={HOME_DESCRIPTION} />
 </head><body class="gc-home" id="gc-site"><a class="skip" href="#main-content">Skip to content</a><main>
 <div class="gc" data-homepage-scene>
   <div class="stage" data-stage="1" role="img" aria-label="An illustrated Brooklyn street beside Prospect Park, with the Manhattan skyline behind it, moving from morning to night as you scroll.">
@@ -23,7 +24,7 @@ import { featuredMembers, memberAnchor } from "@/data/featured-community";
       <SiteHeader />
 
       <h1 class="h1">Find the best NYC events for marketers</h1>
-      <p class="lede">A short, highly curated weekly email of the best NYC and virtual events for marketers in growth and AI, sourced by Nick Lafferty from Profound and Lucy Hoyle from Carta. We also host our own events :)</p>
+      <p class="lede">{HOME_LEDE}</p>
 
       <NewsletterSignup id="hero-newsletter" formOnly />
       <div class="cue" data-cue="1" aria-hidden="true">Scroll to walk through the park</div>

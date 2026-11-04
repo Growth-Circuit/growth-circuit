@@ -11,11 +11,12 @@ import {
   formatCost,
   formatAgreement,
 } from "@/data/ship-or-skip";
+import { SHIP_OR_SKIP_DESCRIPTION } from "@/lib/page-copy";
 import { breadcrumbJsonLd } from "@/lib/seo";
 
 export const prerender = true;
 
-const description = "Ship or Skip: AI model evals for GTM tasks. A verdict in 10 seconds on which model to ship for which marketing task.";
+const description = SHIP_OR_SKIP_DESCRIPTION;
 const sortedReviews = [...modelReviews].sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
 ---
 

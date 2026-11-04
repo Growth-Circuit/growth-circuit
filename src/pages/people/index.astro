@@ -2,13 +2,14 @@
 import { getCollection } from "astro:content";
 import MemberText from "@/components/MemberText.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { PEOPLE_DESCRIPTION } from "@/lib/page-copy";
 import { memberAvatarUrl } from "@/lib/member-schema";
 import "@/styles/members.css";
 
 export const prerender = true;
 const members = (await getCollection("members")).sort((a, b) => a.data.name.localeCompare(b.data.name));
 ---
-<BaseLayout title="Member projects" description="Meet Growth Circuit members and explore the projects they build." bodyClass="sky-page pivot-page">
+<BaseLayout title="Member projects" description={PEOPLE_DESCRIPTION} bodyClass="sky-page pivot-page">
   <section class="shell people-page">
     <div class="people-heading">
       <div><h1>People who build.</h1><p>Meet Growth Circuit members and explore <span class="keep-together">what they’re making.</span></p></div>
