@@ -1,14 +1,17 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
+import { listPublishedJobsIssues } from "@/lib/jobs-issues";
+import { mergeArchiveIssues } from "@/lib/newsletter-archive";
 import { formatNewsletterIssueDate, listPublishedNewsletterIssues } from "@/lib/newsletter-issues";
 import { breadcrumbJsonLd } from "@/lib/seo";
 
 export const prerender = true;
 
-const issues = await listPublishedNewsletterIssues();
+const [events, jobs] = await Promise.all([listPublishedNewsletterIssues(), listPublishedJobsIssues()]);
+const issues = mergeArchiveIssues(events, jobs);
 const description =
-  "A public archive of Growth Circuit’s weekly NYC events newsletter. Five public talks, demos, meetups, and gatherings worth leaving the apartment for.";
+  "A public archive of Growth Circuit’s weekly NYC events newsletter and Lucy Hoyle’s jobs newsletter.";
 ---
 
 <BaseLayout
@@ -25,17 +28,25 @@ const description =
       A short, highly curated weekly email of the best NYC and virtual events for marketers in growth and AI, sourced by
       Nick Lafferty from Profound and Lucy Hoyle from Carta. We also host our own events :)
     </p>
-    <p class="newsletter-issue-signup"><a href="/jobs">Read the jobs newsletter →</a></p>
+    <p class="newsletter-issue-signup"><a href="/newsletter?type=jobs">Read the jobs newsletter →</a></p>
   </section>
 
   <section class="shell newsletter-archive" aria-label="Newsletter issues">
+    <nav class="newsletter-filter" aria-label="Filter issues">
+      <a href="/newsletter" data-filter="all" aria-current="page">All</a>
+      <a href="/newsletter?type=events" data-filter="events">Events</a>
+      <a href="/newsletter?type=jobs" data-filter="jobs">Jobs</a>
+    </nav>
     {
       issues.length ? (
         <ol class="newsletter-issue-list">
           {issues.map((issue) => (
-            <li>
-              <a class="newsletter-issue-card" href={issue.path}>
-                <p class="eyebrow">{formatNewsletterIssueDate(issue.publishedAt)}</p>
+            <li data-issue-type={issue.kind}>
+              <a class:list={["newsletter-issue-card", `newsletter-issue-card--${issue.kind}`]} href={issue.path}>
+                <p class="eyebrow">
+                  <time datetime={issue.publishedAt}>{formatNewsletterIssueDate(issue.publishedAt)}</time>
+                </p>
+                <p class="newsletter-issue-type">{issue.kind === "jobs" ? "Jobs" : "Events"}</p>
                 <h2>{issue.title}</h2>
                 <p>{issue.description}</p>
                 <span>Read this issue →</span>
@@ -50,7 +61,43 @@ const description =
         </div>
       )
     }
+    <p class="newsletter-filter-empty" hidden>No issues in this view yet.</p>
   </section>
 
-  <NewsletterSignup />
+  <NewsletterSignup adaptive />
+  <script is:inline>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var raw = params.get("type");
+      var type = raw === "jobs" || raw === "events" ? raw : "all";
+      var filters = document.querySelectorAll(".newsletter-filter [data-filter]");
+      for (var i = 0; i < filters.length; i++) {
+        var link = filters[i];
+        if (link.getAttribute("data-filter") === type) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      }
+      var items = document.querySelectorAll(".newsletter-issue-list > li[data-issue-type]");
+      var visible = 0;
+      for (var j = 0; j < items.length; j++) {
+        var item = items[j];
+        var show = type === "all" || item.getAttribute("data-issue-type") === type;
+        if (show) {
+          item.removeAttribute("hidden");
+          visible++;
+        } else {
+          item.setAttribute("hidden", "");
+        }
+      }
+      var empty = document.querySelector(".newsletter-filter-empty");
+      if (empty) {
+        if (type !== "all" && visible === 0) empty.removeAttribute("hidden");
+        else empty.setAttribute("hidden", "");
+      }
+      var nodes = document.querySelectorAll("[data-copy-all]");
+      for (var n = 0; n < nodes.length; n++) {
+        var next = nodes[n].getAttribute("data-copy-" + type);
+        if (next) nodes[n].textContent = next;
+      }
+    })();
+  </script>
 </BaseLayout>

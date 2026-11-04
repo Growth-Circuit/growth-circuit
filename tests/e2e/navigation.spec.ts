@@ -5,11 +5,11 @@ for (const path of ["/", "/newsletter", "/newsletter/2026-09-28", "/events", "/n
     await page.goto(path);
     const nav = page.getByRole("navigation", { name: "Main navigation" });
     await expect(nav).toHaveCount(1);
-    await expect(nav.getByRole("link")).toHaveText(["Community", "Newsletter", "Jobs", "Blog", "Events", "Subscribe free"]);
+    await expect(nav.getByRole("link")).toHaveText(["Community", "Newsletter", "Blog", "Events", "Subscribe free"]);
     const prefix = path === "/" ? "" : "/";
     await expect(nav.getByRole("link", { name: "Community", exact: true })).toHaveAttribute("href", `${prefix}#how-it-works`);
     await expect(nav.getByRole("link", { name: "Newsletter", exact: true })).toHaveAttribute("href", "/newsletter");
-    await expect(nav.getByRole("link", { name: "Jobs", exact: true })).toHaveAttribute("href", "/jobs");
+    await expect(nav.getByRole("link", { name: "Jobs", exact: true })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Blog", exact: true })).toHaveAttribute("href", "/blog");
     await expect(nav.getByRole("link", { name: "Events", exact: true })).toHaveAttribute("href", `${prefix}#events`);
     await expect(nav.getByRole("link", { name: "Subscribe free", exact: true })).toHaveAttribute("href", `${prefix}#newsletter`);
@@ -21,7 +21,7 @@ for (const path of ["/", "/newsletter", "/newsletter/2026-09-28", "/events", "/n
     await expect(menuButton).toHaveAttribute("aria-expanded", "false");
     await expect(menuButton).toHaveAttribute("aria-controls", "gc-nav-menu");
     await expect(nav.getByRole("link", { name: "Community", exact: true })).toBeHidden();
-    await expect(nav.getByRole("link", { name: "Jobs", exact: true })).toBeHidden();
+    await expect(nav.getByRole("link", { name: "Newsletter", exact: true })).toBeHidden();
     await expect(nav.getByRole("link", { name: "Blog", exact: true })).toBeHidden();
     await expect(nav.getByRole("link", { name: "Subscribe free", exact: true })).toBeVisible();
     const fits = await page.evaluate(() => {
@@ -44,7 +44,7 @@ for (const path of ["/", "/newsletter", "/newsletter/2026-09-28", "/events", "/n
 
     await page.setViewportSize({ width: 320, height: 812 });
     await expect(nav.getByRole("link", { name: "Community", exact: true })).toBeHidden();
-    await expect(nav.getByRole("link", { name: "Jobs", exact: true })).toBeHidden();
+    await expect(nav.getByRole("link", { name: "Newsletter", exact: true })).toBeHidden();
     await expect(nav.getByRole("link", { name: "Blog", exact: true })).toBeHidden();
     await expect(nav.getByRole("link", { name: "Subscribe free", exact: true })).toBeVisible();
     const fitsNarrow = await page.evaluate(() => {
@@ -81,7 +81,7 @@ test("mobile menu opens, closes, and stays out of the desktop header", async ({ 
   await expect(button).toHaveAttribute("aria-expanded", "true");
   await expect(button).toHaveAccessibleName("Close menu");
   await expect(menu).toBeVisible();
-  for (const name of ["Community", "Newsletter", "Jobs", "Blog", "Events"]) {
+  for (const name of ["Community", "Newsletter", "Blog", "Events"]) {
     const link = nav.getByRole("link", { name, exact: true });
     await expect(link).toBeVisible();
     const box = await link.boundingBox();
@@ -119,19 +119,10 @@ test("mobile menu opens, closes, and stays out of the desktop header", async ({ 
   await expect(button).toHaveAttribute("aria-expanded", "false");
   await expect(menu).toBeHidden();
 
-  await button.click();
-  await nav.getByRole("link", { name: "Jobs", exact: true }).click();
-  await expect(page).toHaveURL(/\/jobs\/?$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("The best jobs in growth and marketing");
-  await expect(button).toHaveAttribute("aria-expanded", "false");
-  await expect(menu).toBeHidden();
-
   await page.setViewportSize({ width: 1280, height: 800 });
   await expect(page.locator(".gc-menu-button")).toBeHidden();
-  await expect(nav.getByRole("link")).toHaveText(["Community", "Newsletter", "Jobs", "Blog", "Events", "Subscribe free"]);
-  await nav.getByRole("link", { name: "Jobs", exact: true }).click();
-  await expect(page).toHaveURL(/\/jobs\/?$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("The best jobs in growth and marketing");
+  await expect(nav.getByRole("link")).toHaveText(["Community", "Newsletter", "Blog", "Events", "Subscribe free"]);
+  await expect(nav.getByRole("link", { name: "Jobs", exact: true })).toHaveCount(0);
   await expect(nav.getByRole("link", { name: "Community", exact: true })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Events", exact: true })).toBeVisible();
 });
