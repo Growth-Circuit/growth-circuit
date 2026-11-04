@@ -1,0 +1,57 @@
+---
+import "@/styles/member-preview.css";
+interface Props {
+  member: { name: string; detail: string; photo: string };
+  invitation?: string;
+}
+const { member, invitation } = Astro.props;
+---
+<span class="member-reveal" aria-hidden="true">
+  <span class="reveal-portrait"><img src={member.photo} alt="" width="52" height="52" loading="lazy" /></span>
+  <span class="reveal-copy"><strong>{member.name}</strong><span class="reveal-role">{member.detail}</span><span class="reveal-invitation">{invitation ?? `Meet ${member.name.split(" ")[0]}`}</span></span>
+  <svg class="reveal-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m-5-5 5 5 5-5" /></svg>
+</span>
+
+<script>
+  const links = document.querySelectorAll<HTMLAnchorElement>("[data-member-preview]");
+  function closeReveals() { links.forEach((link) => delete link.dataset.open); }
+  function positionReveal(link: HTMLAnchorElement) {
+    const panel = link.querySelector<HTMLElement>(".member-reveal")!;
+    panel.style.setProperty("--shift", "0px");
+    const anchor = link.getBoundingClientRect();
+    const left = anchor.left + anchor.width / 2 - panel.offsetWidth / 2;
+    const shift = Math.max(16 - left, Math.min(0, window.innerWidth - 16 - left - panel.offsetWidth));
+    panel.style.setProperty("--shift", `${shift}px`);
+  }
+  links.forEach((link) => {
+    positionReveal(link);
+    let touch = false;
+    link.addEventListener("pointerenter", (event) => {
+      delete link.dataset.dismissed;
+      positionReveal(link);
+      if (event.pointerType !== "touch") { closeReveals(); link.dataset.open = "true"; }
+    });
+    link.addEventListener("pointerleave", (event) => { if (event.pointerType !== "touch") delete link.dataset.open; });
+    link.addEventListener("focus", () => { if (touch) return; delete link.dataset.dismissed; closeReveals(); positionReveal(link); link.dataset.open = "true"; });
+    link.addEventListener("blur", () => delete link.dataset.open);
+    link.addEventListener("pointerdown", (event) => { touch = event.pointerType === "touch"; });
+    link.addEventListener("click", (event) => {
+      if (touch && !link.dataset.open) {
+        event.preventDefault(); closeReveals(); positionReveal(link); link.dataset.open = "true"; touch = false; return;
+      }
+      closeReveals();
+      const target = link.hash && link.origin === location.origin && link.pathname === location.pathname ? document.querySelector<HTMLElement>(link.hash) : null;
+      if (target) {
+        event.preventDefault();
+        history.pushState(null, "", link.hash);
+        target.focus({ preventScroll: true });
+        target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "center" });
+      }
+      touch = false;
+    });
+  });
+  document.addEventListener("pointerdown", (event) => { if (!(event.target as Element).closest("[data-member-preview]")) closeReveals(); });
+  document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeReveals(); });
+  window.addEventListener("resize", () => links.forEach(positionReveal));
+  window.addEventListener("load", () => links.forEach(positionReveal));
+</script>

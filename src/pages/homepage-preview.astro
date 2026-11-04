@@ -1,4 +1,5 @@
 ---
+import MemberPreview from "@/components/MemberPreview.astro";
 import SiteHeader from "@/components/SiteHeader.astro";
 import previewTheme from "@/styles/design-preview.css?raw";
 import CommunityLogoWall from "@/components/CommunityLogoWall.astro";
@@ -80,10 +81,11 @@ import { featuredMembers, memberAnchor } from "@/data/featured-community";
         <ul class="strip" data-strip="1">
           <li class="car" aria-hidden="true"></li>
           {featuredMembers.map((member) => <li class="stop" id={memberAnchor(member.name)} tabindex="-1">
-            <a href={"github" in member ? `/homepage-preview/people/${member.github}` : member.linkedin}>
+            <a class="timeline-member-link" data-member-preview href={"github" in member ? `/homepage-preview/people/${member.github}` : member.linkedin}>
               <span class="stopname">{member.name}</span>
               <span class="dot" aria-hidden="true"></span>
               <span class="stopinfo"><b>{member.company}</b>{member.detail}</span>
+              <MemberPreview member={member} />
             </a>
           </li>)}
         </ul>
@@ -203,6 +205,7 @@ a{color:inherit}
 .strip::before{content:"";position:absolute;left:0;right:0;top:128px;height:8px;margin-top:-4px;border-radius:4px;background:var(--line)}
 .car{position:absolute;top:128px;left:calc(var(--p)*(100% - 44px));width:44px;height:18px;margin-top:-9px;border-radius:7px;background:var(--ink);box-shadow:0 0 0 2px var(--paper);pointer-events:none;z-index:2}
 .stop{position:relative;min-width:0}
+.stop:has([data-open]){z-index:5}
 .stop a{display:block;text-decoration:none;height:100%;padding-top:128px;position:relative}
 .stopname{position:absolute;left:12px;top:86px;width:150px;transform-origin:0 100%;transform:rotate(-38deg);font-weight:700;font-size:18px;line-height:1.1;white-space:nowrap}
 .dot{position:absolute;left:0;top:128px;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:#fff;border:4px solid var(--ink);transition:background .15s;z-index:3}
