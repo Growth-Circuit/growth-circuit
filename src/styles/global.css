@@ -2863,6 +2863,11 @@ h1 {
   text-transform: uppercase;
 }
 
+.newsletter-archive-hero > .eyebrow,
+.newsletter-signup-copy > .eyebrow {
+  margin-left: calc(-1 * (10px + 1px));
+}
+
 .sky-page .newsletter-issue-card--events .eyebrow,
 .sky-page .newsletter-issue-card--jobs .eyebrow {
   color: #17313a;
