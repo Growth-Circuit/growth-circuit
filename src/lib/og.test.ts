@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { listPublishedJobsIssues } from "@/lib/jobs-issues";
 import { listPublishedNewsletterIssues } from "@/lib/newsletter-issues";
@@ -12,7 +14,7 @@ import {
   ogText,
   type OgSources,
 } from "@/lib/og";
-import { renderOgImage } from "@/lib/og-render";
+import { OG_PAGE_TONES, OG_TONES, renderOgImage } from "@/lib/og-render";
 
 async function sources(): Promise<OgSources> {
   return {
@@ -63,6 +65,7 @@ describe("OG image paths", () => {
 describe("OG image copy", () => {
   it("never shows em dashes or links", () => {
     expect(ogText("Ship it \u2014 today, see https://luma.com/private-invite now")).toBe("Ship it, today, see now");
+    expect(ogText("Jobs in marketing \u2013 11/3, 10\u201312 roles")).toBe("Jobs in marketing, 11/3, 10\u201312 roles");
   });
 
   it("gives every page type its own card, image, and alt text", async () => {
@@ -71,7 +74,7 @@ describe("OG image copy", () => {
     expect(new Set(cards.map((card) => ogImagePath(card.path))).size).toBe(cards.length);
     expect(new Set(cards.map(ogImageAlt)).size).toBe(cards.length);
     for (const card of cards) {
-      const visible = [card.eyebrow, card.title, card.description, card.cta, ogImageAlt(card)].map(ogText).join(" ");
+      const visible = [card.label, card.eyebrow, card.title, card.description, card.cta, ogImageAlt(card)].map(ogText).join(" ");
       expect(visible, card.path).not.toMatch(/[\u2014\u2015]|https?:\/\/|event picks/i);
     }
   });
@@ -80,16 +83,27 @@ describe("OG image copy", () => {
     const cards = buildOgCards(await sources());
     const issue = cards.find((card) => card.pageType === "newsletterIssue")!;
     expect(issue.visual).toMatchObject({ kind: "date" });
-    expect(issue.eyebrow).toMatch(/^NYC newsletter · \w+day, \w+ \d{1,2}, \d{4}$/);
-    expect(cards.find((card) => card.pageType === "jobsIssue")?.eyebrow).toMatch(/^Jobs newsletter · /);
+    expect(issue).toMatchObject({ label: "Events", eyebrow: expect.stringMatching(/^\w+day, \w+ \d{1,2}, \d{4}$/) });
+    expect(cards.find((card) => card.pageType === "jobsIssue")).toMatchObject({ label: "Jobs", eyebrow: expect.stringMatching(/^\w+day, /) });
 
     const hero = cards.find((card) => card.path === "/blog/a-post-with-a-hero")!;
     expect(hero.visual).toMatchObject({ kind: "hero" });
     expect(ogImageAlt(hero)).toContain("The Grok Bot front door");
 
     const recap = cards.find((card) => card.path === "/blog/show-and-tell-proactive-agents")!;
-    expect(recap.eyebrow).toBe("Show & Tell · October 25, 2026");
+    expect(recap).toMatchObject({ label: "Show & Tell", eyebrow: "October 25, 2026" });
     expect(JSON.stringify(recap)).not.toMatch(/dabinett|ronen/i);
+  });
+
+  it("uses the newsletter card palette: lilac for events and newsletters, butter for jobs", () => {
+    const css = readFileSync(join(process.cwd(), "src/styles/global.css"), "utf8");
+    const cardBackground = (kind: string) => css.match(new RegExp(`\\.newsletter-issue-card--${kind} \\{\\s*background: (#[0-9a-f]{6});`))?.[1];
+    expect(OG_TONES.lilac).toBe(cardBackground("events"));
+    expect(OG_TONES.butter).toBe(cardBackground("jobs"));
+    expect(readFileSync(join(process.cwd(), "src/styles/site-theme.css"), "utf8")).toContain(`--theme-sky:${OG_TONES.sky}`);
+    for (const pageType of ["events", "newsletterIndex", "newsletterIssue"] as const) expect(OG_PAGE_TONES[pageType], pageType).toBe("lilac");
+    expect(OG_PAGE_TONES.jobsIssue).toBe("butter");
+    expect(Object.keys(OG_PAGE_TONES).sort()).toEqual(Object.keys(OG_PAGE_TYPES).sort());
   });
 
   it("renders a 1200x630 PNG", async () => {
