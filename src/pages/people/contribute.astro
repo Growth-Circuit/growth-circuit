@@ -1,11 +1,12 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { CONTRIBUTE_DESCRIPTION } from "@/lib/page-copy";
 import "@/styles/members.css";
 
 export const prerender = true;
 const prompt = "Create or update my Growth Circuit profile by following https://github.com/Growth-Circuit/growth-circuit/blob/main/PROFILE.md. Ask me for missing required details and only include information I provide or confirm. Use my lowercase GitHub username for the profile filename, preserve my existing projects unless I ask to change them, and show me the profile before submitting it. Work on a new branch in my fork unless I have write access to the organization’s repo. Validate the profile and open a pull request into Growth-Circuit/growth-circuit (main) for Nick and Lucy to review. Verify that the PR targets the organization’s repo and return its URL. Do not merge it.";
 ---
-<BaseLayout title="Create or edit your profile" description="Share your work on Growth Circuit with a GitHub pull request and your favorite coding agent." bodyClass="sky-page pivot-page">
+<BaseLayout title="Create or edit your profile" description={CONTRIBUTE_DESCRIPTION} bodyClass="sky-page pivot-page">
   <section class="shell people-page people-contribute">
     <a href="/people">All members</a>
     <h1>Share your work.</h1>
