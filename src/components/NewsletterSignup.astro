@@ -11,8 +11,8 @@ const eventsCopy = {
 };
 const jobsCopy = {
   eyebrow: "A few roles worth a look",
-  headline: "The best jobs in growth and marketing",
-  body: "Roles at companies like Profound, Clay, and Vercel. A short list from Lucy, alongside the weekly events email.",
+  headline: "Stay on top of the hottest jobs in growth and marketing",
+  body: "Roles for marketers who want to build.",
   button: "Email me the jobs",
   note: "Get the latest jobs list when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.",
 };
@@ -24,6 +24,9 @@ const allCopy = {
   note: "Get the latest note when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.",
 };
 const copy = adaptive ? allCopy : eventsCopy;
+const consent = adaptive
+  ? "I’d like to receive emails from Growth Circuit"
+  : "I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.";
 ---
 <section class:list={["newsletter-section", { shell: !formOnly, "newsletter-inline": formOnly }]} id={id} aria-labelledby={formOnly ? undefined : `${id}-title`} aria-label={formOnly ? "Newsletter signup" : undefined}>
   {!formOnly && <div>
@@ -38,7 +41,7 @@ const copy = adaptive ? allCopy : eventsCopy;
       <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="254" placeholder={formOnly ? "your email address" : "you@example.com"} required />
       <button class="button matcha" type="submit" data-copy-all={adaptive ? allCopy.button : undefined} data-copy-events={adaptive ? eventsCopy.button : undefined} data-copy-jobs={adaptive ? jobsCopy.button : undefined}>{copy.button}</button>
     </div>
-    <label class="newsletter-consent"><input name="consent" type="checkbox" checked required /> <span>I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.</span></label>
+    <label class="newsletter-consent"><input name="consent" type="checkbox" checked required /> <span>{consent}</span></label>
     <div class="newsletter-trap" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
     <p class="newsletter-status" role="status" aria-live="polite"></p>
     <noscript>Please enable JavaScript to use this signup form.</noscript>

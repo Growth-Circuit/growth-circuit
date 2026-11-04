@@ -29,7 +29,7 @@ test("the newsletter archive lists published issues and signup", async ({ page }
   }
   await expect(page.getByText("We haven’t published the first one here yet.")).toHaveCount(0);
   await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
-  await expect(page.getByText("I’d like Growth Circuit’s NYC event emails")).toBeVisible();
+  await expect(page.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
 });
 
 test("published issues render and unpublished slugs stay unpublished", async ({ page }) => {
@@ -160,15 +160,17 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
     "Everything from events to job listings, in one email. A short note from Nick and Lucy when there’s something worth sending.",
   );
   await expect(signup.getByRole("button", { name: "Email me the newsletter" })).toBeVisible();
+  await expect(signup.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
 
   await filter.getByRole("link", { name: "Jobs", exact: true }).click();
   await expect(page).toHaveURL(/\/newsletter\/?\?type=jobs$/);
   await expect(filter.getByRole("link", { name: "Jobs", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /NYC marketing events/ })).toHaveCount(0);
-  await expect(signup.locator("#newsletter-title")).toHaveText("The best jobs in growth and marketing");
+  await expect(signup.locator("#newsletter-title")).toHaveText("Stay on top of the hottest jobs in growth and marketing");
   await expect(signup.getByRole("button", { name: "Email me the jobs" })).toBeVisible();
-  await expect(signup.getByText("Roles at companies like Profound, Clay, and Vercel.")).toBeVisible();
+  await expect(signup.getByText("Roles for marketers who want to build.")).toBeVisible();
+  await expect(signup.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
 
   await page.goto("/newsletter?type=events");
   await expect(page.getByRole("heading", { name: "NYC marketing events this week" })).toBeVisible();
@@ -177,6 +179,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(signup.locator("#newsletter-title")).toHaveText("Find the best NYC events for marketers");
   await expect(signup.getByRole("button", { name: "Email me the events" })).toBeVisible();
   await expect(signup.getByText("Public talks, demos, meetups, and Growth Circuit gatherings.")).toBeVisible();
+  await expect(signup.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
 
   await page.goto("/newsletter?type=nope");
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
@@ -195,6 +198,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   );
   await expect(plain.locator("#newsletter-title")).toHaveText("Stay in the loop");
   await expect(plain.getByRole("button", { name: "Email me the newsletter" })).toBeVisible();
+  await expect(plain.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
   await context.close();
 });
 
