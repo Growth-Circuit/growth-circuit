@@ -5,7 +5,7 @@ for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     const heading = page.locator("#companies-title");
-    await expect(heading).toHaveText("Growth Circuit members include marketers from");
+    await expect(heading).toHaveText("Growth Circuit members include marketers from...");
     await page.evaluate(() => document.fonts.ready);
 
     const lines = await heading.evaluate((element) => {

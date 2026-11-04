@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-test('preview renders its scene and preserves logo member navigation', async ({ page }) => {
+test('homepage renders its scene and preserves logo member navigation', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/homepage-preview');
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex,nofollow');
+  await page.goto('/');
+  await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://growthcircuit.club/');
+  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
   await expect(page.locator('[data-bg]')).toHaveAttribute('width', /[1-9]\d+/);
   const logo = page.getByRole('link', { name: 'Meet Nick Lafferty, Founding Marketing Engineer' });
   await logo.hover();
@@ -16,13 +18,13 @@ test('preview renders its scene and preserves logo member navigation', async ({ 
   expect(errors).toEqual([]);
 });
 
-test('both preview forms submit through the newsletter API', async ({ page }) => {
+test('both homepage forms submit through the newsletter API', async ({ page }) => {
   const requests: unknown[] = [];
   await page.route('**/api/newsletter', async route => {
     requests.push(route.request().postDataJSON());
     await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
   });
-  await page.goto('/homepage-preview');
+  await page.goto('/');
   for (const id of ['hero-newsletter', 'closing-newsletter']) {
     const form = page.locator(`#${id}`);
     await form.getByRole('textbox', { name: 'Email address' }).fill('preview@example.com');
@@ -35,7 +37,7 @@ test('both preview forms submit through the newsletter API', async ({ page }) =>
 test('small screens and reduced motion retain accessible content', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/homepage-preview');
+  await page.goto('/');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
   await expect(page.locator('[data-bg]')).toHaveAttribute('width', /[1-9]\d+/);
   await page.getByText('Do I have to live in New York?', { exact: true }).click();
@@ -43,7 +45,7 @@ test('small screens and reduced motion retain accessible content', async ({ page
 });
 
 test('timeline member previews support hover, keyboard dismissal, and touch', async ({ page, browser }) => {
-  await page.goto('/homepage-preview');
+  await page.goto('/');
   const links = page.locator('.timeline-member-link');
   for (const link of [links.first(), links.last()]) {
     await link.hover();
@@ -59,12 +61,26 @@ test('timeline member previews support hover, keyboard dismissal, and touch', as
   await expect(links.first().locator('.member-reveal')).toBeHidden();
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const mobile = await context.newPage();
-  await mobile.goto('/homepage-preview');
+  await mobile.goto('/');
   const nick = mobile.locator('.timeline-member-link').first();
   await nick.tap();
   await expect(nick.locator('.member-reveal')).toBeVisible();
-  await expect(mobile).toHaveURL(/\/homepage-preview$/);
+  await expect(mobile).toHaveURL(/\/$/);
   await nick.locator('.reveal-invitation').tap();
-  await expect(mobile).toHaveURL(/\/homepage-preview\/people\/nicklafferty$/);
+  await expect(mobile).toHaveURL(/\/people\/nicklafferty\/?$/);
   await context.close();
+});
+
+test('old preview links redirect to the live pages', async ({ request }) => {
+  for (const [from, to] of [
+    ['/homepage-preview', '/'],
+    ['/homepage-preview/', '/'],
+    ['/homepage-preview/newsletter?type=jobs', '/newsletter?type=jobs'],
+    ['/homepage-preview/blog/how-we-run-growth-circuit-with-grok-bot', '/blog/how-we-run-growth-circuit-with-grok-bot'],
+    ['/homepage-preview//evil.example', '/evil.example'],
+  ]) {
+    const response = await request.get(from, { maxRedirects: 0 });
+    expect(response.status(), from).toBe(301);
+    expect(response.headers().location, from).toBe(to);
+  }
 });

@@ -8,12 +8,12 @@ test("the NYC-first site loads through the Worker preview", async ({ page }) => 
   expect(response?.ok()).toBe(true);
   await expect(page).toHaveTitle("Growth Circuit | A Global Community Of Marketing Engineers");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Find the best NYC events for marketers");
-  await expect(page.locator(".gc-hero .newsletter-form")).toBeVisible();
+  await expect(page.locator("#hero-newsletter .newsletter-form")).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: /Growth is better\s*in good company/ })).toBeVisible();
   await expect(page.locator("#events")).toBeVisible();
   await page.getByRole("link", { name: "Subscribe free", exact: true }).click();
   await expect(page).toHaveURL(/\/#newsletter$/);
-  await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
+  await expect(page.locator("#newsletter").getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Read the latest newsletter" })).toHaveAttribute("href", "/newsletter");
 });
 
@@ -26,7 +26,7 @@ test("retired application paths redirect to the newsletter signup", async ({ pag
   await expect(page.getByText("We review community applications")).toHaveCount(0);
   await expect(page.locator("#newsletter")).toBeVisible();
   await expect(page.locator("#newsletter .newsletter-form")).toBeVisible();
-  await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
+  await expect(page.locator("#newsletter").getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
 
   for (const path of ["/apply", "/apply?path=global", "/apply?path=nyc"]) {
     const response = await request.get(path, { maxRedirects: 0 });
@@ -88,7 +88,7 @@ test("the homepage links to the public member directory", async ({ page, request
 test("the community route redirects to the homepage community section", async ({ page }) => {
   const response = await page.goto(`${authBaseUrl}/community`);
   expect(response?.ok()).toBe(true);
-  await expect(page).toHaveURL(/\/#members$/);
+  await expect(page).toHaveURL(/\/#community$/);
   await expect(page.getByRole("heading", { name: "Meet the community", exact: true })).toBeVisible();
 });
 
@@ -97,7 +97,7 @@ test("legacy forum entrypoints point to the homepage community section", async (
     const response = await request.get(`${authBaseUrl}${path}`, { maxRedirects: 0 });
     expect([301, 302, 307, 308]).toContain(response.status());
     const location = response.headers().location || "";
-    expect(new URL(location, "http://127.0.0.1:4321").hash).toBe("#members");
+    expect(new URL(location, "http://127.0.0.1:4321").hash).toBe("#community");
     expect(new URL(location, "http://127.0.0.1:4321").pathname).toBe("/");
   }
 });

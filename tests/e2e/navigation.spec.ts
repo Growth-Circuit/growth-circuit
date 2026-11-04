@@ -11,7 +11,7 @@ for (const path of ["/", "/newsletter", "/newsletter/2026-09-28", "/events", "/n
     await expect(nav.getByRole("link", { name: "Newsletter", exact: true })).toHaveAttribute("href", "/newsletter");
     await expect(nav.getByRole("link", { name: "Jobs", exact: true })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Blog", exact: true })).toHaveAttribute("href", "/blog");
-    await expect(nav.getByRole("link", { name: "Events", exact: true })).toHaveAttribute("href", `${prefix}#events`);
+    await expect(nav.getByRole("link", { name: "Events", exact: true })).toHaveAttribute("href", "/events");
     await expect(nav.getByRole("link", { name: "Subscribe free", exact: true })).toHaveAttribute("href", `${prefix}#newsletter`);
     await expect(page.locator(".gc-menu-button")).toBeHidden();
 
@@ -56,7 +56,7 @@ for (const path of ["/", "/newsletter", "/newsletter/2026-09-28", "/events", "/n
     expect(fitsNarrow).toBe(true);
     await nav.getByRole("link", { name: "Subscribe free", exact: true }).click();
     await expect(page).toHaveURL(/\/#newsletter$/);
-    await expect(page.locator(".gc-hero .newsletter-form")).toBeVisible();
+    await expect(page.locator("#newsletter .newsletter-form")).toBeVisible();
   });
 }
 
@@ -104,10 +104,11 @@ test("mobile menu opens, closes, and stays out of the desktop header", async ({ 
 
   await button.click();
   await nav.getByRole("link", { name: "Events", exact: true }).click();
-  await expect(page).toHaveURL(/\/#events$/);
-  await expect(page.locator("#events")).toBeVisible();
+  await expect(page).toHaveURL(/\/events\/?$/);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(button).toHaveAttribute("aria-expanded", "false");
   await expect(menu).toBeHidden();
+  await page.goto("/");
 
   await button.click();
   await page.locator(".gc-nav-scrim").click();
