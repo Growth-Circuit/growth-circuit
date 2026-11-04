@@ -167,9 +167,10 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(filter.getByRole("link", { name: "Jobs", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /NYC marketing events/ })).toHaveCount(0);
-  await expect(signup.locator("#newsletter-title")).toHaveText("Stay on top of the hottest jobs in growth and marketing");
+  await expect(signup.locator(".eyebrow")).toHaveText("Find your next role today");
+  await expect(signup.locator("#newsletter-title")).toHaveText("The hottest jobs in growth and marketing");
   await expect(signup.getByRole("button", { name: "Email me the jobs" })).toBeVisible();
-  await expect(signup.getByText("Roles for marketers who want to build.")).toBeVisible();
+  await expect(signup.getByText("Caught the builder bug? Turn it into a career at one of the leading U.S. tech companies")).toBeVisible();
   await expect(signup.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
 
   await page.goto("/newsletter?type=events");
