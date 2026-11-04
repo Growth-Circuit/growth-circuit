@@ -1,15 +1,18 @@
 ---
-const homeAnchor = (id: string) => `${Astro.url.pathname === "/" ? "" : "/"}#${id}`;
+interface Props { preview?: boolean; }
+const { preview = false } = Astro.props;
+const base = preview ? "/homepage-preview" : "";
+const homeAnchor = (id: string) => `${preview ? base : Astro.url.pathname === "/" ? "" : "/"}#${id}`;
 ---
 <header class="gc-header">
   <div class="shell gc-nav">
-    <a class="brand" href="/" aria-label="Growth Circuit home"><img class="brand-logo" src="/growth-circuit-icon.svg" alt="" width="44" height="44" /><span>Growth Circuit</span></a>
+    <a class="brand" href={base || "/"} aria-label="Growth Circuit home"><img class="brand-logo" src="/growth-circuit-icon.svg" alt="" width="44" height="44" /><span>Growth Circuit</span></a>
     <nav aria-label="Main navigation">
       <div id="gc-nav-menu" class="gc-nav-menu">
         <a class="gc-nav-about" href={homeAnchor("how-it-works")}>Community</a>
-        <a href="/newsletter">Newsletter</a>
-        <a href="/blog">Blog</a>
-        <a href={homeAnchor("events")}>Events</a>
+        <a href={`${base}/newsletter`}>Newsletter</a>
+        <a href={`${base}/blog`}>Blog</a>
+        <a href={preview ? `${base}/events` : homeAnchor("events")}>Events</a>
       </div>
       <a class="gc-subscribe" href={homeAnchor("newsletter")}>Subscribe free</a>
       <button class="gc-menu-button" type="button" aria-expanded="false" aria-controls="gc-nav-menu" aria-label="Open menu">
