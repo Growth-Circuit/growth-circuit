@@ -176,6 +176,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
     "Events worth showing up to and jobs worth applying for, delivered to your inbox.",
   );
   await expect(signup.getByRole("button", { name: "Email me the newsletter" })).toBeVisible();
+  await expect(signup.locator(".newsletter-note")).toHaveText("Get the latest event and job news when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.");
   await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
 
   await filter.getByRole("link", { name: "Jobs", exact: true }).click();
@@ -187,6 +188,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(signup.locator("#newsletter-title")).toHaveText("Let the hottest jobs come to you");
   await expect(signup.getByRole("button", { name: "Email me the jobs" })).toBeVisible();
   await expect(signup.getByText("Caught the builder bug? Turn it into a career at one of the leading tech companies.", { exact: true })).toBeVisible();
+  await expect(signup.locator(".newsletter-note")).toHaveText("Get the latest event and job news when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.");
   await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
 
   await page.goto("/newsletter?type=events");
@@ -196,6 +198,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(signup.locator("#newsletter-title")).toHaveText("Find the best NYC events for marketers");
   await expect(signup.getByRole("button", { name: "Email me the events" })).toBeVisible();
   await expect(signup.getByText("Public talks, demos, meetups, and Growth Circuit gatherings.")).toBeVisible();
+  await expect(signup.locator(".newsletter-note")).toHaveText("Get the latest event and job news when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.");
   await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
 
   await page.goto("/newsletter?type=nope");
