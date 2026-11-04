@@ -8,7 +8,6 @@ const homeAnchor = (id: string) => `${Astro.url.pathname === "/" ? "" : "/"}#${i
       <div id="gc-nav-menu" class="gc-nav-menu">
         <a class="gc-nav-about" href={homeAnchor("how-it-works")}>Community</a>
         <a href="/newsletter">Newsletter</a>
-        <a href="/newsletter?type=jobs">Jobs</a>
         <a href="/blog">Blog</a>
         <a href={homeAnchor("events")}>Events</a>
       </div>

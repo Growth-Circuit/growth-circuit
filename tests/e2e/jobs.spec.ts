@@ -46,10 +46,8 @@ test("the jobs archive stays reachable and off the events page", async ({ page, 
   expect(events?.ok()).toBe(true);
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toHaveCount(0);
   await expect(page.locator('.newsletter-issue-list a[href^="/jobs"]')).toHaveCount(0);
-  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Jobs", exact: true })).toHaveAttribute(
-    "href",
-    "/newsletter?type=jobs",
-  );
+  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Jobs", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Newsletter", exact: true })).toHaveAttribute("href", "/newsletter");
 
   const missing = await page.goto("/jobs/2099-01-01/");
   expect(missing?.status()).toBe(404);

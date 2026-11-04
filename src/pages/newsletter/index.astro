@@ -62,34 +62,42 @@ const description =
       )
     }
     <p class="newsletter-filter-empty" hidden>No issues in this view yet.</p>
-    <script is:inline>
-      (function () {
-        var params = new URLSearchParams(window.location.search);
-        var raw = params.get("type");
-        var type = raw === "jobs" || raw === "events" ? raw : "all";
-        var filters = document.querySelectorAll(".newsletter-filter [data-filter]");
-        for (var i = 0; i < filters.length; i++) {
-          var link = filters[i];
-          if (link.getAttribute("data-filter") === type) link.setAttribute("aria-current", "page");
-          else link.removeAttribute("aria-current");
-        }
-        if (type === "all") return;
-        var items = document.querySelectorAll(".newsletter-issue-list > li[data-issue-type]");
-        var visible = 0;
-        for (var j = 0; j < items.length; j++) {
-          var item = items[j];
-          if (item.getAttribute("data-issue-type") === type) {
-            item.removeAttribute("hidden");
-            visible++;
-          } else {
-            item.setAttribute("hidden", "");
-          }
-        }
-        var empty = document.querySelector(".newsletter-filter-empty");
-        if (empty && visible === 0) empty.removeAttribute("hidden");
-      })();
-    </script>
   </section>
 
-  <NewsletterSignup />
+  <NewsletterSignup adaptive />
+  <script is:inline>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var raw = params.get("type");
+      var type = raw === "jobs" || raw === "events" ? raw : "all";
+      var filters = document.querySelectorAll(".newsletter-filter [data-filter]");
+      for (var i = 0; i < filters.length; i++) {
+        var link = filters[i];
+        if (link.getAttribute("data-filter") === type) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      }
+      var items = document.querySelectorAll(".newsletter-issue-list > li[data-issue-type]");
+      var visible = 0;
+      for (var j = 0; j < items.length; j++) {
+        var item = items[j];
+        var show = type === "all" || item.getAttribute("data-issue-type") === type;
+        if (show) {
+          item.removeAttribute("hidden");
+          visible++;
+        } else {
+          item.setAttribute("hidden", "");
+        }
+      }
+      var empty = document.querySelector(".newsletter-filter-empty");
+      if (empty) {
+        if (type !== "all" && visible === 0) empty.removeAttribute("hidden");
+        else empty.setAttribute("hidden", "");
+      }
+      var nodes = document.querySelectorAll("[data-copy-all]");
+      for (var n = 0; n < nodes.length; n++) {
+        var next = nodes[n].getAttribute("data-copy-" + type);
+        if (next) nodes[n].textContent = next;
+      }
+    })();
+  </script>
 </BaseLayout>
