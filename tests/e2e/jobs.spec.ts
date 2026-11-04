@@ -40,7 +40,8 @@ test("the jobs archive stays reachable and off the events page", async ({ page, 
   expect(newsletter?.ok()).toBe(true);
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events this week" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Read the jobs newsletter →" })).toHaveAttribute("href", "/newsletter?type=jobs");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Catch up on past editions of our newsletter");
+  await expect(page.getByRole("link", { name: "Read the jobs newsletter →" })).toHaveCount(0);
 
   const events = await page.goto("/events/");
   expect(events?.ok()).toBe(true);

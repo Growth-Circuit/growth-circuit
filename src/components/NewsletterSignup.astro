@@ -11,7 +11,7 @@ const eventsCopy = {
 };
 const jobsCopy = {
   eyebrow: "Find your next role today",
-  headline: "The hottest jobs in growth and marketing",
+  headline: "Let the hottest jobs come to you",
   body: "Caught the builder bug? Turn it into a career at one of the leading tech companies.",
   button: "Email me the jobs",
   note: "Get the latest jobs list when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.",
@@ -29,7 +29,7 @@ const consent = adaptive
   : "I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.";
 ---
 <section class:list={["newsletter-section", { shell: !formOnly, "newsletter-inline": formOnly }]} id={id} aria-labelledby={formOnly ? undefined : `${id}-title`} aria-label={formOnly ? "Newsletter signup" : undefined}>
-  {!formOnly && <div>
+  {!formOnly && <div class:list={[{ "newsletter-signup-copy": adaptive }]}>
     <p class="eyebrow" data-copy-all={adaptive ? allCopy.eyebrow : undefined} data-copy-events={adaptive ? eventsCopy.eyebrow : undefined} data-copy-jobs={adaptive ? jobsCopy.eyebrow : undefined}>{copy.eyebrow}</p>
     <h2 id={`${id}-title`} data-copy-all={adaptive ? allCopy.headline : undefined} data-copy-events={adaptive ? eventsCopy.headline : undefined} data-copy-jobs={adaptive ? jobsCopy.headline : undefined}>{copy.headline}</h2>
     <p data-copy-all={adaptive ? allCopy.body : undefined} data-copy-events={adaptive ? eventsCopy.body : undefined} data-copy-jobs={adaptive ? jobsCopy.body : undefined}>{copy.body}</p>

@@ -1,18 +1,13 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 
 test("the newsletter archive lists published issues and signup", async ({ page }) => {
   const response = await page.goto("/newsletter/");
 
   expect(response?.ok()).toBe(true);
   await expect(page).toHaveTitle(/Newsletter/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("A list of the best NYC events for marketers");
-  await expect(page.locator(".listing-hero > p:not(.eyebrow):not(.newsletter-issue-signup)")).toHaveText(
-    "A short, highly curated weekly email of the best NYC and virtual events for marketers in growth and AI, sourced by Nick Lafferty from Profound and Lucy Hoyle from Carta. We also host our own events :)",
-  );
-  await expect(page.locator(".listing-hero").getByRole("link", { name: "Read the jobs newsletter →" })).toHaveAttribute(
-    "href",
-    "/newsletter?type=jobs",
-  );
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Catch up on past editions of our newsletter");
+  await expect(page.locator(".listing-hero > p:not(.eyebrow)")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Read the jobs newsletter →" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events this week" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/25" })).toBeVisible();
@@ -155,6 +150,26 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(page.locator(".newsletter-issue-card--events .newsletter-issue-type").first()).toHaveText("Events");
 
   const signup = page.locator("#newsletter");
+  const eyebrowLinesUp = (root: Locator) => root.evaluate((el: HTMLElement) => {
+    const textLeft = (node: Element) => {
+      const text = [...node.childNodes].find((child) => child.nodeType === Node.TEXT_NODE) as Text | undefined;
+      if (!text) return 0;
+      const range = document.createRange();
+      range.setStart(text, 0);
+      range.setEnd(text, 1);
+      return range.getBoundingClientRect().left;
+    };
+    const eyebrow = el.querySelector(".eyebrow");
+    const heading = el.querySelector("h1, h2");
+    if (!eyebrow || !heading) return 99;
+    return Math.abs(textLeft(eyebrow) - textLeft(heading));
+  });
+  await page.setViewportSize({ width: 375, height: 812 });
+  expect(await eyebrowLinesUp(page.locator(".newsletter-archive-hero"))).toBeLessThan(1);
+  expect(await eyebrowLinesUp(signup)).toBeLessThan(1);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  expect(await eyebrowLinesUp(page.locator(".newsletter-archive-hero"))).toBeLessThan(1);
+  expect(await eyebrowLinesUp(signup)).toBeLessThan(1);
   await expect(signup.locator(".eyebrow")).toHaveText("The best of growth and marketing");
   await expect(signup.locator("#newsletter-title")).toHaveText("Stay in the circuit");
   await expect(signup.locator("[data-copy-all]").nth(2)).toHaveText(
@@ -169,7 +184,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /NYC marketing events/ })).toHaveCount(0);
   await expect(signup.locator(".eyebrow")).toHaveText("Find your next role today");
-  await expect(signup.locator("#newsletter-title")).toHaveText("The hottest jobs in growth and marketing");
+  await expect(signup.locator("#newsletter-title")).toHaveText("Let the hottest jobs come to you");
   await expect(signup.getByRole("button", { name: "Email me the jobs" })).toBeVisible();
   await expect(signup.getByText("Caught the builder bug? Turn it into a career at one of the leading tech companies.", { exact: true })).toBeVisible();
   await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
