@@ -160,7 +160,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
     "Everything from events to job listings, in one email. A short note from Nick and Lucy when there’s something worth sending.",
   );
   await expect(signup.getByRole("button", { name: "Email me the newsletter" })).toBeVisible();
-  await expect(signup.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
+  await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
 
   await filter.getByRole("link", { name: "Jobs", exact: true }).click();
   await expect(page).toHaveURL(/\/newsletter\/?\?type=jobs$/);
@@ -170,8 +170,8 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(signup.locator(".eyebrow")).toHaveText("Find your next role today");
   await expect(signup.locator("#newsletter-title")).toHaveText("The hottest jobs in growth and marketing");
   await expect(signup.getByRole("button", { name: "Email me the jobs" })).toBeVisible();
-  await expect(signup.getByText("Caught the builder bug? Turn it into a career at one of the leading U.S. tech companies")).toBeVisible();
-  await expect(signup.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
+  await expect(signup.getByText("Caught the builder bug? Turn it into a career at one of the leading tech companies")).toBeVisible();
+  await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
 
   await page.goto("/newsletter?type=events");
   await expect(page.getByRole("heading", { name: "NYC marketing events this week" })).toBeVisible();
@@ -180,7 +180,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(signup.locator("#newsletter-title")).toHaveText("Find the best NYC events for marketers");
   await expect(signup.getByRole("button", { name: "Email me the events" })).toBeVisible();
   await expect(signup.getByText("Public talks, demos, meetups, and Growth Circuit gatherings.")).toBeVisible();
-  await expect(signup.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
+  await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
 
   await page.goto("/newsletter?type=nope");
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
@@ -199,7 +199,7 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   );
   await expect(plain.locator("#newsletter-title")).toHaveText("Stay in the loop");
   await expect(plain.getByRole("button", { name: "Email me the newsletter" })).toBeVisible();
-  await expect(plain.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
+  await expect(plain.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
   await context.close();
 });
 
