@@ -84,7 +84,7 @@ test("the post renders the byline, formatting, and structured data", async ({ pa
   );
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `https://growthcircuit.club${postPath}`);
   await expect(page.locator('meta[property="og:type"]')).toHaveAttribute("content", "article");
-  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /growth-circuit-og-v4\.png$/);
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", `https://growthcircuit.club/og${postPath}.png`);
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
   await expect(page.locator('meta[property="article:modified_time"]')).toHaveAttribute("content", "2026-10-07");
   await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
