@@ -29,8 +29,8 @@
 #gc-site .newsletter-section h2{font-size:clamp(30px,3.4vw,46px);letter-spacing:-.03em;line-height:1.1;color:white}
 #gc-site .newsletter-section .eyebrow,#gc-site .newsletter-section .newsletter-note{color:#c8dce0}
 #gc-site .newsletter-section p,#gc-site .newsletter-section label{color:inherit}
-#gc-site .newsletter-fields input{border:2px solid var(--theme-ink);border-radius:999px;padding:14px 18px;background:white;color:var(--theme-ink);font-size:16px}
-#gc-site .newsletter-fields button{border-radius:999px;padding:14px 22px;background:var(--theme-sun);color:var(--theme-ink);font-weight:650;font-size:14px}
+#gc-site .signup-row input{border:2px solid var(--theme-ink);border-radius:999px;padding:14px 18px;background:white;color:var(--theme-ink);font-size:16px}
+#gc-site .signup-row button{border-radius:999px;padding:14px 22px;background:var(--theme-sun);color:var(--theme-ink);font-weight:650;font-size:14px}
 #gc-site .newsletter-consent{font-size:12px;line-height:1.6}
 #gc-site .newsletter-section .newsletter-archive-link{color:white}
 #gc-site .calendar-section{padding-top:60px;padding-bottom:30px}
@@ -55,14 +55,14 @@
 #gc-site .footer-links a{min-height:44px;display:inline-flex;align-items:center}
 @media(min-width:1100px){#gc-site .newsletter-issue-card{display:grid;grid-template-columns:190px 1fr;column-gap:35px}#gc-site .newsletter-issue-card>.eyebrow{grid-row:1/4;align-self:start;margin-top:18px}#gc-site .newsletter-issue-card>h2,#gc-site .newsletter-issue-card>p:not(.eyebrow),#gc-site .newsletter-issue-card>span{grid-column:2}}
 @media(max-width:900px){#gc-site .newsletter-section:not(.newsletter-inline){grid-template-columns:1fr;gap:24px}#gc-site .gc-nav nav{gap:14px}}
-@media(max-width:760px){#gc-site .shell{width:calc(100% - 40px)}#gc-site .gc-nav{min-height:82px;gap:10px}#gc-site .gc-nav .brand{font-size:16px;gap:8px}#gc-site .gc-nav nav{gap:8px}#gc-site .gc-nav nav>.gc-subscribe{font-size:13px;padding:10px 14px;min-height:40px}#gc-site .listing-hero,#gc-site .sos-hero{padding-top:38px;padding-bottom:60px}#gc-site .listing-hero h1{font-size:clamp(38px,9vw,58px);line-height:1.06}#gc-site .newsletter-archive{padding-top:32px}#gc-site .newsletter-issue-card{padding:26px 0}#gc-site .newsletter-issue-body{font-size:17px;padding-top:36px}#gc-site .newsletter-section:not(.newsletter-inline){margin-top:36px;margin-bottom:40px;border-radius:22px}#gc-site .newsletter-fields{flex-direction:column}#gc-site .newsletter-fields button{min-height:50px}#gc-site .people-page{padding-top:36px}#gc-site .footer{padding-top:45px}}
+@media(max-width:760px){#gc-site .shell{width:calc(100% - 40px)}#gc-site .gc-nav{min-height:82px;gap:10px}#gc-site .gc-nav .brand{font-size:16px;gap:8px}#gc-site .gc-nav nav{gap:8px}#gc-site .gc-nav nav>.gc-subscribe{font-size:13px;padding:10px 14px;min-height:40px}#gc-site .listing-hero,#gc-site .sos-hero{padding-top:38px;padding-bottom:60px}#gc-site .listing-hero h1{font-size:clamp(38px,9vw,58px);line-height:1.06}#gc-site .newsletter-archive{padding-top:32px}#gc-site .newsletter-issue-card{padding:26px 0}#gc-site .newsletter-issue-body{font-size:17px;padding-top:36px}#gc-site .newsletter-section:not(.newsletter-inline){margin-top:36px;margin-bottom:40px;border-radius:22px}#gc-site .signup-row{flex-direction:column}#gc-site .signup-row button{min-height:50px}#gc-site .people-page{padding-top:36px}#gc-site .footer{padding-top:45px}}
 @media(max-width:370px){#gc-site .gc-nav .brand{font-size:13px;gap:6px}#gc-site .gc-nav nav>.gc-subscribe{font-size:12px;padding:10px}#gc-site .gc-nav .brand-logo{width:30px;height:30px;flex-basis:30px}#gc-site .gc-nav nav{gap:4px}}
 @media(prefers-reduced-motion:reduce){#gc-site .newsletter-issue-card{transition:none}}
 /* The homepage keeps its transparent scene header and original hero signup colors. */
 #gc-site.gc-home .gc-header{background:transparent}
 #gc-site.gc-home .gc-header .shell{width:100%}
 #gc-site .gc-header a{text-decoration:none}
-#gc-site.gc-home .hero .newsletter-fields button{background:#17313a;color:white}
+#gc-site.gc-home .hero .signup-row button{background:#17313a;color:white}
 #gc-site .blog-index{padding-top:36px}
 #gc-site .blog-index-card{padding:32px;margin-bottom:20px}
 #gc-site .blog-post-body,#gc-site .blog-post-sidebar{min-width:0;overflow-wrap:anywhere}
