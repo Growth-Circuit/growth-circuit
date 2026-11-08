@@ -9,7 +9,8 @@ test("the newsletter archive lists published issues and signup", async ({ page }
   await expect(page.locator(".listing-hero > p:not(.eyebrow)")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Read the jobs newsletter →" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "NYC marketing events this week" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NYC marketing events 11/8" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NYC marketing events 11/2" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/25" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/18" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 10/11" })).toBeVisible();
@@ -17,7 +18,7 @@ test("the newsletter archive lists published issues and signup", async ({ page }
   await expect(page.getByRole("heading", { name: "NYC marketing events 9/28" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC marketing events 9/21" })).toBeVisible();
   const issueLinks = page.getByRole("link", { name: /Read this issue/ });
-  const issueHrefs = ["/jobs/2026-11-03", "/newsletter/2026-11-02", "/newsletter/2026-10-25", "/newsletter/2026-10-18", "/newsletter/2026-10-11", "/newsletter/2026-10-04", "/newsletter/2026-09-28", "/newsletter/2026-09-21"];
+  const issueHrefs = ["/newsletter/2026-11-08", "/jobs/2026-11-03", "/newsletter/2026-11-02", "/newsletter/2026-10-25", "/newsletter/2026-10-18", "/newsletter/2026-10-11", "/newsletter/2026-10-04", "/newsletter/2026-09-28", "/newsletter/2026-09-21"];
   await expect(issueLinks).toHaveCount(issueHrefs.length);
   for (const [index, href] of issueHrefs.entries()) {
     await expect(issueLinks.nth(index)).toHaveAttribute("href", href);
@@ -107,7 +108,7 @@ test("published issues render and unpublished slugs stay unpublished", async ({ 
 
   const nov2 = await page.goto("/newsletter/2026-11-02/");
   expect(nov2?.ok()).toBe(true);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("NYC marketing events this week");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("NYC marketing events 11/2");
   await expect(page.getByRole("heading", { name: "Upcoming Growth Circuit Events", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "NYC Events This Week", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Coming up", exact: true })).toBeVisible();
@@ -132,6 +133,36 @@ test("published issues render and unpublished slugs stay unpublished", async ({ 
   await expect(growthCircuitLinks).toHaveCount(2);
   await expect(growthCircuitLinks.nth(0)).toHaveAttribute("href", "https://growthcircuit.club/");
   await expect(growthCircuitLinks.nth(1)).toHaveAttribute("href", "https://growthcircuit.club/");
+
+  const nov8 = await page.goto("/newsletter/2026-11-08/");
+  expect(nov8?.ok()).toBe(true);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("NYC marketing events 11/8");
+  await expect(page.getByRole("heading", { name: "Upcoming Growth Circuit Events (our community for marketing engineers)", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NYC Events This Week", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Coming up", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Best thing I read this week", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Show & Tell" })).toHaveAttribute("href", "https://luma.com/p3it0t90");
+  await expect(page.getByRole("link", { name: "Growth Circuit Friendsgiving" })).toHaveAttribute(
+    "href",
+    "https://luma.com/0a9ihccs",
+  );
+  await expect(page.getByRole("link", { name: "Good Friends Run Club" })).toHaveAttribute(
+    "href",
+    "https://luma.com/9cfnuojc",
+  );
+  await expect(page.getByRole("link", { name: "My best advice for sponsoring B2B creators" })).toHaveAttribute(
+    "href",
+    "https://newsletter.mkt1.co/p/b2b-creator-marketing",
+  );
+  await expect(page.locator(".newsletter-issue-body")).toContainText("12:30–1pm ET —");
+  await expect(page.locator(".newsletter-issue-body")).toContainText("Park Slope - come hang w/ me and Lucy!");
+  const nov8Hrefs = await page.locator("a").evaluateAll((links) => links.map((link) => link.getAttribute("href") || ""));
+  expect(nov8Hrefs.join("\n")).not.toMatch(/chat\.whatsapp\.com|wa\.me|loops\.so|app\.loops/i);
+  await expect(page.locator(".newsletter-issue-body")).not.toContainText(/draft/i);
+  const nov8GrowthCircuitLinks = page.locator(".newsletter-issue-body").getByRole("link", { name: "Growth Circuit", exact: true });
+  await expect(nov8GrowthCircuitLinks).toHaveCount(2);
+  await expect(nov8GrowthCircuitLinks.nth(0)).toHaveAttribute("href", "https://growthcircuit.club/");
+  await expect(nov8GrowthCircuitLinks.nth(1)).toHaveAttribute("href", "https://growthcircuit.club/");
 
   const missing = await page.goto("/newsletter/2099-01-01/");
   expect(missing?.status()).toBe(404);
@@ -204,7 +235,8 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
 
   await page.goto("/newsletter?type=events");
-  await expect(page.getByRole("heading", { name: "NYC marketing events this week" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NYC marketing events 11/8" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NYC marketing events 11/2" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toHaveCount(0);
   await expect(filter.getByRole("link", { name: "Events", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(signup.locator("#newsletter-title")).toHaveText("Find the best NYC events for marketers");
@@ -215,7 +247,8 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
 
   await page.goto("/newsletter?type=nope");
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "NYC marketing events this week" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NYC marketing events 11/8" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "NYC marketing events 11/2" })).toBeVisible();
   await expect(filter.getByRole("link", { name: "All", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(signup.locator("#newsletter-title")).toHaveText("Stay in the circuit");
 
@@ -223,7 +256,8 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   const plain = await context.newPage();
   await plain.goto("/newsletter?type=jobs");
   await expect(plain.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
-  await expect(plain.getByRole("heading", { name: "NYC marketing events this week" })).toBeVisible();
+  await expect(plain.getByRole("heading", { name: "NYC marketing events 11/8" })).toBeVisible();
+  await expect(plain.getByRole("heading", { name: "NYC marketing events 11/2" })).toBeVisible();
   await expect(plain.getByRole("navigation", { name: "Filter issues" }).getByRole("link", { name: "All", exact: true })).toHaveAttribute(
     "aria-current",
     "page",
