@@ -22,6 +22,54 @@ test("the sidebar email CTA stays visible through the article on desktop", async
   await expect(cta.getByRole("button", { name: "Email me the events" })).toBeInViewport();
 });
 
+test("the opening paragraph starts below the hero on every blog post", async ({ page }) => {
+  const posts = ["/blog/show-and-tell-proactive-agents/", "/blog/how-we-run-growth-circuit-with-grok-bot/"];
+
+  for (const path of posts) {
+    for (const viewport of [
+      { width: 1280, height: 900 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto(path);
+      const result = await page.evaluate(() => {
+        const hero = document.querySelector(".blog-post-header");
+        const paragraph = document.querySelector(".blog-post-body > p");
+        const toc = document.querySelector(".toc");
+        const cta = document.querySelector(".sidebar-email-cta");
+        if (!(hero instanceof HTMLElement) || !(paragraph instanceof HTMLElement) || !(cta instanceof HTMLElement)) {
+          return { ok: false, reason: "missing hero, opening paragraph, or email signup" };
+        }
+        const top = paragraph.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo(0, Math.max(0, top - 80));
+        const heroBox = hero.getBoundingClientRect();
+        const textBox = paragraph.getBoundingClientRect();
+        const clip = getComputedStyle(hero).clipPath;
+        const parts = clip.startsWith("inset(") ? clip.slice(6, -1).trim().split(/\s+/) : [];
+        const bottom = parts.length === 1 || parts.length === 2 ? parts[0] : parts[2];
+        const inset = Number.parseFloat(bottom ?? "0");
+        const heroVisualBottom = heroBox.bottom - (Number.isFinite(inset) ? inset : 0);
+        const x = textBox.left + Math.min(16, Math.max(1, textBox.width / 2));
+        const y = Math.min(textBox.bottom - 1, textBox.top + 6);
+        const hit = document.elementFromPoint(x, y);
+        const hitOk = Boolean(hit && (hit === paragraph || paragraph.contains(hit)));
+        return {
+          ok: textBox.top + 0.5 >= heroVisualBottom && hitOk,
+          textTop: textBox.top,
+          heroVisualBottom,
+          hitOk,
+          tocPosition: toc ? getComputedStyle(toc).position : "missing",
+          ctaPosition: getComputedStyle(cta).position,
+        };
+      });
+
+      expect(result.ok, `${path} at ${viewport.width}px: ${JSON.stringify(result)}`).toBe(true);
+      expect(result.tocPosition).toBe("static");
+      expect(result.ctaPosition).toBe(viewport.width > 900 ? "sticky" : "static");
+    }
+  }
+});
+
 test("the sidebar email CTA stays in normal flow on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/blog/show-and-tell-proactive-agents/");
