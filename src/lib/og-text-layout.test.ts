@@ -55,6 +55,7 @@ describe("OG text layout", () => {
       blogPosts: [
         { id: "how-we-run-growth-circuit-with-grok-bot", title: "How We Run Growth Circuit With Grok Bot", description: "Growth Circuit runs on a small team of Grok Bot specialists plus one supervisor bot. Here's what each bot does and what Lucy and I still decide.", publishDate: "2026-10-07", category: "Community ops" },
         { id: "show-and-tell-proactive-agents", title: "Show & Tell: Proactive Agents, Jev and Agent Marketing", description: "At our Oct 23 Show & Tell I demoed our Grok Bot newsletter workflow, then we got into proactive agents, Jev benchmarks, and marketing to AI agents.", publishDate: "2026-10-25", category: "Show & Tell" },
+        { id: "show-and-tell-job-roundups-visitor-outreach-ai-editing", title: "Show & Tell: LinkedIn Job Roundups, Website Visitor Outreach and an AI Content Editor", description: "At our Nov 13 Show & Tell I walked through the Grok Bot routine behind my weekly marketing engineer jobs post, Yilan showed her website visitor system, and Maddie demoed a modular Claude content editor.", publishDate: "2026-11-13", category: "Show & Tell" },
       ],
       members,
       models: [{ modelSlug: "claude-fable-5-1", model: "Claude Fable 5.1", verdict: "Ships clean copy with minimal edits. Best for long-form content.", ship: 7, skip: 1 }],
