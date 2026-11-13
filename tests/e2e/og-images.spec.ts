@@ -4,7 +4,7 @@ const pageTypes: Record<string, string> = {
   homepage: '/',
   events: '/events',
   newsletterArchive: '/newsletter',
-  newsletterIssue: '/newsletter/2026-11-08',
+  newsletterIssue: '/newsletter/2026-11-13',
   jobsPost: '/jobs/2026-11-03',
   blog: '/blog',
   blogPost: '/blog/how-we-run-growth-circuit-with-grok-bot',
@@ -59,7 +59,7 @@ test('each page type has its own absolute 1200x630 og:image and twitter:image', 
 });
 
 test('issue images name the issue date and recaps leave out attendees', async ({ request }) => {
-  expect((await socialMeta(request, pageTypes.newsletterIssue)).alt).toContain('Sunday, November 8, 2026');
+  expect((await socialMeta(request, pageTypes.newsletterIssue)).alt).toContain('Friday, November 13, 2026');
   expect((await socialMeta(request, pageTypes.jobsPost)).alt).toContain('Tuesday, November 3, 2026');
   expect((await socialMeta(request, pageTypes.showAndTell)).alt).not.toMatch(/Dabinett|Ronen|Leatherman/);
 });
