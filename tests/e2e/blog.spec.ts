@@ -23,7 +23,11 @@ test("the sidebar email CTA stays visible through the article on desktop", async
 });
 
 test("the opening paragraph starts below the hero on every blog post", async ({ page }) => {
-  const posts = ["/blog/show-and-tell-proactive-agents/", "/blog/how-we-run-growth-circuit-with-grok-bot/"];
+  const posts = [
+    "/blog/show-and-tell-job-roundups-visitor-outreach-ai-editing/",
+    "/blog/show-and-tell-proactive-agents/",
+    "/blog/how-we-run-growth-circuit-with-grok-bot/",
+  ];
 
   for (const path of posts) {
     for (const viewport of [
@@ -101,19 +105,25 @@ test("the blog lists posts newest-first without a featured hero when the newest 
   await expect(listed).toBeVisible();
   await expect(page.getByText("No posts yet.")).toHaveCount(0);
 
+  const latestShowAndTellTitle = "Show & Tell: LinkedIn Job Roundups, Website Visitor Outreach and an AI Content Editor";
   const showAndTellTitle = "Show & Tell: Proactive Agents, Jev and Agent Marketing";
   const grokBotTitle = "How We Run Growth Circuit With Grok Bot";
 
-  // Both posts should be in the list
+  await expect(listed.getByRole("heading", { name: latestShowAndTellTitle })).toBeVisible();
   await expect(listed.getByRole("heading", { name: showAndTellTitle })).toBeVisible();
   await expect(listed.getByRole("heading", { name: grokBotTitle })).toBeVisible();
 
-  // Verify newest-first ordering: Show & Tell (Oct 25) should appear before Grok Bot (Oct 7)
+  // Newest first: Nov 13 recap, then Oct 25 Show & Tell, then the Oct 7 Grok Bot post
   const cards = listed.locator(".blog-index-card");
-  await expect(cards).toHaveCount(2);
-  await expect(cards.first().getByRole("heading")).toHaveText(showAndTellTitle);
-  await expect(cards.nth(1).getByRole("heading")).toHaveText(grokBotTitle);
+  await expect(cards).toHaveCount(3);
+  await expect(cards.first().getByRole("heading")).toHaveText(latestShowAndTellTitle);
+  await expect(cards.nth(1).getByRole("heading")).toHaveText(showAndTellTitle);
+  await expect(cards.nth(2).getByRole("heading")).toHaveText(grokBotTitle);
 
+  await expect(listed.getByRole("link", { name: new RegExp(latestShowAndTellTitle) })).toHaveAttribute(
+    "href",
+    "/blog/show-and-tell-job-roundups-visitor-outreach-ai-editing",
+  );
   await expect(listed.getByRole("link", { name: new RegExp(showAndTellTitle) })).toHaveAttribute(
     "href",
     "/blog/show-and-tell-proactive-agents",
@@ -387,6 +397,8 @@ test("the blog feed and sitemap include the post", async ({ request }) => {
   expect(rss).toContain("<rss");
   expect(rss).toContain(title);
   expect(rss).toContain(postPath);
+  expect(rss).toContain("Show &amp; Tell: LinkedIn Job Roundups, Website Visitor Outreach and an AI Content Editor");
+  expect(rss).toContain("/blog/show-and-tell-job-roundups-visitor-outreach-ai-editing");
   expect(rss).toContain("Nick Lafferty");
   expect(rss).toContain("Lucy Hoyle");
 
@@ -402,6 +414,8 @@ test("the blog feed and sitemap include the post", async ({ request }) => {
     combined += await child.text();
   }
   expect(combined).toContain("/blog/how-we-run-growth-circuit-with-grok-bot");
+  expect(combined).toContain("/blog/show-and-tell-proactive-agents");
+  expect(combined).toContain("/blog/show-and-tell-job-roundups-visitor-outreach-ai-editing");
   expect(combined).toMatch(/\/blog\/?(<\/loc>)/);
   expect(combined).not.toContain("/blog/rss.xml");
 });
