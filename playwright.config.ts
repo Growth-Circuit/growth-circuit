@@ -18,6 +18,11 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "webkit-mobile",
+      testMatch: /home-hero-readability\.spec\.ts/,
+      use: { ...devices["iPhone 14"] },
+    },
   ],
   webServer: {
     command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${port}`,

@@ -284,6 +284,8 @@ html{scroll-behavior:smooth}body{margin:0}.gc .shell{width:min(100% - 64px,1240p
 @media(max-width:760px){.gc .community-companies h2{text-align:left}.gc .community-companies h2 .keep-together{display:block}.boardlinks{display:grid;grid-template-columns:minmax(0,1fr)}.boardlinks .pill{width:100%;justify-content:center;text-align:center}}
 @media(max-width:370px){.nav .brand{font-size:16px;gap:6px}.nav .pill{font-size:13px;padding:0 12px}.nav{gap:8px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+/* Short phone viewports (Safari with its toolbars) pull the skyline up behind the copy, so back the headline and intro like the consent line. */
+@media(max-width:760px) and (max-height:820px){.hero .h1,.hero .lede{width:fit-content;max-width:calc(100% + 20px);margin-left:-10px;padding:4px 10px;border-radius:10px;background:rgba(232,245,248,.92)}}
 
 </style>
 <script>
