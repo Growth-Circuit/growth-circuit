@@ -52,7 +52,7 @@ jobs:
         run: npm run test:db
 
       - name: Install browser
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Run browser tests
         run: npm run test:e2e
