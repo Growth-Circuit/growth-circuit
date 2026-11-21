@@ -13,7 +13,7 @@ const surveyUrl = "https://tally.so/r/e5rbyx?source=website";
 </script>
 <div class="survey-banner" data-survey-banner role="region" aria-label="Survey announcement">
   <a class="survey-banner-link" href={surveyUrl} target="_blank" rel="noopener noreferrer">
-    <span class="survey-banner-copy">Quick ask: spend 90 seconds on my AI at work survey for a piece on how marketers use AI. If I use your quote, I'll send you a $100 gift card.</span>
+    <span class="survey-banner-copy">Take our 90-second survey on how you use AI and get a $100 gift card.</span>
     <span class="survey-banner-cta">Take the survey</span>
   </a>
   <button class="survey-banner-dismiss" type="button" data-survey-dismiss aria-label="Dismiss announcement">
@@ -70,7 +70,6 @@ const surveyUrl = "https://tally.so/r/e5rbyx?source=website";
   }
   .survey-banner-copy {
     min-width: 0;
-    text-wrap: pretty;
   }
   .survey-banner-cta {
     display: inline-flex;
@@ -114,11 +113,13 @@ const surveyUrl = "https://tally.so/r/e5rbyx?source=website";
   @media (max-width: 760px) {
     .survey-banner-link {
       justify-content: flex-start;
-      gap: 6px 10px;
       padding: 8px 48px 8px 16px;
       font-size: 13px;
       line-height: 1.35;
       text-align: left;
+    }
+    .survey-banner-cta {
+      display: none;
     }
   }
 </style>
