@@ -3,6 +3,7 @@ import "@/styles/site-theme.css";
 import MemberPreview from "@/components/MemberPreview.astro";
 import SiteHead from "@/components/SiteHead.astro";
 import SiteHeader from "@/components/SiteHeader.astro";
+import SurveyBanner from "@/components/SurveyBanner.astro";
 import CommunityLogoWall from "@/components/CommunityLogoWall.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import LumaCalendar from "@/components/LumaCalendar.astro";
@@ -20,6 +21,7 @@ import { HOME_DESCRIPTION, HOME_LEDE, HOME_TITLE } from "@/lib/page-copy";
   </div>
 
   <div class="flow">
+    <SurveyBanner />
     <section class="hero wrap" id="main-content">
       <SiteHeader />
 

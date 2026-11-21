@@ -1,0 +1,124 @@
+---
+const surveyUrl = "https://tally.so/r/e5rbyx?source=website";
+---
+
+<script is:inline>
+  try {
+    if (localStorage.getItem("gc-ai-survey-banner") === "dismissed") {
+      document.documentElement.setAttribute("data-survey-banner", "dismissed");
+    }
+  } catch {
+    // Storage can throw in private mode. The banner stays visible.
+  }
+</script>
+<div class="survey-banner" data-survey-banner role="region" aria-label="Survey announcement">
+  <a class="survey-banner-link" href={surveyUrl} target="_blank" rel="noopener noreferrer">
+    <span class="survey-banner-copy">Quick ask: spend 90 seconds on my AI at work survey for a piece on how marketers use AI. If I use your quote, I'll send you a $100 gift card.</span>
+    <span class="survey-banner-cta">Take the survey</span>
+  </a>
+  <button class="survey-banner-dismiss" type="button" data-survey-dismiss aria-label="Dismiss announcement">
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+    </svg>
+  </button>
+</div>
+<script>
+  const storageKey = "gc-ai-survey-banner";
+  for (const banner of document.querySelectorAll("[data-survey-banner]")) {
+    const dismiss = banner.querySelector("[data-survey-dismiss]");
+    if (!(dismiss instanceof HTMLButtonElement)) continue;
+    dismiss.addEventListener("click", () => {
+      if (banner instanceof HTMLElement) banner.hidden = true;
+      document.documentElement.setAttribute("data-survey-banner", "dismissed");
+      try {
+        localStorage.setItem(storageKey, "dismissed");
+      } catch {
+        // The banner is already hidden for this view.
+      }
+    });
+  }
+</script>
+<style>
+  .survey-banner {
+    position: relative;
+    z-index: 40;
+    background: #17313a;
+    color: #dceef5;
+    color-scheme: light;
+  }
+  .survey-banner[hidden] {
+    display: none;
+  }
+  :global(html[data-survey-banner="dismissed"]) .survey-banner {
+    display: none;
+  }
+  .survey-banner-link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 14px;
+    width: 100%;
+    margin: 0;
+    padding: 8px 56px;
+    color: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: center;
+    text-decoration: none;
+  }
+  .survey-banner-copy {
+    min-width: 0;
+    text-wrap: pretty;
+  }
+  .survey-banner-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #f6a93b;
+    color: #17313a;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .survey-banner-link:hover .survey-banner-cta {
+    background: #ffc15a;
+  }
+  .survey-banner-dismiss {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    right: 4px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #dceef5;
+    cursor: pointer;
+  }
+  .survey-banner-dismiss:hover {
+    background: rgba(220, 238, 245, 0.14);
+  }
+  @media (max-width: 760px) {
+    .survey-banner-link {
+      justify-content: flex-start;
+      gap: 6px 10px;
+      padding: 8px 48px 8px 16px;
+      font-size: 13px;
+      line-height: 1.35;
+      text-align: left;
+    }
+  }
+</style>
