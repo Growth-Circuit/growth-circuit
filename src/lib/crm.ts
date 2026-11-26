@@ -29,6 +29,15 @@ export type CrmPerson = {
   region?: string;
   linkedInProfile?: string;
   referralSource?: string;
+  company?: string;
+  companyDomain?: string;
+  jobTitle?: string;
+  jobFunction?: string;
+  seniority?: string;
+  metro?: string;
+  enrichedLocation?: string;
+  enrichmentStatus?: string;
+  enrichedAt?: string;
   communicationPreferences: readonly CommunicationPreference[];
   consentStatus?: CrmConsentStatus;
   consentSource?: string;

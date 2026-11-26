@@ -539,6 +539,84 @@ describe("Notion CRM sync records", () => {
     });
   });
 
+  it("reads enrichment fields from whichever Notion property type is present and omits empties", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({
+        id: "person-enriched",
+        properties: {
+          Name: { title: [{ plain_text: "Alex Example" }] },
+          Email: { email: "alex@example.com" },
+          Company: { select: { name: "Profound" } },
+          "Company domain": { url: "https://www.profound.com" },
+          "Job title": { rich_text: [{ plain_text: "Founding Marketing Engineer" }] },
+          "Job function": { select: { name: "Marketing" } },
+          Seniority: { rich_text: [{ plain_text: "Founder" }] },
+          Metro: { select: { name: "New York" } },
+          "Enriched location": { rich_text: [{ plain_text: "Brooklyn, NY" }] },
+          "Enrichment status": { status: { name: "Pending" } },
+          "Enriched at": { date: { start: "2026-11-26T15:04:00.000Z" } },
+        },
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        id: "person-alt",
+        properties: {
+          Name: { title: [{ plain_text: "Alex Example" }] },
+          Email: { email: "alex@example.com" },
+          Company: { rich_text: [{ plain_text: "Carta" }] },
+          "Company domain": { rich_text: [{ plain_text: "carta.com" }] },
+          "Job title": { select: { name: "Content Engineer" } },
+          "Job function": { rich_text: [{ plain_text: "Content" }] },
+          Seniority: { select: { name: "Senior" } },
+          Metro: { rich_text: [{ plain_text: "New York" }] },
+          "Enriched location": { url: "Brooklyn, NY" },
+          "Enrichment status": { rich_text: [{ plain_text: "Complete" }] },
+          "Enriched at": { rich_text: [{ plain_text: "2026-11-01" }] },
+        },
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        id: "person-empty",
+        properties: {
+          Name: { title: [{ plain_text: "Alex Example" }] },
+          Email: { email: "alex@example.com" },
+          Company: { rich_text: [] },
+          "Company domain": { url: null },
+          "Job title": { select: null },
+          "Enrichment status": { select: { name: "  " } },
+          "Enriched at": { date: null },
+        },
+      }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getNotionPersonForSync("person-enriched", notionEnv)).resolves.toMatchObject({
+      company: "Profound",
+      companyDomain: "https://www.profound.com",
+      jobTitle: "Founding Marketing Engineer",
+      jobFunction: "Marketing",
+      seniority: "Founder",
+      metro: "New York",
+      enrichedLocation: "Brooklyn, NY",
+      enrichmentStatus: "Pending",
+      enrichedAt: "2026-11-26T15:04:00.000Z",
+    });
+    await expect(getNotionPersonForSync("person-alt", notionEnv)).resolves.toMatchObject({
+      company: "Carta",
+      companyDomain: "carta.com",
+      jobTitle: "Content Engineer",
+      jobFunction: "Content",
+      seniority: "Senior",
+      metro: "New York",
+      enrichedLocation: "Brooklyn, NY",
+      enrichmentStatus: "Complete",
+      enrichedAt: "2026-11-01",
+    });
+    const empty = await getNotionPersonForSync("person-empty", notionEnv);
+    expect(empty.company).toBeUndefined();
+    expect(empty.companyDomain).toBeUndefined();
+    expect(empty.jobTitle).toBeUndefined();
+    expect(empty.enrichmentStatus).toBeUndefined();
+    expect(empty.enrichedAt).toBeUndefined();
+  });
+
   it("records a successful Loops sync on the People page", async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ id: "person-1" }));
     vi.stubGlobal("fetch", fetchMock);
@@ -622,6 +700,9 @@ describe("verified newsletter consent", () => {
     expect(properties.Name).toEqual({ title: [] });
     expect(properties.Lifecycle).toEqual({ select: { name: "Broader community" } });
     expect(properties).not.toHaveProperty("Market");
+    expect(properties).not.toHaveProperty("LinkedIn profile");
+    expect(properties).not.toHaveProperty("LinkedIn source");
+    expect(properties).not.toHaveProperty("Enrichment status");
     expect(properties["Communication preferences"]).toEqual({ multi_select: [{ name: "NYC newsletter" }] });
   });
   it("preserves an existing member identity and granted preferences", async () => {
@@ -641,6 +722,34 @@ describe("verified newsletter consent", () => {
     vi.stubGlobal("fetch", fetchMock);
     await upsertNewsletterPersonUnlocked("reader@example.com", notionEnv);
     expect(JSON.parse(fetchMock.mock.calls[1][1].body).properties["Communication preferences"]).toEqual({ multi_select: [{ name: "NYC newsletter" }] });
+  });
+  it("sets LinkedIn on confirm only when the profile is empty", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ results: [{ id: "person-1", properties: { "LinkedIn profile": { url: null } } }] }))
+      .mockResolvedValueOnce(jsonResponse({ id: "person-1", properties: {} }));
+    vi.stubGlobal("fetch", fetchMock);
+    await upsertNewsletterPersonUnlocked("reader@example.com", notionEnv, "https://www.linkedin.com/in/reader");
+    const properties = JSON.parse(fetchMock.mock.calls[1][1].body).properties;
+    expect(properties["LinkedIn profile"]).toEqual({ url: "https://www.linkedin.com/in/reader" });
+    expect(properties["LinkedIn source"]).toEqual({ select: { name: "Website form" } });
+    expect(properties["Enrichment status"]).toEqual({ select: { name: "Pending" } });
+    expect(properties["Sync status"]).toEqual({ select: { name: "Pending" } });
+  });
+  it("does not overwrite a LinkedIn profile stored as a url or as text", async () => {
+    for (const linkedInProperty of [
+      { url: "https://www.linkedin.com/in/existing" },
+      { rich_text: [{ plain_text: "https://www.linkedin.com/in/existing" }] },
+    ]) {
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(jsonResponse({ results: [{ id: "person-1", properties: { "LinkedIn profile": linkedInProperty } }] }))
+        .mockResolvedValueOnce(jsonResponse({ id: "person-1", properties: {} }));
+      vi.stubGlobal("fetch", fetchMock);
+      await upsertNewsletterPersonUnlocked("reader@example.com", notionEnv, "https://www.linkedin.com/in/incoming");
+      const properties = JSON.parse(fetchMock.mock.calls[1][1].body).properties;
+      expect(properties).not.toHaveProperty("LinkedIn profile");
+      expect(properties).not.toHaveProperty("LinkedIn source");
+      expect(properties).not.toHaveProperty("Enrichment status");
+    }
   });
   it("does not reverse a canonical withdrawal", async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ results: [{ id: "person-1", properties: { "Consent status": { select: { name: "Withdrawn" } } } }] }));

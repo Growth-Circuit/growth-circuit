@@ -51,7 +51,7 @@ test("the jobs archive stays reachable and off the events page", async ({ page, 
   await expect(page.locator('.newsletter-issue-list a[href^="/jobs"]')).toHaveCount(0);
   await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Jobs", exact: true })).toHaveCount(0);
   await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Newsletter", exact: true })).toHaveAttribute("href", "/newsletter");
-  await expect(page.locator(".newsletter-note")).toHaveText("Get the latest event list when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.");
+  await expect(page.locator(".newsletter-note")).toHaveCount(0);
 
   const missing = await page.goto("/jobs/2099-01-01/");
   expect(missing?.status()).toBe(404);
@@ -71,10 +71,11 @@ test("jobs CTAs use Lucy's copy and stay usable on desktop and mobile", async ({
     await expect(cta.getByRole('heading', { name: 'Let the hottest jobs come to you' })).toBeVisible();
     await expect(cta.getByText('Caught the builder bug? Turn it into a career at one of the leading tech companies.', { exact: true })).toBeVisible();
     await cta.getByRole('textbox', { name: 'Email address' }).fill('jobs-preview@example.com');
-    await cta.getByRole('button', { name: 'Email me the jobs' }).click();
+    await cta.getByRole('textbox', { name: 'LinkedIn profile' }).fill('https://www.linkedin.com/in/jobs-preview');
+    await cta.getByRole('button', { name: 'Subscribe to Growth Circuit' }).click();
     await expect(cta.getByRole('status')).toContainText('Check your inbox to confirm');
   }
-  expect(requests).toEqual(Array(2).fill({ email: 'jobs-preview@example.com', consent: true, website: '' }));
+  expect(requests).toEqual(Array(2).fill({ email: 'jobs-preview@example.com', linkedin: 'https://www.linkedin.com/in/jobs-preview', consent: true, website: '' }));
   for (const scroll of [1200, 1800]) {
     await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), scroll);
     expect((await sidebar.boundingBox())!.y).toBeCloseTo(100, 0);
@@ -82,5 +83,5 @@ test("jobs CTAs use Lucy's copy and stay usable on desktop and mobile", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await sidebar.evaluate(el => getComputedStyle(el).position)).toBe('static');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
-  await expect(bottom.getByRole('button', { name: 'Email me the jobs' })).toBeVisible();
+  await expect(bottom.getByRole('button', { name: 'Subscribe to Growth Circuit' })).toBeVisible();
 });
