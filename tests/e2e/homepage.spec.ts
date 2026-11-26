@@ -35,6 +35,44 @@ test('both homepage forms submit through the newsletter API', async ({ page }) =
   expect(requests).toEqual(Array(2).fill({ email: 'preview@example.com', linkedin: 'https://www.linkedin.com/in/preview', consent: true, website: '' }));
 });
 
+test('homepage signups pair the fields and leave out the LinkedIn helper', async ({ page }) => {
+  const helper = 'We use your LinkedIn to tailor what we send you.';
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.goto('/');
+  await expect(page.getByText(helper)).toHaveCount(0);
+  for (const id of ['hero-newsletter', 'closing-newsletter']) {
+    const form = page.locator(`#${id} .newsletter-form`);
+    await form.scrollIntoViewIfNeeded();
+    await expect(form).toHaveAttribute('data-layout', 'paired');
+    await expect(form.locator('input[name="email"]')).toHaveJSProperty('required', true);
+    const linkedin = form.locator('input[name="linkedin"]');
+    await expect(linkedin).toHaveJSProperty('required', true);
+    await expect(linkedin).not.toHaveAttribute('aria-describedby');
+    const email = await form.locator('input[name="email"]').boundingBox();
+    const profile = await linkedin.boundingBox();
+    const button = await form.getByRole('button', { name: 'Subscribe to Growth Circuit' }).boundingBox();
+    expect(Math.abs(email!.y - profile!.y)).toBeLessThan(2);
+    expect(Math.abs(email!.width - profile!.width)).toBeLessThan(2);
+    expect(profile!.x).toBeGreaterThan(email!.x + email!.width - 2);
+    expect(button!.y).toBeGreaterThan(email!.y + email!.height - 1);
+    expect(button!.width).toBeGreaterThan(email!.width + profile!.width - 24);
+  }
+  await expect(page.locator('#closing-newsletter .newsletter-form')).toHaveAttribute('data-tone', 'dark');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const id of ['hero-newsletter', 'closing-newsletter']) {
+    const form = page.locator(`#${id} .newsletter-form`);
+    await form.scrollIntoViewIfNeeded();
+    const email = await form.locator('input[name="email"]').boundingBox();
+    const profile = await form.locator('input[name="linkedin"]').boundingBox();
+    const button = await form.getByRole('button', { name: 'Subscribe to Growth Circuit' }).boundingBox();
+    expect(profile!.y).toBeGreaterThan(email!.y + email!.height - 1);
+    expect(button!.y).toBeGreaterThan(profile!.y + profile!.height - 1);
+    expect(Math.abs(email!.width - profile!.width)).toBeLessThan(2);
+    expect(Math.abs(button!.width - email!.width)).toBeLessThan(2);
+  }
+});
+
 // Generic newsletter rules from Fanboy's Annoyance list, which iOS content blockers apply to every site.
 const contentBlockerRules = '.newsletter-fields,#newsletter-inline,#newsletter-form-footer,.footer__newsletter-form,.newsletter-form-wrap,.newsletter-inline-wrapper{display:none!important}';
 

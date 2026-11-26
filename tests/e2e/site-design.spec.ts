@@ -58,6 +58,8 @@ test('newsletter hero signup pairs the fields like the events form', async ({ pa
   await page.goto('/newsletter');
   const form = page.locator('#newsletter-hero .newsletter-form');
   await expect(form).toHaveAttribute('data-layout', 'paired');
+  await expect(form.getByText('We use your LinkedIn to tailor what we send you.')).toHaveCount(0);
+  await expect(form.locator('input[name="linkedin"]')).not.toHaveAttribute('aria-describedby');
   const boxes = async () => {
     const email = await form.locator('input[name="email"]').boundingBox();
     const linkedin = await form.locator('input[name="linkedin"]').boundingBox();
@@ -85,6 +87,9 @@ test('events signup pairs the fields on desktop and stacks them on a phone', asy
   const form = page.locator('#newsletter .newsletter-form');
   await form.scrollIntoViewIfNeeded();
   await expect(form).toHaveAttribute('data-layout', 'paired');
+  await expect(form.getByText('We use your LinkedIn to tailor what we send you.')).toHaveCount(0);
+  await expect(form.locator('input[name="email"]')).toHaveJSProperty('required', true);
+  await expect(form.locator('input[name="linkedin"]')).toHaveJSProperty('required', true);
   await expect(form.getByRole('textbox', { name: 'Email address' })).toHaveAttribute('placeholder', 'nick@growthcircuit.club');
   await expect(form.getByRole('textbox', { name: 'LinkedIn profile' })).toHaveAttribute('placeholder', 'linkedin.com/in/nicklafferty');
   const boxes = async () => {

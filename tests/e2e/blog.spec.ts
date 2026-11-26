@@ -20,6 +20,10 @@ test("the sidebar email CTA stays visible through the article on desktop", async
     window.scrollTo(0, body.getBoundingClientRect().bottom + window.scrollY - window.innerHeight);
   });
   await expect(cta.getByRole("button", { name: "Subscribe to Growth Circuit" })).toBeInViewport();
+  await expect(cta.getByText("We use your LinkedIn to tailor what we send you.")).toHaveCount(0);
+  await expect(cta.locator('input[name="email"]')).toHaveJSProperty("required", true);
+  await expect(cta.locator('input[name="linkedin"]')).toHaveJSProperty("required", true);
+  await expect(cta.locator('input[name="linkedin"]')).not.toHaveAttribute("aria-describedby");
 });
 
 test("the opening paragraph starts below the hero on every blog post", async ({ page }) => {
