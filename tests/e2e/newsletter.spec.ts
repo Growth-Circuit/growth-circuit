@@ -26,8 +26,9 @@ test("the newsletter archive lists published issues and signup", async ({ page }
     await expect(issueLinks.nth(index)).toHaveAttribute("href", href);
   }
   await expect(page.getByText("We haven’t published the first one here yet.")).toHaveCount(0);
-  await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
-  await expect(page.getByText("I want to receive emails from Growth Circuit")).toBeVisible();
+  await expect(page.locator("#newsletter-hero .newsletter-form")).toBeVisible();
+  await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toHaveCount(2);
+  await expect(page.getByText("I want to receive emails from Growth Circuit")).toHaveCount(2);
 });
 
 test("published issues render and unpublished slugs stay unpublished", async ({ page }) => {
@@ -342,8 +343,11 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   );
   await expect(plain.locator("#newsletter .eyebrow")).toHaveText("The best of growth and marketing");
   await expect(plain.locator("#newsletter-title")).toHaveText("Stay in the circuit");
-  await expect(plain.getByRole("button", { name: "Subscribe to Growth Circuit" })).toBeVisible();
-  await expect(plain.locator(".newsletter-consent span")).toHaveText("I want to receive emails from Growth Circuit");
+  await expect(plain.getByRole("button", { name: "Subscribe to Growth Circuit" })).toHaveCount(2);
+  await expect(plain.locator(".newsletter-consent span")).toHaveText([
+    "I want to receive emails from Growth Circuit",
+    "I want to receive emails from Growth Circuit",
+  ]);
   await context.close();
 });
 

@@ -4,7 +4,7 @@ export const HOME_DESCRIPTION =
 export const HOME_LEDE =
   "A short, highly curated weekly email of the best NYC and virtual events for marketers in growth and AI, sourced by Nick Lafferty from Profound and Lucy Hoyle from Carta. We also host our own events :)";
 export const EVENTS_DESCRIPTION =
-  "Read past NYC event newsletters, then find upcoming Growth Circuit events and RSVP on Luma.";
+  "Find upcoming Growth Circuit events and RSVP on Luma.";
 export const NEWSLETTER_DESCRIPTION =
   "A public archive of Growth Circuit’s weekly NYC events newsletter and Lucy Hoyle’s jobs newsletter.";
 export const PEOPLE_DESCRIPTION = "Meet Growth Circuit members and explore the projects they build.";

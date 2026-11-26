@@ -61,7 +61,7 @@ describe("OG text layout", () => {
       models: [{ modelSlug: "claude-fable-5-1", model: "Claude Fable 5.1", verdict: "Ships clean copy with minimal edits. Best for long-form content.", ship: 7, skip: 1 }],
       copy: {
         homeDescription: "A short, highly curated weekly email of the best NYC and virtual events for marketers in growth and AI, sourced by Nick Lafferty from Profound and Lucy Hoyle from Carta. We also host our own events :)",
-        eventsDescription: "Read past NYC event newsletters, then find upcoming Growth Circuit events and RSVP on Luma.",
+        eventsDescription: "Find upcoming Growth Circuit events and RSVP on Luma.",
         newsletterDescription: "A public archive of Growth Circuit’s weekly NYC events newsletter and Lucy Hoyle’s jobs newsletter.",
         blogDescription: "Writing about how Growth Circuit runs, from the weekly newsletter to the bots that help.",
         peopleDescription: "Meet Growth Circuit members and explore the projects they build.",

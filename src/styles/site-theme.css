@@ -14,6 +14,7 @@
 #gc-site .listing-hero::after,#gc-site .sos-hero::after{content:'';position:absolute;left:-50vw;right:-50vw;bottom:-1px;height:30px;background-image:radial-gradient(circle,var(--theme-paper) 1.6px,transparent 2.1px),radial-gradient(circle,var(--theme-paper) 2.6px,transparent 3.1px),radial-gradient(circle,var(--theme-paper) 4.1px,transparent 4.6px);background-size:12px 10px;background-repeat:repeat-x;background-position:0 0,6px 10px,0 20px;pointer-events:none}
 #gc-site .listing-hero h1,#gc-site .sos-hero h1{font-size:clamp(42px,6.7vw,96px);font-weight:700;letter-spacing:-.035em;line-height:1.04;text-wrap:balance;margin:18px 0 26px;max-width:1080px}
 #gc-site .listing-hero>p:not(.eyebrow){font-size:clamp(17px,1.5vw,20px);line-height:1.65;max-width:780px;color:var(--theme-ink)}
+#gc-site .newsletter-archive-hero .newsletter-inline{max-width:540px}
 #gc-site .eyebrow{font-family:inherit;letter-spacing:.06em;font-size:12px;font-weight:600;color:#2f6d52}
 #gc-site .newsletter-archive{padding-top:48px;padding-bottom:48px}
 #gc-site .newsletter-issue-list{border-top:2px solid var(--theme-ink)}

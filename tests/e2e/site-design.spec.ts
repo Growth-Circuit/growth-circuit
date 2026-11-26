@@ -45,7 +45,7 @@ test('mobile menu reaches the newsletter and its form posts to the newsletter AP
   await page.evaluate(() => document.fonts.ready);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   await page.route('**/api/newsletter', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
-  const form = page.locator('.newsletter-form');
+  const form = page.locator('#newsletter-hero .newsletter-form');
   await expect(form).toHaveAttribute('action', '/api/newsletter');
   await form.getByRole('textbox', { name: 'Email address' }).fill('reader@example.com');
   await form.getByRole('textbox', { name: 'LinkedIn profile' }).fill('https://www.linkedin.com/in/reader');
@@ -84,10 +84,11 @@ test('events signup pairs the fields on desktop and stacks them on a phone', asy
 });
 
 test('Luma embeds are allowed where the calendar renders', async ({ request }) => {
-  for (const route of ['/', '/events']) {
-    const response = await request.get(route);
-    expect(response.headers()['content-security-policy'], route).toContain('frame-src \'self\' https://luma.com');
-  }
+  const home = await request.get('/');
+  expect(home.headers()['content-security-policy']).toContain('frame-src \'self\' https://luma.com');
+  const events = await request.get('/events');
+  expect(events.headers()['content-security-policy']).toContain("frame-src 'self'");
+  expect(events.headers()['content-security-policy']).not.toContain('https://luma.com');
 });
 
 test('mobile article content and table of contents fit their column', async ({ page }) => {
