@@ -788,7 +788,7 @@ export async function upsertNewsletterPersonUnlocked(email: string, env: NotionR
   const linkedInProfile = linkedin?.trim();
   if (linkedInProfile && !readFlexibleProperty(existing || {}, "LinkedIn profile")) {
     properties["LinkedIn profile"] = { url: linkedInProfile };
-    properties["LinkedIn source"] = { rich_text: notionRichText("Website form") };
+    properties["LinkedIn source"] = { select: { name: "Website form" } };
     properties["Enrichment status"] = { select: { name: "Pending" } };
   }
   const page = await notionRequest<NotionPage>(

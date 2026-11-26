@@ -48,7 +48,7 @@ Section placements render `NewsletterSignup`. `formOnly` drops the section headi
 
 1. `src/pages/api/newsletter/index.ts` checks origin, body size (2KB), the honeypot, email, consent, and LinkedIn. Missing or invalid LinkedIn is a 422. The route forwards the normalized profile to the Durable Object.
 2. `src/lib/newsletter.ts` stores `{ email, linkedin, hash, expires }` on the pending record and sends the confirm email. Nothing is written to Notion yet.
-3. On confirm, `upsertNewsletterPersonUnlocked` in `src/lib/notion-server.ts` sets People `LinkedIn profile` only when that property is empty, `LinkedIn source` to `Website form`, and `Enrichment status` to `Pending`.
+3. On confirm, `upsertNewsletterPersonUnlocked` in `src/lib/notion-server.ts` sets People `LinkedIn profile` (url) only when that property is empty, `LinkedIn source` to the select `Website form`, and `Enrichment status` to the select `Pending`. Those three properties do not include `Sync status`. Newsletter confirm still sets `Sync status` to `Pending` so the person is queued for Loops.
 4. `parseCrmPerson` reads Company, Company domain, Job title, Job function, Seniority, Metro, Enriched location, Enrichment status, and Enriched at. `buildLoopsContactUpdate` maps those to Loops and omits empty values. It does not set `mailingLists` or `subscribed` for those fields.
 
 ## Tests that submit or render a form

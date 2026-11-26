@@ -731,8 +731,9 @@ describe("verified newsletter consent", () => {
     await upsertNewsletterPersonUnlocked("reader@example.com", notionEnv, "https://www.linkedin.com/in/reader");
     const properties = JSON.parse(fetchMock.mock.calls[1][1].body).properties;
     expect(properties["LinkedIn profile"]).toEqual({ url: "https://www.linkedin.com/in/reader" });
-    expect(properties["LinkedIn source"]).toEqual({ rich_text: [{ type: "text", text: { content: "Website form" } }] });
+    expect(properties["LinkedIn source"]).toEqual({ select: { name: "Website form" } });
     expect(properties["Enrichment status"]).toEqual({ select: { name: "Pending" } });
+    expect(properties["Sync status"]).toEqual({ select: { name: "Pending" } });
   });
   it("does not overwrite a LinkedIn profile stored as a url or as text", async () => {
     for (const linkedInProperty of [
