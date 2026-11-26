@@ -4,18 +4,22 @@ interface Props {
   formLabel: string;
   tone?: "light" | "dark";
   formClass?: string;
-  layout?: "stacked" | "paired";
+  layout?: "stacked" | "paired" | "column";
 }
 const { id, formLabel, tone = "light", formClass, layout = "stacked" } = Astro.props;
 ---
 
 <div class="gc-signup-wrap">
-  <form method="post" action="/api/newsletter" class:list={["gc-signup", "newsletter-form", formClass, { "gc-signup-paired": layout === "paired" }]} data-tone={tone} data-layout={layout} aria-label={formLabel}>
+  <form method="post" action="/api/newsletter" class:list={["gc-signup", "newsletter-form", formClass, { "gc-signup-paired": layout === "paired", "gc-signup-column": layout === "column" }]} data-tone={tone} data-layout={layout} aria-label={formLabel}>
     <div class="gc-signup-fields">
-      <label class="gc-signup-label" for={`${id}-email`}>Email address</label>
-      <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="254" placeholder="nick@growthcircuit.club" required />
-      <label class="gc-signup-label" for={`${id}-linkedin`}>LinkedIn profile</label>
-      <input id={`${id}-linkedin`} name="linkedin" type="url" maxlength="200" autocomplete="off" placeholder="linkedin.com/in/nicklafferty" aria-describedby={`${id}-linkedin-hint`} required />
+      <div class="gc-signup-control">
+        <label class="gc-signup-label" for={`${id}-email`}>Email address</label>
+        <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="254" placeholder="nick@growthcircuit.club" required />
+      </div>
+      <div class="gc-signup-control">
+        <label class="gc-signup-label" for={`${id}-linkedin`}>LinkedIn profile</label>
+        <input id={`${id}-linkedin`} name="linkedin" type="url" maxlength="200" autocomplete="off" placeholder="linkedin.com/in/nicklafferty" aria-describedby={`${id}-linkedin-hint`} required />
+      </div>
     </div>
     <button class="gc-signup-button" type="submit">Subscribe to Growth Circuit</button>
     <p class="gc-signup-hint" id={`${id}-linkedin-hint`}>We use your LinkedIn to tailor what we send you.</p>
@@ -65,10 +69,16 @@ const { id, formLabel, tone = "light", formClass, layout = "stacked" } = Astro.p
   .gc-signup-wrap { container-type: inline-size; width: 100%; }
   .gc-signup { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; row-gap: 10px; align-items: start; position: relative; }
   .gc-signup-fields { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .gc-signup-control { container: signup-field / inline-size; position: relative; width: 100%; min-width: 0; }
   .gc-signup-label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
   .gc-signup input[type="email"],
   .gc-signup input[type="url"] { width: 100%; min-height: 52px; box-sizing: border-box; border: 2px solid #17313a; border-radius: 999px; padding: 12px 18px; background: #fff; color: #17313a; font: inherit; font-size: 17px; }
-  .gc-signup input::placeholder { color: #55717b; font-size: 10px; }
+  .gc-signup input::placeholder { color: #55717b; font-size: 17px; }
+  @container signup-field (max-width: 278px) { .gc-signup input::placeholder { font-size: 16px; } }
+  @container signup-field (max-width: 264px) { .gc-signup input::placeholder { font-size: 15px; } }
+  @container signup-field (max-width: 250px) { .gc-signup input::placeholder { font-size: 14px; } }
+  @container signup-field (max-width: 236px) { .gc-signup input::placeholder { font-size: 13px; } }
+  @container signup-field (max-width: 222px) { .gc-signup input::placeholder { font-size: 12px; } }
   .gc-signup input:focus-visible { outline: 3px solid #f6a93b; outline-offset: 2px; }
   .gc-signup-button { grid-column: 2; grid-row: 1; align-self: start; min-height: 52px; max-width: 100%; border: 0; border-radius: 999px; padding: 12px 22px; background: #17313a; color: #fff; font: inherit; font-size: 16px; font-weight: 600; line-height: 1.2; text-align: center; white-space: nowrap; cursor: pointer; }
   .gc-signup[data-tone="dark"] .gc-signup-button { background: #f6a93b; color: #17313a; }
@@ -88,6 +98,11 @@ const { id, formLabel, tone = "light", formClass, layout = "stacked" } = Astro.p
   .gc-signup-paired .gc-signup-hint { grid-row: 3; }
   .gc-signup-paired .gc-signup-consent { grid-row: 4; }
   .gc-signup-paired .gc-signup-status { grid-row: 5; }
+  .gc-signup-column { grid-template-columns: minmax(0, 1fr); }
+  .gc-signup-column .gc-signup-button { grid-column: 1; grid-row: 2; width: 100%; }
+  .gc-signup-column .gc-signup-hint { grid-row: 3; }
+  .gc-signup-column .gc-signup-consent { grid-row: 4; }
+  .gc-signup-column .gc-signup-status { grid-row: 5; }
   @media (max-width: 390px) {
     .gc-signup-paired .gc-signup-fields { grid-template-columns: minmax(0, 1fr); }
   }
