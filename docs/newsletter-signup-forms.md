@@ -1,6 +1,6 @@
 # Newsletter signup forms
 
-Every public email signup posts to `POST /api/newsletter` and asks for the same three things, in this order: email, LinkedIn profile URL, consent checkbox. The helper line under the fields is `We use your LinkedIn to tailor what we send you.` Placeholders are `your email address` and `your LinkedIn URL`. Labels are visually hidden. Inputs and the button are pills (52px tall, fully rounded). Light surfaces use a dark button. Dark surfaces use the sun button and light helper and consent text. A narrow container stacks the button under the LinkedIn field. A wide container keeps the button beside the email field, with LinkedIn the same width as the email field.
+Every public email signup posts to `POST /api/newsletter` and asks for the same three things, in this order: email, LinkedIn profile URL, consent checkbox. The helper line under the fields is `We use your LinkedIn to tailor what we send you.` Placeholders are `you@example.com` and `linkedin.com/in/nick`. The consent line is `I want to receive emails from Growth Circuit`. The button label is `Subscribe to Growth Circuit`. Those four strings live only in `NewsletterFields.astro`. Labels are visually hidden. Inputs and the button are pills (52px tall, fully rounded). Light surfaces use a dark button. Dark surfaces use the sun button and light helper and consent text. A narrow container stacks the button under the LinkedIn field. A wide container keeps the button beside the email field, with LinkedIn the same width as the email field.
 
 Headings, body copy, and button labels stay with the placement. Do not invent new titles.
 
@@ -9,7 +9,7 @@ Headings, body copy, and button labels stay with the placement. Do not invent ne
 | Piece | Path |
 | --- | --- |
 | Shared fields, placeholders, helper, pill CSS, submit script | `src/components/NewsletterFields.astro` |
-| Section wrapper (eyebrow, headline, body, archive link, WhatsApp note) | `src/components/NewsletterSignup.astro` |
+| Section wrapper (eyebrow, headline, body, archive link) | `src/components/NewsletterSignup.astro` |
 | Card wrapper for sidebars | `src/components/SidebarEmailCta.astro` |
 | Request validation and 422 messages | `src/pages/api/newsletter/index.ts` |
 | LinkedIn normalization, pending record, confirm handoff | `src/lib/newsletter.ts` |
@@ -23,16 +23,16 @@ Homepage contrast chips for the helper and consent live in `src/pages/index.astr
 
 | Placement | File | Line | Pages | Prod URL | Heading | Button | Consent |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homepage hero | `src/pages/index.astro` | 31 | `/` | https://growthcircuit.club/ | Page h1, no form heading | Email me the events | I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime. |
-| Homepage closing | `src/pages/index.astro` | 118 | `/` | https://growthcircuit.club/#newsletter | See you around the neighborhood. | Email me the events | I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime. |
-| Newsletter archive | `src/pages/newsletter/index.astro` | 62 | `/newsletter` | https://growthcircuit.club/newsletter | Stay in the circuit (filter can switch the headline) | Email me the newsletter (filter can switch it) | I'd like to receive emails from Growth Circuit |
-| Newsletter issue | `src/pages/newsletter/[slug].astro` | 46 | `/newsletter/[slug]` | https://growthcircuit.club/newsletter/2026-11-21 | Find the best NYC events for marketers | Email me the events | I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime. |
-| Events page | `src/pages/events/index.astro` | 37 | `/events` | https://growthcircuit.club/events | Find the best NYC events for marketers | Email me the events | I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime. |
-| Jobs issue sidebar | `src/pages/jobs/[slug].astro` | 43 | `/jobs/[slug]` | https://growthcircuit.club/jobs/2026-11-03 | Let the hottest jobs come to you | Email me the jobs | I'd like to receive emails from Growth Circuit |
-| Jobs issue bottom | `src/pages/jobs/[slug].astro` | 46 | `/jobs/[slug]` | https://growthcircuit.club/jobs/2026-11-03 | Let the hottest jobs come to you | Email me the jobs | I'd like to receive emails from Growth Circuit |
-| Blog article sidebar | `src/components/BlogSidebar.astro` | 105 | `/blog/[slug]` | https://growthcircuit.club/blog/show-and-tell-job-roundups-visitor-outreach-ai-editing | Find the best NYC events for marketers | Email me the events | I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime. |
-| Ship or Skip rubric | `src/pages/ship-or-skip/index.astro` | 77 | `/ship-or-skip` | https://growthcircuit.club/ship-or-skip | Steal the rubric | Send me the rubric | I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime. |
-| Ship or Skip bottom | `src/pages/ship-or-skip/index.astro` | 213 | `/ship-or-skip` | https://growthcircuit.club/ship-or-skip#newsletter | Find the best NYC events for marketers | Email me the events | I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime. |
+| Homepage hero | `src/pages/index.astro` | 31 | `/` | https://growthcircuit.club/ | Page h1, no form heading | Subscribe to Growth Circuit | I want to receive emails from Growth Circuit |
+| Homepage closing | `src/pages/index.astro` | 118 | `/` | https://growthcircuit.club/#newsletter | See you around the neighborhood. | Subscribe to Growth Circuit | I want to receive emails from Growth Circuit |
+| Newsletter archive | `src/pages/newsletter/index.astro` | 62 | `/newsletter` | https://growthcircuit.club/newsletter | Stay in the circuit (filter can switch the headline) | Subscribe to Growth Circuit | I want to receive emails from Growth Circuit |
+| Newsletter issue | `src/pages/newsletter/[slug].astro` | 46 | `/newsletter/[slug]` | https://growthcircuit.club/newsletter/2026-11-21 | Find the best NYC events for marketers | Subscribe to Growth Circuit | I want to receive emails from Growth Circuit |
+| Events page | `src/pages/events/index.astro` | 37 | `/events` | https://growthcircuit.club/events | Find the best NYC events for marketers | Subscribe to Growth Circuit | I want to receive emails from Growth Circuit |
+| Jobs issue sidebar | `src/pages/jobs/[slug].astro` | 43 | `/jobs/[slug]` | https://growthcircuit.club/jobs/2026-11-03 | Let the hottest jobs come to you | Subscribe to Growth Circuit | I want to receive emails from Growth Circuit |
+| Jobs issue bottom | `src/pages/jobs/[slug].astro` | 46 | `/jobs/[slug]` | https://growthcircuit.club/jobs/2026-11-03 | Let the hottest jobs come to you | Subscribe to Growth Circuit | I want to receive emails from Growth Circuit |
+| Blog article sidebar | `src/components/BlogSidebar.astro` | 105 | `/blog/[slug]` | https://growthcircuit.club/blog/show-and-tell-job-roundups-visitor-outreach-ai-editing | Find the best NYC events for marketers | Subscribe to Growth Circuit | I want to receive emails from Growth Circuit |
+| Ship or Skip rubric | `src/pages/ship-or-skip/index.astro` | 77 | `/ship-or-skip` | https://growthcircuit.club/ship-or-skip | Steal the rubric | Subscribe to Growth Circuit | I want to receive emails from Growth Circuit |
+| Ship or Skip bottom | `src/pages/ship-or-skip/index.astro` | 213 | `/ship-or-skip` | https://growthcircuit.club/ship-or-skip#newsletter | Find the best NYC events for marketers | Subscribe to Growth Circuit | I want to receive emails from Growth Circuit |
 
 The jobs sidebar and the blog sidebar both render `SidebarEmailCta`. The blog call is the default events card. The jobs call passes `variant="jobs"`.
 

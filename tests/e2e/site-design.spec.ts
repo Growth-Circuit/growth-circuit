@@ -49,7 +49,7 @@ test('mobile menu reaches the newsletter and its form posts to the newsletter AP
   await expect(form).toHaveAttribute('action', '/api/newsletter');
   await form.getByRole('textbox', { name: 'Email address' }).fill('reader@example.com');
   await form.getByRole('textbox', { name: 'LinkedIn profile' }).fill('https://www.linkedin.com/in/reader');
-  await form.getByRole('button', { name: 'Email me the newsletter' }).click();
+  await form.getByRole('button', { name: 'Subscribe to Growth Circuit' }).click();
   await expect(form.getByRole('status')).toContainText('Check your inbox to confirm');
 });
 

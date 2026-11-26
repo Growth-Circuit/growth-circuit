@@ -29,7 +29,7 @@ test('both homepage forms submit through the newsletter API', async ({ page }) =
     const form = page.locator(`#${id}`);
     await form.getByRole('textbox', { name: 'Email address' }).fill('preview@example.com');
     await form.getByRole('textbox', { name: 'LinkedIn profile' }).fill('https://www.linkedin.com/in/preview');
-    await form.getByRole('button', { name: 'Email me the events' }).click();
+    await form.getByRole('button', { name: 'Subscribe to Growth Circuit' }).click();
     await expect(form.getByRole('status')).toContainText('Check your inbox to confirm');
   }
   expect(requests).toEqual(Array(2).fill({ email: 'preview@example.com', linkedin: 'https://www.linkedin.com/in/preview', consent: true, website: '' }));
@@ -54,13 +54,13 @@ for (const width of [375, 390, 768]) {
     await page.goto('/');
     await page.addStyleTag({ content: contentBlockerRules });
     const hero = page.locator('#hero-newsletter');
-    for (const control of [hero.getByRole('textbox', { name: 'Email address' }), hero.getByRole('textbox', { name: 'LinkedIn profile' }), hero.getByRole('button', { name: 'Email me the events' }), hero.getByText('I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.')]) {
+    for (const control of [hero.getByRole('textbox', { name: 'Email address' }), hero.getByRole('textbox', { name: 'LinkedIn profile' }), hero.getByRole('button', { name: 'Subscribe to Growth Circuit' }), hero.getByText('I want to receive emails from Growth Circuit')]) {
       await expect(control).toBeVisible();
       await expect(control).toBeInViewport();
     }
     const closing = page.locator('#closing-newsletter');
     await closing.scrollIntoViewIfNeeded();
-    for (const control of [closing.getByRole('textbox', { name: 'Email address' }), closing.getByRole('textbox', { name: 'LinkedIn profile' }), closing.getByRole('button', { name: 'Email me the events' })]) {
+    for (const control of [closing.getByRole('textbox', { name: 'Email address' }), closing.getByRole('textbox', { name: 'LinkedIn profile' }), closing.getByRole('button', { name: 'Subscribe to Growth Circuit' })]) {
       await expect(control).toBeVisible();
       await expect(control).toBeInViewport();
     }

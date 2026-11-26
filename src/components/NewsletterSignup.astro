@@ -8,20 +8,13 @@ const eventsCopy = {
   eyebrow: "A few good reasons to leave the apartment",
   headline: "Find the best NYC events for marketers",
   body: "Public talks, demos, meetups, and Growth Circuit gatherings. A short list from Nick and Lucy for people building things in marketing, growth, and AI.",
-  button: "Email me the events",
-  note: "Get the latest event list when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.",
 };
 const allCopy = {
   eyebrow: "The best of growth and marketing",
   headline: "Stay in the circuit",
   body: "Events worth showing up to and jobs worth applying for, delivered to your inbox.",
-  button: "Email me the newsletter",
-  note: "Get the latest event and job news when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.",
 };
 const copy = adaptive ? allCopy : variant === "jobs" ? jobsCopy : eventsCopy;
-const consent = adaptive || variant === "jobs"
-  ? "I’d like to receive emails from Growth Circuit"
-  : "I’d like Growth Circuit’s NYC event emails. I can unsubscribe anytime.";
 const surface = tone ?? (formOnly ? "light" : "dark");
 ---
 <section class:list={["newsletter-section", { shell: !formOnly, "newsletter-inline": formOnly }]} id={id} aria-labelledby={formOnly ? undefined : `${id}-title`} aria-label={formOnly ? "Newsletter signup" : undefined}>
@@ -34,13 +27,9 @@ const surface = tone ?? (formOnly ? "light" : "dark");
   <div class="newsletter-signup-form">
     <NewsletterFields
       id={id}
-      button={copy.button}
-      consent={consent}
       formLabel={variant === "jobs" ? "Subscribe to the jobs newsletter" : "Subscribe to the NYC newsletter"}
       tone={surface}
-      buttonCopy={adaptive ? { all: allCopy.button, events: eventsCopy.button, jobs: jobsCopy.button } : undefined}
     />
-    {!formOnly && <p class="newsletter-note" data-copy-all={adaptive ? allCopy.note : undefined} data-copy-events={adaptive ? allCopy.note : undefined} data-copy-jobs={adaptive ? allCopy.note : undefined}>{copy.note}</p>}
   </div>
 </section>
 <style>
@@ -50,6 +39,5 @@ const surface = tone ?? (formOnly ? "light" : "dark");
   .newsletter-section p { line-height:1.6; max-width:38rem; }
   .newsletter-archive-link { font-weight:600; text-decoration:underline; text-underline-offset:4px; }
   .newsletter-signup-form { align-self:center; min-width:0; }
-  .newsletter-note { font-size:.8rem; color:#516358; }
   @media(max-width:760px) { .newsletter-section { grid-template-columns:1fr; gap:1.5rem; } }
 </style>

@@ -36,8 +36,9 @@ test("the ship or skip landing page renders all sections", async ({ page }) => {
   await expect(tasksSection.getByText("Social Thread")).toBeVisible();
 
   await expect(page.getByRole("heading", { name: "Steal the rubric" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Send me the rubric" })).toBeVisible();
-  await expect(page.getByText("I'd like Growth Circuit's NYC event emails")).toBeVisible();
+  const rubric = page.locator(".sos-rubric-form");
+  await expect(rubric.getByRole("button", { name: "Subscribe to Growth Circuit" })).toBeVisible();
+  await expect(rubric.getByText("I want to receive emails from Growth Circuit")).toBeVisible();
 });
 
 test("the ship or skip landing page renders the scorecard grid", async ({ page }) => {
@@ -146,7 +147,7 @@ test("rubric form handles submission", async ({ page }) => {
   await form.getByRole("textbox", { name: "Email address" }).fill("test@example.com");
   await form.getByRole("textbox", { name: "LinkedIn profile" }).fill("https://www.linkedin.com/in/test-example");
   await expect(form.getByRole("checkbox")).toBeChecked();
-  await form.getByRole("button", { name: "Send me the rubric" }).click();
+  await form.getByRole("button", { name: "Subscribe to Growth Circuit" }).click();
 
   await expect(form.getByRole("status")).toContainText("Check your inbox");
   expect(submissions).toBe(1);

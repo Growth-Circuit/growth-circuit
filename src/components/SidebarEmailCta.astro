@@ -6,9 +6,6 @@ interface Props {
   id?: string;
 }
 const { id = "sidebar-newsletter", variant = "events" } = Astro.props;
-const consent = variant === "jobs"
-  ? "I’d like to receive emails from Growth Circuit"
-  : "I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime.";
 ---
 
 <aside class="sidebar-email-cta" aria-labelledby={`${id}-title`}>
@@ -18,8 +15,6 @@ const consent = variant === "jobs"
   </p>
   <NewsletterFields
     id={id}
-    button={variant === "jobs" ? jobsCopy.button : "Email me the events"}
-    consent={consent}
     formLabel={variant === "jobs" ? "Subscribe to the jobs newsletter" : "Subscribe to the NYC newsletter"}
     tone="light"
   />

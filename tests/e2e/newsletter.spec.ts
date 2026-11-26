@@ -27,7 +27,7 @@ test("the newsletter archive lists published issues and signup", async ({ page }
   }
   await expect(page.getByText("We haven’t published the first one here yet.")).toHaveCount(0);
   await expect(page.getByRole("form", { name: "Subscribe to the NYC newsletter" })).toBeVisible();
-  await expect(page.getByText("I’d like to receive emails from Growth Circuit")).toBeVisible();
+  await expect(page.getByText("I want to receive emails from Growth Circuit")).toBeVisible();
 });
 
 test("published issues render and unpublished slugs stay unpublished", async ({ page }) => {
@@ -290,9 +290,9 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(signup.locator("[data-copy-all]").nth(2)).toHaveText(
     "Events worth showing up to and jobs worth applying for, delivered to your inbox.",
   );
-  await expect(signup.getByRole("button", { name: "Email me the newsletter" })).toBeVisible();
-  await expect(signup.locator(".newsletter-note")).toHaveText("Get the latest event and job news when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.");
-  await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
+  await expect(signup.getByRole("button", { name: "Subscribe to Growth Circuit" })).toBeVisible();
+  await expect(signup.locator(".newsletter-note")).toHaveCount(0);
+  await expect(signup.locator(".newsletter-consent span")).toHaveText("I want to receive emails from Growth Circuit");
 
   await filter.getByRole("link", { name: "Jobs", exact: true }).click();
   await expect(page).toHaveURL(/\/newsletter\/?\?type=jobs$/);
@@ -301,10 +301,10 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(page.getByRole("heading", { name: /NYC marketing events/ })).toHaveCount(0);
   await expect(signup.locator(".eyebrow")).toHaveText("Find your next role today");
   await expect(signup.locator("#newsletter-title")).toHaveText("Let the hottest jobs come to you");
-  await expect(signup.getByRole("button", { name: "Email me the jobs" })).toBeVisible();
+  await expect(signup.getByRole("button", { name: "Subscribe to Growth Circuit" })).toBeVisible();
   await expect(signup.getByText("Caught the builder bug? Turn it into a career at one of the leading tech companies.", { exact: true })).toBeVisible();
-  await expect(signup.locator(".newsletter-note")).toHaveText("Get the latest event and job news when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.");
-  await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
+  await expect(signup.locator(".newsletter-note")).toHaveCount(0);
+  await expect(signup.locator(".newsletter-consent span")).toHaveText("I want to receive emails from Growth Circuit");
 
   await page.goto("/newsletter?type=events");
   await expect(page.getByRole("heading", { name: "NYC marketing events 11/21" })).toBeVisible();
@@ -314,10 +314,10 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toHaveCount(0);
   await expect(filter.getByRole("link", { name: "Events", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(signup.locator("#newsletter-title")).toHaveText("Find the best NYC events for marketers");
-  await expect(signup.getByRole("button", { name: "Email me the events" })).toBeVisible();
+  await expect(signup.getByRole("button", { name: "Subscribe to Growth Circuit" })).toBeVisible();
   await expect(signup.getByText("Public talks, demos, meetups, and Growth Circuit gatherings.")).toBeVisible();
-  await expect(signup.locator(".newsletter-note")).toHaveText("Get the latest event and job news when you subscribe. A few days later, we’ll invite you to join the conversation on WhatsApp. WhatsApp is optional.");
-  await expect(signup.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
+  await expect(signup.locator(".newsletter-note")).toHaveCount(0);
+  await expect(signup.locator(".newsletter-consent span")).toHaveText("I want to receive emails from Growth Circuit");
 
   await page.goto("/newsletter?type=nope");
   await expect(page.getByRole("heading", { name: "The best jobs in growth and marketing – 11/3" })).toBeVisible();
@@ -342,8 +342,8 @@ test("newsletter filters are shareable links and keep every issue without JavaSc
   );
   await expect(plain.locator("#newsletter .eyebrow")).toHaveText("The best of growth and marketing");
   await expect(plain.locator("#newsletter-title")).toHaveText("Stay in the circuit");
-  await expect(plain.getByRole("button", { name: "Email me the newsletter" })).toBeVisible();
-  await expect(plain.locator(".newsletter-consent span")).toHaveText("I’d like to receive emails from Growth Circuit");
+  await expect(plain.getByRole("button", { name: "Subscribe to Growth Circuit" })).toBeVisible();
+  await expect(plain.locator(".newsletter-consent span")).toHaveText("I want to receive emails from Growth Circuit");
   await context.close();
 });
 
@@ -366,12 +366,12 @@ for (const width of [1440, 390]) {
     await form.getByRole("checkbox").uncheck();
     await form.getByLabel("Email address", { exact: true }).fill("reader@example.com");
     await form.getByLabel("LinkedIn profile", { exact: true }).fill("https://www.linkedin.com/in/reader");
-    await form.getByRole("button", { name: "Email me the events" }).click();
+    await form.getByRole("button", { name: "Subscribe to Growth Circuit" }).click();
     expect(submissions).toBe(0);
     await form.getByRole("checkbox").check();
-    await form.getByRole("button", { name: "Email me the events" }).click();
+    await form.getByRole("button", { name: "Subscribe to Growth Circuit" }).click();
     await expect(form.getByRole("status")).toHaveText("Please try again shortly.");
-    await form.getByRole("button", { name: "Email me the events" }).click();
+    await form.getByRole("button", { name: "Subscribe to Growth Circuit" }).click();
     await expect(form.getByRole("status")).toContainText("Check your inbox to confirm.");
     expect(submissions).toBe(2);
     await expect(form.getByLabel("Email address", { exact: true })).toBeEmpty();

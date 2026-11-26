@@ -1,38 +1,24 @@
 ---
-interface ButtonCopy {
-  all?: string;
-  events?: string;
-  jobs?: string;
-}
 interface Props {
   id: string;
-  button: string;
-  consent: string;
   formLabel: string;
   tone?: "light" | "dark";
   formClass?: string;
-  buttonCopy?: ButtonCopy;
 }
-const { id, button, consent, formLabel, tone = "light", formClass, buttonCopy } = Astro.props;
+const { id, formLabel, tone = "light", formClass } = Astro.props;
 ---
 
 <div class="gc-signup-wrap">
   <form method="post" action="/api/newsletter" class:list={["gc-signup", "newsletter-form", formClass]} data-tone={tone} aria-label={formLabel}>
     <div class="gc-signup-fields">
       <label class="gc-signup-label" for={`${id}-email`}>Email address</label>
-      <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="254" placeholder="your email address" required />
+      <input id={`${id}-email`} name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required />
       <label class="gc-signup-label" for={`${id}-linkedin`}>LinkedIn profile</label>
-      <input id={`${id}-linkedin`} name="linkedin" type="url" maxlength="200" autocomplete="off" placeholder="your LinkedIn URL" aria-describedby={`${id}-linkedin-hint`} required />
+      <input id={`${id}-linkedin`} name="linkedin" type="url" maxlength="200" autocomplete="off" placeholder="linkedin.com/in/nick" aria-describedby={`${id}-linkedin-hint`} required />
     </div>
-    <button
-      class="gc-signup-button"
-      type="submit"
-      data-copy-all={buttonCopy?.all}
-      data-copy-events={buttonCopy?.events}
-      data-copy-jobs={buttonCopy?.jobs}
-    >{button}</button>
+    <button class="gc-signup-button" type="submit">Subscribe to Growth Circuit</button>
     <p class="gc-signup-hint" id={`${id}-linkedin-hint`}>We use your LinkedIn to tailor what we send you.</p>
-    <label class="gc-signup-consent newsletter-consent"><input name="consent" type="checkbox" checked required /> <span>{consent}</span></label>
+    <label class="gc-signup-consent newsletter-consent"><input name="consent" type="checkbox" checked required /> <span>I want to receive emails from Growth Circuit</span></label>
     <div class="gc-signup-trap" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
     <p class="gc-signup-status newsletter-status" role="status" aria-live="polite"></p>
     <noscript>Please enable JavaScript to use this signup form.</noscript>
@@ -83,7 +69,7 @@ const { id, button, consent, formLabel, tone = "light", formClass, buttonCopy } 
   .gc-signup input[type="url"] { width: 100%; min-height: 52px; box-sizing: border-box; border: 2px solid #17313a; border-radius: 999px; padding: 12px 18px; background: #fff; color: #17313a; font: inherit; font-size: 17px; }
   .gc-signup input::placeholder { color: #55717b; }
   .gc-signup input:focus-visible { outline: 3px solid #f6a93b; outline-offset: 2px; }
-  .gc-signup-button { grid-column: 2; grid-row: 1; align-self: start; min-height: 52px; border: 0; border-radius: 999px; padding: 12px 24px; background: #17313a; color: #fff; font: inherit; font-size: 17px; font-weight: 600; line-height: 1.2; white-space: nowrap; cursor: pointer; }
+  .gc-signup-button { grid-column: 2; grid-row: 1; align-self: start; min-height: 52px; max-width: 100%; border: 0; border-radius: 999px; padding: 12px 22px; background: #17313a; color: #fff; font: inherit; font-size: 16px; font-weight: 600; line-height: 1.2; text-align: center; white-space: nowrap; cursor: pointer; }
   .gc-signup[data-tone="dark"] .gc-signup-button { background: #f6a93b; color: #17313a; }
   .gc-signup-button:disabled { opacity: .65; cursor: wait; }
   .gc-signup-hint { grid-column: 1 / -1; justify-self: start; width: fit-content; max-width: 100%; margin: 0; font-size: 13px; font-weight: 400; line-height: 1.45; color: #17313a; }
@@ -97,7 +83,7 @@ const { id, button, consent, formLabel, tone = "light", formClass, buttonCopy } 
   .gc-signup-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
   @container (max-width: 440px) {
     .gc-signup { grid-template-columns: minmax(0, 1fr); }
-    .gc-signup-button { grid-column: 1; grid-row: 2; width: 100%; }
+    .gc-signup-button { grid-column: 1; grid-row: 2; width: 100%; padding: 12px 16px; font-size: 15px; }
     .gc-signup-hint { grid-row: 3; }
     .gc-signup-consent { grid-row: 4; }
     .gc-signup-status { grid-row: 5; }
