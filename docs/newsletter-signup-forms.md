@@ -1,6 +1,6 @@
 # Newsletter signup forms
 
-Every public email signup posts to `POST /api/newsletter` and asks for the same three things, in this order: email, LinkedIn profile URL, consent checkbox. The helper line under the fields is `We use your LinkedIn to tailor what we send you.` Placeholders are `nick@growthcircuit.club` and `linkedin.com/in/nicklafferty`. Placeholder type starts at 17px, the same size as typed text, and steps down with the field width (16, 15, 14, 13, then 12px). It never goes below 12px. At 390px every field is wide enough for 17px. At 1280 the homepage hero and the events fields use 15px, and the fields that sit beside the button (sidebars, newsletter sections, jobs bottom, Ship or Skip bottom) use 13px. The Ship or Skip rubric is full width at 1280 and stays at 17px. Typed text stays 17px and the inputs stay 52px tall. The events page and the newsletter archive hero (`layout="paired"`) put email and LinkedIn on one row and the button full width underneath. At 390px those forms stack. The archive hero stays in a 540px box, so its placeholders are 16px at 1280 and 17px at 390. The Ship or Skip rubric stacks its fields (`layout="column"`) so the placeholder stays 17px, the same size as typed text. Every other wide placement keeps the button beside the email field. The consent line is `I want to receive emails from Growth Circuit`. The button label is `Subscribe to Growth Circuit`. Those four strings live only in `NewsletterFields.astro`. Labels are visually hidden. Inputs and the button are pills (52px tall, fully rounded). Light surfaces use a dark button. Dark surfaces use the sun button and light helper and consent text. A narrow container stacks the button under the LinkedIn field. A wide container keeps the button beside the email field, with LinkedIn the same width as the email field.
+Every public email signup posts to `POST /api/newsletter` and asks for the same three things, in this order: email, LinkedIn profile URL, consent checkbox. Email and LinkedIn both stay required. There is no helper line under the fields. Placeholders are `nick@growthcircuit.club` and `linkedin.com/in/nicklafferty`. Placeholder type starts at 17px, the same size as typed text, and steps down with the field width (16, 15, 14, 13, then 12px). It never goes below 12px. At 390px every field is wide enough for 17px. At 1280 the events fields use 15px, and the fields that sit beside the button (sidebars, newsletter sections, jobs bottom, Ship or Skip bottom) use 13px. The Ship or Skip rubric is full width at 1280 and stays at 17px. Typed text stays 17px and the inputs stay 52px tall. The homepage hero, homepage closing, events page, and newsletter archive hero (`layout="paired"`) put email and LinkedIn on one row at equal widths, with the button full width underneath and consent below that. At 390px those forms stack email, LinkedIn, then the button. The homepage forms and the archive hero stay in a 540px box, so their placeholders are 16px at 1280 and 17px at 390. The homepage closing keeps `tone="dark"`: sun button, light consent text. The Ship or Skip rubric stacks its fields (`layout="column"`) so the placeholder stays 17px, the same size as typed text. Every other wide placement keeps the button beside the email field. The consent line is `I want to receive emails from Growth Circuit`. The button label is `Subscribe to Growth Circuit`. The placeholders, consent line, and button label live only in `NewsletterFields.astro`. Labels are visually hidden. Inputs and the button are pills (52px tall, fully rounded). Light surfaces use a dark button. Dark surfaces use the sun button and light consent text. A narrow container stacks the button under the LinkedIn field. A wide stacked container keeps the button beside the email field, with LinkedIn the same width as the email field.
 
 Headings, body copy, and button labels stay with the placement. Do not invent new titles.
 
@@ -8,7 +8,7 @@ Headings, body copy, and button labels stay with the placement. Do not invent ne
 
 | Piece | Path |
 | --- | --- |
-| Shared fields, placeholders, helper, pill CSS, submit script | `src/components/NewsletterFields.astro` |
+| Shared fields, placeholders, pill CSS, submit script | `src/components/NewsletterFields.astro` |
 | Section wrapper (eyebrow, headline, body, archive link) | `src/components/NewsletterSignup.astro` |
 | Card wrapper for sidebars | `src/components/SidebarEmailCta.astro` |
 | Request validation and 422 messages | `src/pages/api/newsletter/index.ts` |
@@ -17,7 +17,7 @@ Headings, body copy, and button labels stay with the placement. Do not invent ne
 | People field parsing | `src/lib/notion-server.ts` (`parseCrmPerson`) and `src/lib/crm.ts` (`CrmPerson`) |
 | Loops contact mapping | `src/lib/loops-server.ts` (`buildLoopsContactUpdate`) |
 
-Homepage contrast chips for the helper and consent live in `src/pages/index.astro`. They only exist so the text stays readable on the illustrated scene.
+Homepage contrast chips for the consent line live in `src/pages/index.astro`. They only exist so the text stays readable on the illustrated scene.
 
 ## Placements
 
@@ -37,7 +37,7 @@ Homepage contrast chips for the helper and consent live in `src/pages/index.astr
 
 The jobs sidebar and the blog sidebar both render `SidebarEmailCta`. The blog call is the default events card. The jobs call passes `variant="jobs"`.
 
-Section placements render `NewsletterSignup`. `formOnly` drops the section heading (homepage hero, homepage closing, and the top of the newsletter archive). The archive hero passes `layout="paired"`, the same row as the events form, and stays capped at 540px. The archive section below the issue list stays. `adaptive` is the archive filter. `variant="jobs"` uses the jobs headline. `showArchiveLink` adds the past-newsletters link on Ship or Skip. The events page passes `layout="paired"`: email and LinkedIn share the top row, and the button spans the full width under them. At 390px that form stacks. The Ship or Skip rubric passes `layout="column"` so its fields are full width and the placeholder stays 17px.
+Section placements render `NewsletterSignup`. `formOnly` drops the section heading (homepage hero, homepage closing, and the top of the newsletter archive). The homepage hero, homepage closing, and archive hero pass `layout="paired"`, the same row as the events form. The homepage forms and the archive hero stay capped at 540px. The homepage closing also passes `tone="dark"`. The archive section below the issue list stays on the default stacked layout. `adaptive` is the archive filter. `variant="jobs"` uses the jobs headline. `showArchiveLink` adds the past-newsletters link on Ship or Skip. The events page passes `layout="paired"`: email and LinkedIn share the top row, and the button spans the full width under them. At 390px that form stacks. The Ship or Skip rubric passes `layout="column"` so its fields are full width and the placeholder stays 17px.
 
 ## Not signup forms
 
@@ -56,12 +56,12 @@ Section placements render `NewsletterSignup`. `formOnly` drops the section headi
 
 | Test | Placement |
 | --- | --- |
-| `tests/e2e/homepage.spec.ts` | Homepage hero and closing |
+| `tests/e2e/homepage.spec.ts` | Homepage hero and closing, paired at 1280 and stacked at 390 |
 | `tests/e2e/newsletter.spec.ts` | Archive section, and the homepage hero retry |
 | `tests/e2e/jobs.spec.ts` | Jobs sidebar and jobs bottom |
-| `tests/e2e/site-design.spec.ts` | `/newsletter` form |
+| `tests/e2e/site-design.spec.ts` | `/newsletter` hero and the events paired row |
 | `tests/e2e/ship-or-skip.spec.ts` | Rubric form |
-| `tests/e2e/blog.spec.ts` | Blog sidebar card stays on screen |
+| `tests/e2e/blog.spec.ts` | Blog sidebar card stays on screen, with no helper line |
 | `tests/e2e/community.spec.ts` | Homepage and events forms are present |
 | `src/lib/newsletter.test.ts` | Pending record and confirm |
 | `src/pages/api/newsletter/index.test.ts` | 422 responses and normalization |
