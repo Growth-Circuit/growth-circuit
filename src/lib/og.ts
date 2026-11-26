@@ -148,7 +148,7 @@ export function buildOgCards(sources: OgSources): OgCard[] {
       pageType: "events",
       label: "Events",
       eyebrow: "Growth Circuit in New York",
-      title: "Upcoming events and past event newsletters",
+      title: "Upcoming Growth Circuit events",
       description: copy.eventsDescription,
       visual: { kind: "rings" },
     },
