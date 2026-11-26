@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { handleNewsletterObject, smallJson, NEWSLETTER_LIST_ID } from "./newsletter";
+import { handleNewsletterObject, linkedInSignupError, normalizeLinkedInProfile, smallJson, NEWSLETTER_LIST_ID } from "./newsletter";
 import { upsertNewsletterPersonUnlocked, updateNotionPersonSyncState } from "./notion-server";
 vi.mock("./notion-server", () => ({ upsertNewsletterPersonUnlocked: vi.fn(), updateNotionPersonSyncState: vi.fn(), isServerNotionConfigured: () => true }));
 const emailSend = vi.fn();
@@ -7,9 +7,11 @@ const env = { LOOPS_API_KEY: "test", EMAIL: { send: emailSend } } as unknown as 
 let values: Map<string, unknown>;
 let state: DurableObjectState;
 const objectId = "a".repeat(64);
+const enteredLinkedIn = "http://uk.linkedin.com/in/reader-example/?trk=public#about";
+const normalizedLinkedIn = "https://www.linkedin.com/in/reader-example";
 const request = (path: string, body: object) => new Request(`https://crm.internal/newsletter/${path}`, { method: "POST", body: JSON.stringify(body) });
 async function signup() {
-  const response = await handleNewsletterObject(request("request", { email: "Reader@example.com" }), state, env);
+  const response = await handleNewsletterObject(request("request", { email: "Reader@example.com", linkedin: enteredLinkedIn }), state, env);
   expect(response.status).toBe(200);
   const message = emailSend.mock.calls[0][0];
   const link = new URL(message.text.match(/https:\/\/\S+/)[0]);
@@ -30,7 +32,8 @@ describe("newsletter confirmation", () => {
     const token = await signup();
     expect(token).toMatch(/^[a-f0-9]{64}$/);
     expect(JSON.stringify([...values.values()])).not.toContain(token);
-    await handleNewsletterObject(request("request", { email: "reader@example.com" }), state, env);
+    expect(values.get("newsletter-pending")).toMatchObject({ email: "reader@example.com", linkedin: normalizedLinkedIn });
+    await handleNewsletterObject(request("request", { email: "reader@example.com", linkedin: normalizedLinkedIn }), state, env);
     expect(emailSend).toHaveBeenCalledTimes(1);
     expect(fetch).not.toHaveBeenCalled();
     expect(upsertNewsletterPersonUnlocked).not.toHaveBeenCalled();
@@ -39,7 +42,7 @@ describe("newsletter confirmation", () => {
     const token = await signup();
     const confirmed = await handleNewsletterObject(request("confirm", { token }), state, env);
     expect(confirmed.status).toBe(200);
-    expect(upsertNewsletterPersonUnlocked).toHaveBeenCalledWith("reader@example.com", env);
+    expect(upsertNewsletterPersonUnlocked).toHaveBeenCalledWith("reader@example.com", env, normalizedLinkedIn);
     const properties = JSON.parse(vi.mocked(fetch).mock.calls[2][1]!.body as string);
     expect(properties.welcomeEventUrl).toBe("https://luma.com/growth-circuit");
     expect(properties).not.toHaveProperty("mailingLists");
@@ -84,7 +87,7 @@ describe("newsletter confirmation", () => {
   });
   it("removes the undelivered token when email fails", async () => {
     emailSend.mockRejectedValue(new Error("failed"));
-    await expect(handleNewsletterObject(request("request", { email: "reader@example.com" }), state, env)).rejects.toThrow("NEWSLETTER_EMAIL_FAILED");
+    await expect(handleNewsletterObject(request("request", { email: "reader@example.com", linkedin: normalizedLinkedIn }), state, env)).rejects.toThrow("NEWSLETTER_EMAIL_FAILED");
     expect(values.has("newsletter-pending")).toBe(false);
   });
   it("limits an IP to ten requests an hour", async () => {
@@ -94,5 +97,71 @@ describe("newsletter confirmation", () => {
   it("bounds incoming bodies", async () => {
     await expect(smallJson(request("request", { email: "x".repeat(3000) }))).rejects.toThrow();
     await expect(smallJson(request("request", { email: "a@example.com" }))).resolves.toEqual({ email: "a@example.com" });
+  });
+  it("rejects a missing or non-profile LinkedIn URL before any email or CRM write", async () => {
+    expect((await handleNewsletterObject(request("request", { email: "reader@example.com" }), state, env)).status).toBe(422);
+    const company = await handleNewsletterObject(request("request", { email: "reader@example.com", linkedin: "https://www.linkedin.com/company/growth-circuit" }), state, env);
+    expect(company.status).toBe(422);
+    await expect(company.json()).resolves.toEqual({ error: "Use your personal LinkedIn profile URL, not a company or school page." });
+    expect(emailSend).not.toHaveBeenCalled();
+    expect(values.has("newsletter-pending")).toBe(false);
+    expect(upsertNewsletterPersonUnlocked).not.toHaveBeenCalled();
+  });
+});
+
+describe("LinkedIn profile normalization", () => {
+  const normalized = "https://www.linkedin.com/in/nicklafferty";
+  it("accepts personal profile URLs and canonicalizes them", () => {
+    for (const value of [
+      "https://www.linkedin.com/in/nicklafferty",
+      "https://www.linkedin.com/in/nicklafferty/",
+      "http://www.linkedin.com/in/nicklafferty",
+      "https://linkedin.com/in/nicklafferty",
+      "http://uk.linkedin.com/in/nicklafferty/",
+      "HTTPS://UK.LinkedIn.com/in/nicklafferty/",
+      "www.linkedin.com/in/nicklafferty",
+      "linkedin.com/in/nicklafferty",
+      "uk.linkedin.com/in/nicklafferty",
+      "//de.linkedin.com/in/nicklafferty",
+      "https://www.linkedin.com/in/nicklafferty?trk=public",
+      "https://www.linkedin.com/in/nicklafferty#about",
+      "https://www.linkedin.com/in/nicklafferty/?trk=x#y",
+      "  https://in.linkedin.com/in/nicklafferty/  ",
+    ]) {
+      expect(normalizeLinkedInProfile(value), value).toBe(normalized);
+      expect(linkedInSignupError(value), value).toBeNull();
+    }
+    expect(normalizeLinkedInProfile("https://www.linkedin.com/in/Nick-Lafferty")).toBe("https://www.linkedin.com/in/Nick-Lafferty");
+    expect(normalizeLinkedInProfile("https://www.linkedin.com/in/matt-ratchford-940019142/")).toBe("https://www.linkedin.com/in/matt-ratchford-940019142");
+  });
+  it("rejects company pages, school pages, other paths, and other hosts", () => {
+    expect(linkedInSignupError(undefined)).toBe("Add your LinkedIn profile URL.");
+    expect(linkedInSignupError("")).toBe("Add your LinkedIn profile URL.");
+    expect(linkedInSignupError("   ")).toBe("Add your LinkedIn profile URL.");
+    for (const value of [
+      "https://www.linkedin.com/company/growth-circuit",
+      "https://linkedin.com/company/acme/",
+      "https://uk.linkedin.com/school/oxford",
+      "http://www.linkedin.com/school/nyu/",
+    ]) {
+      expect(normalizeLinkedInProfile(value), value).toBeNull();
+      expect(linkedInSignupError(value), value).toBe("Use your personal LinkedIn profile URL, not a company or school page.");
+    }
+    for (const value of [
+      "https://example.com/in/nicklafferty",
+      "https://notlinkedin.com/in/nicklafferty",
+      "https://linkedin.com.evil.com/in/nicklafferty",
+      "https://m.linkedin.com/in/nicklafferty",
+      "https://www.linkedin.com/jobs/view/123",
+      "https://www.linkedin.com/in/",
+      "https://www.linkedin.com/in/nicklafferty/overlay",
+      "https://www.linkedin.com/pub/nicklafferty/1/2/3",
+      "https://user:pass@www.linkedin.com/in/nicklafferty",
+      "javascript:alert(1)",
+      `https://www.linkedin.com/in/${"a".repeat(180)}`,
+    ]) {
+      expect(normalizeLinkedInProfile(value), value).toBeNull();
+      expect(linkedInSignupError(value), value).toBe("Use a personal LinkedIn profile URL, like https://www.linkedin.com/in/your-name.");
+    }
   });
 });

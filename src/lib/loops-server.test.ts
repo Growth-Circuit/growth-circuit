@@ -54,6 +54,47 @@ describe("Loops CRM sync", () => {
       consentAt: "",
     });
     expect(buildLoopsContactUpdate(person, {})).not.toHaveProperty("mailingLists");
+    expect(buildLoopsContactUpdate(person, {})).not.toHaveProperty("subscribed");
+  });
+
+  it("maps enrichment fields, omits blanks, and never sets list membership", () => {
+    const update = buildLoopsContactUpdate({
+      ...person,
+      company: "Profound",
+      companyDomain: " profound.com ",
+      jobTitle: "Founding Marketing Engineer",
+      jobFunction: "Marketing",
+      seniority: "Founder",
+      metro: "New York",
+      enrichedLocation: "Brooklyn, NY",
+      enrichmentStatus: "Pending",
+      enrichedAt: "2026-11-26T15:04:00.000Z",
+    }, {});
+    expect(update).toMatchObject({
+      company: "Profound",
+      companyDomain: "profound.com",
+      jobTitle: "Founding Marketing Engineer",
+      jobFunction: "Marketing",
+      seniority: "Founder",
+      metro: "New York",
+      enrichedLocation: "Brooklyn, NY",
+      enrichmentStatus: "Pending",
+      enrichedAt: "2026-11-26",
+    });
+    expect(update).not.toHaveProperty("mailingLists");
+    expect(update).not.toHaveProperty("subscribed");
+    const blank = buildLoopsContactUpdate({
+      ...person,
+      company: " ",
+      jobTitle: "",
+      enrichedAt: "not a date",
+    }, {});
+    expect(blank).not.toHaveProperty("company");
+    expect(blank).not.toHaveProperty("jobTitle");
+    expect(blank).not.toHaveProperty("companyDomain");
+    expect(blank).not.toHaveProperty("enrichedAt");
+    expect(blank).not.toHaveProperty("mailingLists");
+    expect(blank).not.toHaveProperty("subscribed");
   });
 
   it("upserts contacts without preferences and skips only a missing email", () => {

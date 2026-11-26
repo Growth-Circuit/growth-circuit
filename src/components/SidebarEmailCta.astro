@@ -23,6 +23,18 @@ const { id = "sidebar-newsletter", variant = "events" } = Astro.props;
       placeholder="you@example.com"
       required
     />
+    <label for={`${id}-linkedin`} class="sr-only">LinkedIn profile</label>
+    <input
+      id={`${id}-linkedin`}
+      name="linkedin"
+      type="url"
+      maxlength="200"
+      autocomplete="off"
+      placeholder="https://www.linkedin.com/in/you"
+      aria-describedby={`${id}-linkedin-hint`}
+      required
+    />
+    <p class="sidebar-email-hint" id={`${id}-linkedin-hint`}>We use your LinkedIn to tailor what we send you.</p>
     <button class="button matcha" type="submit">{variant === "jobs" ? jobsCopy.button : "Email me the events"}</button>
     <label class="sidebar-email-consent">
       <input name="consent" type="checkbox" checked required />
@@ -50,6 +62,7 @@ const { id = "sidebar-newsletter", variant = "events" } = Astro.props;
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: fields.get("email"),
+            linkedin: fields.get("linkedin"),
             consent: fields.get("consent") === "on",
             website: fields.get("website"),
           }),
@@ -100,7 +113,8 @@ const { id = "sidebar-newsletter", variant = "events" } = Astro.props;
     gap: 10px;
   }
 
-  .sidebar-email-form input[type="email"] {
+  .sidebar-email-form input[type="email"],
+  .sidebar-email-form input[type="url"] {
     width: 100%;
     border: 1px solid var(--pivot-line);
     border-radius: 10px;
@@ -110,14 +124,23 @@ const { id = "sidebar-newsletter", variant = "events" } = Astro.props;
     color: var(--pivot-navy);
   }
 
-  .sidebar-email-form input[type="email"]::placeholder {
+  .sidebar-email-form input[type="email"]::placeholder,
+  .sidebar-email-form input[type="url"]::placeholder {
     color: rgba(82, 107, 115, 0.6);
   }
 
-  .sidebar-email-form input[type="email"]:focus {
+  .sidebar-email-form input[type="email"]:focus,
+  .sidebar-email-form input[type="url"]:focus {
     border-color: var(--sky-deep);
     outline: none;
     box-shadow: 0 0 0 3px rgba(119, 183, 203, 0.2);
+  }
+
+  .sidebar-email-hint {
+    margin: 0;
+    color: var(--sky-muted);
+    font-size: 12px;
+    line-height: 1.45;
   }
 
   .sidebar-email-form .button {

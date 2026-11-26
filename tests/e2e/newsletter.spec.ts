@@ -353,7 +353,7 @@ for (const width of [1440, 390]) {
     let submissions = 0;
     await page.route("**/api/newsletter", async (route) => {
       submissions += 1;
-      expect(route.request().postDataJSON()).toEqual({ email: "reader@example.com", consent: true, website: "" });
+      expect(route.request().postDataJSON()).toEqual({ email: "reader@example.com", linkedin: "https://www.linkedin.com/in/reader", consent: true, website: "" });
       await route.fulfill({
         status: submissions === 1 ? 503 : 200,
         contentType: "application/json",
@@ -365,6 +365,7 @@ for (const width of [1440, 390]) {
     await expect(form.getByRole("checkbox")).toBeChecked();
     await form.getByRole("checkbox").uncheck();
     await form.getByLabel("Email address", { exact: true }).fill("reader@example.com");
+    await form.getByLabel("LinkedIn profile", { exact: true }).fill("https://www.linkedin.com/in/reader");
     await form.getByRole("button", { name: "Email me the events" }).click();
     expect(submissions).toBe(0);
     await form.getByRole("checkbox").check();

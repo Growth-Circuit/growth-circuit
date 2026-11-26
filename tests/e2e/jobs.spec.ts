@@ -71,10 +71,11 @@ test("jobs CTAs use Lucy's copy and stay usable on desktop and mobile", async ({
     await expect(cta.getByRole('heading', { name: 'Let the hottest jobs come to you' })).toBeVisible();
     await expect(cta.getByText('Caught the builder bug? Turn it into a career at one of the leading tech companies.', { exact: true })).toBeVisible();
     await cta.getByRole('textbox', { name: 'Email address' }).fill('jobs-preview@example.com');
+    await cta.getByRole('textbox', { name: 'LinkedIn profile' }).fill('https://www.linkedin.com/in/jobs-preview');
     await cta.getByRole('button', { name: 'Email me the jobs' }).click();
     await expect(cta.getByRole('status')).toContainText('Check your inbox to confirm');
   }
-  expect(requests).toEqual(Array(2).fill({ email: 'jobs-preview@example.com', consent: true, website: '' }));
+  expect(requests).toEqual(Array(2).fill({ email: 'jobs-preview@example.com', linkedin: 'https://www.linkedin.com/in/jobs-preview', consent: true, website: '' }));
   for (const scroll of [1200, 1800]) {
     await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), scroll);
     expect((await sidebar.boundingBox())!.y).toBeCloseTo(100, 0);

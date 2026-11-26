@@ -131,6 +131,7 @@ test("rubric form handles submission", async ({ page }) => {
     submissions += 1;
     expect(route.request().postDataJSON()).toEqual({
       email: "test@example.com",
+      linkedin: "https://www.linkedin.com/in/test-example",
       consent: true,
       website: "",
     });
@@ -142,7 +143,8 @@ test("rubric form handles submission", async ({ page }) => {
   });
 
   const form = page.locator(".sos-rubric-form");
-  await form.getByRole("textbox").fill("test@example.com");
+  await form.getByRole("textbox", { name: "Email address" }).fill("test@example.com");
+  await form.getByRole("textbox", { name: "LinkedIn profile" }).fill("https://www.linkedin.com/in/test-example");
   await expect(form.getByRole("checkbox")).toBeChecked();
   await form.getByRole("button", { name: "Send me the rubric" }).click();
 

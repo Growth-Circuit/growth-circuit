@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { env as cloudflareEnv } from "cloudflare:workers";
 import { normalizeEmailKey } from "@/lib/crm";
-import { newsletterJson, smallJson, validNewsletterEmail } from "@/lib/newsletter";
+import { linkedInSignupError, newsletterJson, normalizeLinkedInProfile, smallJson, validNewsletterEmail } from "@/lib/newsletter";
 const env = cloudflareEnv as unknown as Env;
 export const prerender = false;
 export const POST: APIRoute = async ({ request, url }) => {
@@ -10,12 +10,16 @@ export const POST: APIRoute = async ({ request, url }) => {
   try { body = await smallJson(request); } catch { return newsletterJson({ error: "Invalid signup." }, 400); }
   if (body.website) return newsletterJson({ ok: true });
   if (!validNewsletterEmail(body.email) || body.consent !== true) return newsletterJson({ error: "Enter a valid email and agree to receive the newsletter." }, 422);
+  const linkedInError = linkedInSignupError(body.linkedin);
+  if (linkedInError) return newsletterJson({ error: linkedInError }, 422);
+  const linkedin = normalizeLinkedInProfile(body.linkedin);
+  if (!linkedin) return newsletterJson({ error: "Add your LinkedIn profile URL." }, 422);
   try {
     const ip = request.headers.get("cf-connecting-ip") || "local";
     const rate = await env.CRM_PERSON_LOCK.getByName(`newsletter-ip:${ip}`).fetch("https://crm.internal/newsletter/rate", { method: "POST", body: "{}" });
     if (!rate.ok) return new Response(rate.body, { status: rate.status, headers: new Headers(rate.headers) });
     const response = await env.CRM_PERSON_LOCK.getByName(normalizeEmailKey(body.email)).fetch("https://crm.internal/newsletter/request", {
-      method: "POST", body: JSON.stringify({ email: normalizeEmailKey(body.email) }),
+      method: "POST", body: JSON.stringify({ email: normalizeEmailKey(body.email), linkedin }),
     });
     return new Response(response.body, { status: response.status, headers: new Headers(response.headers) });
   } catch { return newsletterJson({ error: "We couldn’t send your confirmation email. Please try again shortly." }, 503); }

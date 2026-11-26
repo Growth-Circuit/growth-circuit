@@ -145,6 +145,24 @@ function getPlainText(page: NotionPage, property: string, type: "title" | "rich_
     .join("");
 }
 
+function readFlexibleProperty(page: NotionPage, property: string) {
+  const value = page.properties?.[property];
+  if (!value) return "";
+  const text = (items?: Array<{ plain_text?: string }>) => (items || []).map((item) => item.plain_text || "").join("").trim();
+  return text(value.rich_text)
+    || text(value.title)
+    || value.select?.name?.trim()
+    || value.status?.name?.trim()
+    || (typeof value.url === "string" ? value.url.trim() : "")
+    || (typeof value.email === "string" ? value.email.trim() : "")
+    || value.date?.start?.trim()
+    || "";
+}
+
+function optionalProperty(page: NotionPage, property: string) {
+  return readFlexibleProperty(page, property) || undefined;
+}
+
 function getCrmId(page: NotionPage) {
   const uniqueId = page.properties?.["CRM ID"]?.unique_id;
   if (typeof uniqueId?.number !== "number") return page.id ? `notion-${page.id}` : "";
@@ -180,6 +198,15 @@ function parseCrmPerson(page: NotionPage): CrmPerson {
     region: getPlainText(page, "Region", "rich_text"),
     linkedInProfile: page.properties?.["LinkedIn profile"]?.url || undefined,
     referralSource: getPlainText(page, "Referral source", "rich_text"),
+    company: optionalProperty(page, "Company"),
+    companyDomain: optionalProperty(page, "Company domain"),
+    jobTitle: optionalProperty(page, "Job title"),
+    jobFunction: optionalProperty(page, "Job function"),
+    seniority: optionalProperty(page, "Seniority"),
+    metro: optionalProperty(page, "Metro"),
+    enrichedLocation: optionalProperty(page, "Enriched location"),
+    enrichmentStatus: optionalProperty(page, "Enrichment status"),
+    enrichedAt: optionalProperty(page, "Enriched at"),
     communicationPreferences: getMultiSelectNames(page, "Communication preferences"),
     consentStatus: isConsentStatus(consentStatus) ? consentStatus : undefined,
     consentSource: getPlainText(page, "Consent source", "rich_text"),
@@ -735,7 +762,7 @@ export async function createNotionSubmission(
 }
 
 // Called only after email verification, inside the existing same-email lock.
-export async function upsertNewsletterPersonUnlocked(email: string, env: NotionRuntimeEnv) {
+export async function upsertNewsletterPersonUnlocked(email: string, env: NotionRuntimeEnv, linkedin?: string) {
   const token = getNotionToken(env);
   const dataSourceId = getPeopleDataSourceId(env);
   if (!token || !dataSourceId) throw new Error("NOTION_NOT_CONFIGURED");
@@ -757,6 +784,12 @@ export async function upsertNewsletterPersonUnlocked(email: string, env: NotionR
     properties.Email = { email: normalizeEmailKey(email) };
     properties["Email key"] = { rich_text: notionRichText(normalizeEmailKey(email)) };
     properties.Lifecycle = { select: { name: "Broader community" } };
+  }
+  const linkedInProfile = linkedin?.trim();
+  if (linkedInProfile && !readFlexibleProperty(existing || {}, "LinkedIn profile")) {
+    properties["LinkedIn profile"] = { url: linkedInProfile };
+    properties["LinkedIn source"] = { rich_text: notionRichText("Website form") };
+    properties["Enrichment status"] = { select: { name: "Pending" } };
   }
   const page = await notionRequest<NotionPage>(
     existing?.id ? `https://api.notion.com/v1/pages/${existing.id}` : "https://api.notion.com/v1/pages", token,

@@ -75,9 +75,12 @@ const sortedReviews = [...modelReviews].sort((a, b) => new Date(b.publishDate).g
       <p>Get the full evaluation template I use. Same consent as the newsletter.</p>
       <form method="post" action="/api/newsletter" class="sos-rubric-form" aria-label="Get the rubric">
         <div class="sos-rubric-fields">
-          <input name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@company.com" required />
+          <input name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@company.com" aria-label="Email address" required />
           <button class="button matcha" type="submit">Send me the rubric</button>
         </div>
+        <label class="sos-rubric-label" for="sos-rubric-linkedin">LinkedIn profile</label>
+        <input id="sos-rubric-linkedin" name="linkedin" type="url" maxlength="200" autocomplete="off" placeholder="https://www.linkedin.com/in/you" aria-describedby="sos-rubric-linkedin-hint" required />
+        <p class="sos-rubric-hint" id="sos-rubric-linkedin-hint">We use your LinkedIn to tailor what we send you.</p>
         <label class="sos-rubric-consent"><input name="consent" type="checkbox" checked required /> <span>I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime.</span></label>
         <div class="sos-rubric-trap" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
         <p class="sos-rubric-status" role="status" aria-live="polite"></p>
@@ -229,6 +232,7 @@ const sortedReviews = [...modelReviews].sort((a, b) => new Date(b.publishDate).g
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: fields.get("email"),
+            linkedin: fields.get("linkedin"),
             consent: fields.get("consent") === "on",
             website: fields.get("website"),
           }),
@@ -453,6 +457,31 @@ const sortedReviews = [...modelReviews].sort((a, b) => new Date(b.publishDate).g
 
   .sos-rubric-fields button {
     white-space: nowrap;
+  }
+
+  .sos-rubric-label {
+    display: block;
+    margin: 12px 0 6px;
+    font-size: 14px;
+    font-weight: 650;
+    color: var(--pivot-navy);
+  }
+
+  #sos-rubric-linkedin {
+    width: 100%;
+    border: 1px solid var(--pivot-line);
+    border-radius: 8px;
+    padding: 12px;
+    font: inherit;
+    background: white;
+    color: var(--pivot-navy);
+  }
+
+  .sos-rubric-hint {
+    margin: 8px 0 0;
+    color: var(--sky-muted);
+    font-size: 13px;
+    line-height: 1.45;
   }
 
   .sos-rubric-consent {

@@ -47,6 +47,15 @@ function getLoopsUserId(person: CrmPerson) {
   return person.crmId || `notion-${person.id}`;
 }
 
+function assignText(payload: Record<string, unknown>, key: string, value?: string) {
+  const trimmed = value?.trim();
+  if (trimmed) payload[key] = trimmed;
+}
+
+function loopsDate(value?: string) {
+  return value?.trim().match(/^(\d{4}-\d{2}-\d{2})/)?.[1];
+}
+
 function retryDelayMilliseconds(response: Response, attempt: number) {
   const retryAfter = response.headers.get("Retry-After");
   if (retryAfter) {
@@ -89,6 +98,15 @@ export function buildLoopsContactUpdate(
     consentSource: person.consentSource || "",
     consentAt: person.consentAt || "",
   };
+  assignText(payload, "company", person.company);
+  assignText(payload, "companyDomain", person.companyDomain);
+  assignText(payload, "jobTitle", person.jobTitle);
+  assignText(payload, "jobFunction", person.jobFunction);
+  assignText(payload, "seniority", person.seniority);
+  assignText(payload, "metro", person.metro);
+  assignText(payload, "enrichedLocation", person.enrichedLocation);
+  assignText(payload, "enrichmentStatus", person.enrichmentStatus);
+  assignText(payload, "enrichedAt", loopsDate(person.enrichedAt));
 
   if (options.addToMarketList) {
     payload.mailingLists = {

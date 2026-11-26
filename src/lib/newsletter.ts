@@ -5,10 +5,58 @@ import { getWelcomeEventProperties } from "./newsletter-events";
 export const NEWSLETTER_LIST_ID = "cmu760ltt0xkz0jzq7xomfx3m";
 const TTL = 24 * 60 * 60 * 1000;
 const LOOPS = "https://app.loops.so/api/v1";
-type Pending = { email: string; hash: string; expires: number; complete?: boolean };
+type Pending = { email: string; linkedin?: string; hash: string; expires: number; complete?: boolean };
 type Rate = { start: number; count: number };
+const LINKEDIN_MISSING = "Add your LinkedIn profile URL.";
+const LINKEDIN_ORG = "Use your personal LinkedIn profile URL, not a company or school page.";
+const LINKEDIN_INVALID = "Use a personal LinkedIn profile URL, like https://www.linkedin.com/in/your-name.";
 export function validNewsletterEmail(value: unknown): value is string {
   return typeof value === "string" && value.length <= 254 && /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(value);
+}
+function looseUrl(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 200 || /[\s<>]/.test(trimmed)) return null;
+  const withScheme = trimmed.startsWith("//")
+    ? `https:${trimmed}`
+    : /^[a-z][a-z0-9+.-]*:/i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    return new URL(withScheme);
+  } catch {
+    return null;
+  }
+}
+function isLinkedInHost(hostname: string) {
+  const host = hostname.toLowerCase().replace(/\.$/, "");
+  return host === "linkedin.com" || host === "www.linkedin.com" || /^[a-z]{2}\.linkedin\.com$/.test(host);
+}
+type LinkedInCheck = { ok: true; url: string } | { ok: false; reason: "missing" | "org" | "invalid" };
+export function inspectLinkedInProfile(value: unknown): LinkedInCheck {
+  if (typeof value !== "string" || value.trim() === "") return { ok: false, reason: "missing" };
+  const url = looseUrl(value);
+  if (!url || url.username || url.password || (url.protocol !== "http:" && url.protocol !== "https:")) {
+    return { ok: false, reason: "invalid" };
+  }
+  let pathname = url.pathname;
+  try { pathname = decodeURIComponent(pathname); } catch { return { ok: false, reason: "invalid" }; }
+  const segments = pathname.replace(/\/+$/, "").split("/").slice(1);
+  const linkedInHost = isLinkedInHost(url.hostname);
+  const head = segments[0]?.toLowerCase();
+  if (linkedInHost && (head === "company" || head === "school")) return { ok: false, reason: "org" };
+  if (!linkedInHost || segments.length !== 2 || head !== "in") return { ok: false, reason: "invalid" };
+  const slug = segments[1];
+  if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,98}[A-Za-z0-9])?$/.test(slug)) return { ok: false, reason: "invalid" };
+  return { ok: true, url: `https://www.linkedin.com/in/${slug}` };
+}
+export function normalizeLinkedInProfile(value: unknown) {
+  const result = inspectLinkedInProfile(value);
+  return result.ok ? result.url : null;
+}
+export function linkedInSignupError(value: unknown) {
+  const result = inspectLinkedInProfile(value);
+  if (result.ok) return null;
+  if (result.reason === "missing") return LINKEDIN_MISSING;
+  if (result.reason === "org") return LINKEDIN_ORG;
+  return LINKEDIN_INVALID;
 }
 export const newsletterJson = (body: object, status = 200) => Response.json(body, {
   status, headers: { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" },
@@ -43,7 +91,7 @@ async function loopsRequest(path: string, env: Env, method = "GET", body?: objec
 }
 export async function handleNewsletterObject(request: Request, state: DurableObjectState, env: Env) {
   const path = new URL(request.url).pathname;
-  const body = await request.json() as { email?: string; token?: string };
+  const body = await request.json() as { email?: string; token?: string; linkedin?: string };
   const now = Date.now();
   if (path === "/newsletter/rate") {
     const old = await state.storage.get<Rate>("newsletter-rate");
@@ -55,13 +103,17 @@ export async function handleNewsletterObject(request: Request, state: DurableObj
   }
   if (path === "/newsletter/request") {
     if (!validNewsletterEmail(body.email)) return newsletterJson({ error: "Enter a valid email." }, 422);
+    const linkedInError = linkedInSignupError(body.linkedin);
+    if (linkedInError) return newsletterJson({ error: linkedInError }, 422);
+    const linkedin = normalizeLinkedInProfile(body.linkedin);
+    if (!linkedin) return newsletterJson({ error: LINKEDIN_MISSING }, 422);
     if (!env.LOOPS_API_KEY || !isServerNotionConfigured(env) || !env.EMAIL) throw new Error("NEWSLETTER_NOT_CONFIGURED");
     const previous = await state.storage.get<Pending>("newsletter-pending");
     // Keep a delivered link valid. Repeat requests have the same public response.
     if (previous && previous.expires > now) return newsletterJson({ ok: true });
     const email = normalizeEmailKey(body.email);
     const token = Array.from(crypto.getRandomValues(new Uint8Array(32))).map((b) => b.toString(16).padStart(2, "0")).join("");
-    const pending: Pending = { email, hash: await digest(token), expires: now + TTL };
+    const pending: Pending = { email, linkedin, hash: await digest(token), expires: now + TTL };
     await state.storage.put("newsletter-pending", pending);
     await state.storage.setAlarm(pending.expires);
     const url = `https://growthcircuit.club/newsletter/confirm?id=${state.id.toString()}&token=${token}`;
@@ -91,7 +143,7 @@ export async function handleNewsletterObject(request: Request, state: DurableObj
   if (contacts.some((contact) => contact.subscribed === false)) {
     return newsletterJson({ error: "This address has unsubscribed from Growth Circuit. Use the preferences link in a previous email, or contact nick@growthcircuit.club for help." }, 409);
   }
-  const person = await upsertNewsletterPersonUnlocked(pending.email, env);
+  const person = await upsertNewsletterPersonUnlocked(pending.email, env, pending.linkedin);
   const eventProperties = await getWelcomeEventProperties();
   // Persist the snapshot before the separate list update can trigger the immediate welcome.
   const prepared = await (await loopsRequest("contacts/update", env, "PUT", {
