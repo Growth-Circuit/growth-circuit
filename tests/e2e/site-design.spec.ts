@@ -53,6 +53,36 @@ test('mobile menu reaches the newsletter and its form posts to the newsletter AP
   await expect(form.getByRole('status')).toContainText('Check your inbox to confirm');
 });
 
+test('events signup pairs the fields on desktop and stacks them on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.goto('/events');
+  const form = page.locator('#newsletter .newsletter-form');
+  await form.scrollIntoViewIfNeeded();
+  await expect(form).toHaveAttribute('data-layout', 'paired');
+  await expect(form.getByRole('textbox', { name: 'Email address' })).toHaveAttribute('placeholder', 'nick@growthcircuit.club');
+  await expect(form.getByRole('textbox', { name: 'LinkedIn profile' })).toHaveAttribute('placeholder', 'linkedin.com/in/nicklafferty');
+  const boxes = async () => {
+    const email = await form.locator('input[name="email"]').boundingBox();
+    const linkedin = await form.locator('input[name="linkedin"]').boundingBox();
+    const button = await form.getByRole('button', { name: 'Subscribe to Growth Circuit' }).boundingBox();
+    return { email: email!, linkedin: linkedin!, button: button! };
+  };
+  const desktop = await boxes();
+  expect(Math.abs(desktop.email.y - desktop.linkedin.y)).toBeLessThan(2);
+  expect(Math.abs(desktop.email.width - desktop.linkedin.width)).toBeLessThan(2);
+  expect(desktop.linkedin.x).toBeGreaterThan(desktop.email.x + desktop.email.width - 2);
+  expect(desktop.button.y).toBeGreaterThan(desktop.email.y + desktop.email.height - 1);
+  expect(desktop.button.width).toBeGreaterThan(desktop.email.width + desktop.linkedin.width - 24);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await form.scrollIntoViewIfNeeded();
+  const mobile = await boxes();
+  expect(mobile.linkedin.y).toBeGreaterThan(mobile.email.y + mobile.email.height - 1);
+  expect(mobile.button.y).toBeGreaterThan(mobile.linkedin.y + mobile.linkedin.height - 1);
+  expect(Math.abs(mobile.email.width - mobile.linkedin.width)).toBeLessThan(2);
+  expect(Math.abs(mobile.button.width - mobile.email.width)).toBeLessThan(2);
+});
+
 test('Luma embeds are allowed where the calendar renders', async ({ request }) => {
   for (const route of ['/', '/events']) {
     const response = await request.get(route);

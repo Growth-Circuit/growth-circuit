@@ -1,6 +1,6 @@
 # Newsletter signup forms
 
-Every public email signup posts to `POST /api/newsletter` and asks for the same three things, in this order: email, LinkedIn profile URL, consent checkbox. The helper line under the fields is `We use your LinkedIn to tailor what we send you.` Placeholders are `you@example.com` and `linkedin.com/in/nick`. The consent line is `I want to receive emails from Growth Circuit`. The button label is `Subscribe to Growth Circuit`. Those four strings live only in `NewsletterFields.astro`. Labels are visually hidden. Inputs and the button are pills (52px tall, fully rounded). Light surfaces use a dark button. Dark surfaces use the sun button and light helper and consent text. A narrow container stacks the button under the LinkedIn field. A wide container keeps the button beside the email field, with LinkedIn the same width as the email field.
+Every public email signup posts to `POST /api/newsletter` and asks for the same three things, in this order: email, LinkedIn profile URL, consent checkbox. The helper line under the fields is `We use your LinkedIn to tailor what we send you.` Placeholders are `nick@growthcircuit.club` and `linkedin.com/in/nicklafferty`. Placeholder text is 10px so those strings fit the narrowest field. Typed text stays 17px and the inputs stay 52px tall. The events page signup (`layout="paired"`) puts email and LinkedIn on one row and the button full width underneath. At 390px that events form stacks. Every other placement keeps the button beside the email field when there is room. The consent line is `I want to receive emails from Growth Circuit`. The button label is `Subscribe to Growth Circuit`. Those four strings live only in `NewsletterFields.astro`. Labels are visually hidden. Inputs and the button are pills (52px tall, fully rounded). Light surfaces use a dark button. Dark surfaces use the sun button and light helper and consent text. A narrow container stacks the button under the LinkedIn field. A wide container keeps the button beside the email field, with LinkedIn the same width as the email field.
 
 Headings, body copy, and button labels stay with the placement. Do not invent new titles.
 
@@ -36,7 +36,7 @@ Homepage contrast chips for the helper and consent live in `src/pages/index.astr
 
 The jobs sidebar and the blog sidebar both render `SidebarEmailCta`. The blog call is the default events card. The jobs call passes `variant="jobs"`.
 
-Section placements render `NewsletterSignup`. `formOnly` drops the section heading (homepage). `adaptive` is the archive filter. `variant="jobs"` uses the jobs headline and button. `showArchiveLink` adds the past-newsletters link on Ship or Skip.
+Section placements render `NewsletterSignup`. `formOnly` drops the section heading (homepage). `adaptive` is the archive filter. `variant="jobs"` uses the jobs headline. `showArchiveLink` adds the past-newsletters link on Ship or Skip. The events page passes `layout="paired"`: email and LinkedIn share the top row, and the button spans the full width under them. At 390px that form stacks.
 
 ## Not signup forms
 

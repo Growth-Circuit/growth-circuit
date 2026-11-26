@@ -1,8 +1,8 @@
 ---
 import NewsletterFields from "@/components/NewsletterFields.astro";
 import { jobsCopy } from "@/lib/newsletter-copy";
-interface Props { variant?: "events" | "jobs"; id?: string; showArchiveLink?: boolean; formOnly?: boolean; adaptive?: boolean; tone?: "light" | "dark"; }
-const { id = "newsletter", showArchiveLink = false, formOnly = false, adaptive = false, variant = "events", tone } = Astro.props;
+interface Props { variant?: "events" | "jobs"; id?: string; showArchiveLink?: boolean; formOnly?: boolean; adaptive?: boolean; tone?: "light" | "dark"; layout?: "stacked" | "paired"; }
+const { id = "newsletter", showArchiveLink = false, formOnly = false, adaptive = false, variant = "events", tone, layout = "stacked" } = Astro.props;
 
 const eventsCopy = {
   eyebrow: "A few good reasons to leave the apartment",
@@ -29,6 +29,7 @@ const surface = tone ?? (formOnly ? "light" : "dark");
       id={id}
       formLabel={variant === "jobs" ? "Subscribe to the jobs newsletter" : "Subscribe to the NYC newsletter"}
       tone={surface}
+      layout={layout}
     />
   </div>
 </section>
