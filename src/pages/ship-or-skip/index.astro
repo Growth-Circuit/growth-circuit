@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import NewsletterFields from "@/components/NewsletterFields.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import {
   rubricAreas,
@@ -73,19 +74,14 @@ const sortedReviews = [...modelReviews].sort((a, b) => new Date(b.publishDate).g
     <div class="sos-rubric-cta">
       <h3>Steal the rubric</h3>
       <p>Get the full evaluation template I use. Same consent as the newsletter.</p>
-      <form method="post" action="/api/newsletter" class="sos-rubric-form" aria-label="Get the rubric">
-        <div class="sos-rubric-fields">
-          <input name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@company.com" aria-label="Email address" required />
-          <button class="button matcha" type="submit">Send me the rubric</button>
-        </div>
-        <label class="sos-rubric-label" for="sos-rubric-linkedin">LinkedIn profile</label>
-        <input id="sos-rubric-linkedin" name="linkedin" type="url" maxlength="200" autocomplete="off" placeholder="https://www.linkedin.com/in/you" aria-describedby="sos-rubric-linkedin-hint" required />
-        <p class="sos-rubric-hint" id="sos-rubric-linkedin-hint">We use your LinkedIn to tailor what we send you.</p>
-        <label class="sos-rubric-consent"><input name="consent" type="checkbox" checked required /> <span>I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime.</span></label>
-        <div class="sos-rubric-trap" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
-        <p class="sos-rubric-status" role="status" aria-live="polite"></p>
-        <noscript>Please enable JavaScript to use this form.</noscript>
-      </form>
+      <NewsletterFields
+        id="sos-rubric"
+        button="Send me the rubric"
+        consent="I'd like Growth Circuit's NYC event emails. I can unsubscribe anytime."
+        formLabel="Get the rubric"
+        formClass="sos-rubric-form"
+        tone="light"
+      />
     </div>
   </section>
 
@@ -216,41 +212,6 @@ const sortedReviews = [...modelReviews].sort((a, b) => new Date(b.publishDate).g
 
   <NewsletterSignup id="newsletter" showArchiveLink />
 </BaseLayout>
-
-<script>
-  document.querySelectorAll<HTMLFormElement>(".sos-rubric-form").forEach((form) => {
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
-      const status = form.querySelector<HTMLElement>(".sos-rubric-status")!;
-      const fields = new FormData(form);
-      button.disabled = true;
-      status.textContent = "Sending...";
-      try {
-        const response = await fetch("/api/newsletter", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: fields.get("email"),
-            linkedin: fields.get("linkedin"),
-            consent: fields.get("consent") === "on",
-            website: fields.get("website"),
-          }),
-        });
-        const result = await response.json().catch(() => ({ error: "Please try again shortly." })) as { error?: string };
-        if (!response.ok) throw new Error(result.error || "Please try again shortly.");
-        status.textContent = "Check your inbox to confirm. The rubric download link will be in the welcome email.";
-        form.reset();
-        const consent = form.querySelector<HTMLInputElement>('input[name="consent"]');
-        if (consent) consent.checked = true;
-      } catch (error) {
-        status.textContent = error instanceof Error ? error.message : "Please try again shortly.";
-      } finally {
-        button.disabled = false;
-      }
-    });
-  });
-</script>
 
 <style>
   .sos-hero {
@@ -437,85 +398,6 @@ const sortedReviews = [...modelReviews].sort((a, b) => new Date(b.publishDate).g
     color: var(--sky-muted);
     font-size: 15px;
     line-height: 1.5;
-  }
-
-  .sos-rubric-fields {
-    display: flex;
-    gap: 10px;
-  }
-
-  .sos-rubric-fields input {
-    flex: 1;
-    min-width: 0;
-    border: 1px solid var(--pivot-line);
-    border-radius: 8px;
-    padding: 12px;
-    font: inherit;
-    background: white;
-    color: var(--pivot-navy);
-  }
-
-  .sos-rubric-fields button {
-    white-space: nowrap;
-  }
-
-  .sos-rubric-label {
-    display: block;
-    margin: 12px 0 6px;
-    font-size: 14px;
-    font-weight: 650;
-    color: var(--pivot-navy);
-  }
-
-  #sos-rubric-linkedin {
-    width: 100%;
-    border: 1px solid var(--pivot-line);
-    border-radius: 8px;
-    padding: 12px;
-    font: inherit;
-    background: white;
-    color: var(--pivot-navy);
-  }
-
-  .sos-rubric-hint {
-    margin: 8px 0 0;
-    color: var(--sky-muted);
-    font-size: 13px;
-    line-height: 1.45;
-  }
-
-  .sos-rubric-consent {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    margin-top: 14px;
-    font-size: 13px;
-    color: var(--sky-muted);
-    line-height: 1.5;
-  }
-
-  .sos-rubric-consent input {
-    margin-top: 3px;
-    accent-color: var(--pivot-navy);
-  }
-
-  .sos-rubric-trap {
-    position: absolute;
-    left: -10000px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-  }
-
-  .sos-rubric-status {
-    margin-top: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--pivot-navy);
-  }
-
-  .sos-rubric-status:empty {
-    display: none;
   }
 
   .sos-scorecard-wrapper {
@@ -761,10 +643,6 @@ const sortedReviews = [...modelReviews].sort((a, b) => new Date(b.publishDate).g
   @media (max-width: 620px) {
     .sos-hero h1 {
       font-size: 48px;
-    }
-
-    .sos-rubric-fields {
-      flex-direction: column;
     }
 
     .sos-scorecard-table {

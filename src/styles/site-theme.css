@@ -27,7 +27,7 @@
 #gc-site .newsletter-issue-body a,#gc-site .blog-prose a{text-underline-offset:4px}
 #gc-site .newsletter-section:not(.newsletter-inline){margin-top:56px;margin-bottom:64px;padding:clamp(28px,4vw,56px);background:#0e2029;color:white;border:0;border-radius:28px;gap:40px}
 #gc-site .newsletter-section h2{font-size:clamp(30px,3.4vw,46px);letter-spacing:-.03em;line-height:1.1;color:white}
-#gc-site .newsletter-section .eyebrow,#gc-site .newsletter-section .newsletter-note,#gc-site .newsletter-section .newsletter-hint{color:#c8dce0}
+#gc-site .newsletter-section .eyebrow,#gc-site .newsletter-section .newsletter-note{color:#c8dce0}
 #gc-site .newsletter-section p,#gc-site .newsletter-section label{color:inherit}
 #gc-site .signup-row input{border:2px solid var(--theme-ink);border-radius:999px;padding:14px 18px;background:white;color:var(--theme-ink);font-size:16px}
 #gc-site .signup-row button{border-radius:999px;padding:14px 22px;background:var(--theme-sun);color:var(--theme-ink);font-weight:650;font-size:14px}
