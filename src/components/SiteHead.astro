@@ -1,7 +1,7 @@
 ---
 import { FALLBACK_OG_IMAGE, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH, ogImageAlt, ogImagePath } from "@/lib/og";
 import { getOgCard } from "@/lib/og-cards";
-import { canonical, organizationJsonLd, serializeJsonLd } from "@/lib/seo";
+import { SITE_DESCRIPTION, canonical, organizationJsonLd, serializeJsonLd, websiteJsonLd } from "@/lib/seo";
 
 export interface Props {
   title?: string;
@@ -21,7 +21,7 @@ export interface Props {
 const {
   title = "Growth Circuit",
   appendSiteName = true,
-  description = "An NYC-first community for people building growth systems.",
+  description = SITE_DESCRIPTION,
   path = Astro.url.pathname,
   noindex = false,
   jsonLd = [],
@@ -41,7 +41,7 @@ const image = ogCard
   : socialImage
     ? { url: canonical(socialImage), width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT, alt: suppliedSocialImageAlt || FALLBACK_OG_IMAGE.alt }
     : { url: canonical(FALLBACK_OG_IMAGE.path), width: FALLBACK_OG_IMAGE.width, height: FALLBACK_OG_IMAGE.height, alt: FALLBACK_OG_IMAGE.alt };
-const allJsonLd = [organizationJsonLd(), ...jsonLd];
+const allJsonLd = [organizationJsonLd(), websiteJsonLd(), ...jsonLd];
 ---
 
 <meta charset="UTF-8" />

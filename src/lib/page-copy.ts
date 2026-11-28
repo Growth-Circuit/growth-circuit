@@ -1,6 +1,7 @@
+import { SITE_DESCRIPTION } from "@/lib/seo";
+
 export const HOME_TITLE = "Growth Circuit | A Global Community Of Marketing Engineers";
-export const HOME_DESCRIPTION =
-  "Find the best NYC events for marketers, delivered to your inbox. Join Nick and Lucy for in-person gatherings, online demos, and a community that gets what you do.";
+export const HOME_DESCRIPTION = SITE_DESCRIPTION;
 export const HOME_LEDE =
   "A short, highly curated weekly email of the best NYC and virtual events for marketers in growth and AI, sourced by Nick Lafferty from Profound and Lucy Hoyle from Carta. We also host our own events :)";
 export const EVENTS_DESCRIPTION =

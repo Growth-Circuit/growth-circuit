@@ -1,7 +1,61 @@
 import { describe, expect, it } from "vitest";
-import { blogPostingJsonLd, faqPageJsonLd, jobsIssueJsonLd, newsletterIssueJsonLd, serializeJsonLd } from "@/lib/seo";
+import { homepageFaq } from "@/data/homepage-faq";
+import {
+  ORGANIZATION_SAME_AS,
+  SITE_DESCRIPTION,
+  blogPostingJsonLd,
+  faqPageJsonLd,
+  jobsIssueJsonLd,
+  newsletterIssueJsonLd,
+  organizationJsonLd,
+  serializeJsonLd,
+  websiteJsonLd,
+} from "@/lib/seo";
 
 describe("JSON-LD serialization", () => {
+  it("describes the organization and website without a site search action", () => {
+    const organization = organizationJsonLd();
+    const website = websiteJsonLd();
+
+    expect(JSON.parse(serializeJsonLd(organization))).toMatchObject({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "Growth Circuit",
+      url: "https://growthcircuit.club",
+      description: SITE_DESCRIPTION,
+      logo: "https://growthcircuit.club/growth-circuit-icon-800.png",
+      sameAs: ORGANIZATION_SAME_AS,
+      founder: [
+        { "@type": "Person", name: "Nick Lafferty", sameAs: "https://www.linkedin.com/in/nicklafferty/" },
+        { "@type": "Person", name: "Lucy Hoyle", sameAs: "https://www.linkedin.com/in/lucyjanehoyle" },
+      ],
+    });
+    expect(JSON.stringify(organization)).not.toMatch(/x\.com|twitter\.com/i);
+    expect(website).toEqual({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Growth Circuit",
+      url: "https://growthcircuit.club",
+      description: SITE_DESCRIPTION,
+    });
+    expect(website).not.toHaveProperty("potentialAction");
+    expect(JSON.parse(serializeJsonLd(website))["@type"]).toBe("WebSite");
+  });
+
+  it("builds the homepage FAQ page from the visible FAQ copy", () => {
+    const faq = faqPageJsonLd(homepageFaq);
+    const serialized = serializeJsonLd(faq);
+
+    expect(serialized).not.toContain("<");
+    expect(JSON.parse(serialized)).toMatchObject({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+    });
+    expect(faq.mainEntity.map((item) => item.name)).toEqual(homepageFaq.map((item) => item.question));
+    expect(faq.mainEntity.map((item) => item.acceptedAnswer.text)).toEqual(homepageFaq.map((item) => item.answer));
+    expect(homepageFaq).toHaveLength(4);
+  });
+
   it("cannot close the containing script element", () => {
     const serialized = serializeJsonLd({ title: "</script><script>alert(1)</script>" });
 

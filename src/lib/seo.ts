@@ -3,6 +3,16 @@ import type { CommunityPostView, CommunityReplyView } from "@/lib/community";
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.club";
 
+export const SITE_DESCRIPTION = "Growth Circuit is a global community of marketing engineers.";
+
+/** Square 800x800 PNG of the header mark (`/growth-circuit-icon.svg`). */
+const organizationLogoPath = "/growth-circuit-icon-800.png";
+
+export const ORGANIZATION_SAME_AS = [
+  "https://www.linkedin.com/company/growth-circuit-nyc",
+  "https://luma.com/growth-circuit",
+];
+
 export function canonical(pathname: string) {
   return new URL(pathname, siteUrl).toString();
 }
@@ -17,7 +27,9 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: "Growth Circuit",
     url: siteUrl,
-    description: "An NYC-first community for people building growth systems, with public events and a global WhatsApp group.",
+    description: SITE_DESCRIPTION,
+    logo: canonical(organizationLogoPath),
+    sameAs: ORGANIZATION_SAME_AS,
     foundingDate: "2026",
     slogan: "Meet the people building growth systems",
     founder: [
@@ -32,6 +44,16 @@ export function organizationJsonLd() {
         sameAs: "https://www.linkedin.com/in/lucyjanehoyle",
       },
     ],
+  };
+}
+
+export function websiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Growth Circuit",
+    url: siteUrl,
+    description: SITE_DESCRIPTION,
   };
 }
 

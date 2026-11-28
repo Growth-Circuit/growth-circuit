@@ -6,7 +6,11 @@ test('homepage renders its scene and preserves logo member navigation', async ({
   await page.goto('/');
   await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://growthcircuit.club/');
-  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(3);
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', 'Growth Circuit is a global community of marketing engineers.');
+  await expect(page.locator('meta[property="og:description"]')).toHaveAttribute('content', 'Growth Circuit is a global community of marketing engineers.');
+  await expect(page).toHaveTitle('Growth Circuit | A Global Community Of Marketing Engineers');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Find the best NYC events for marketers');
   await expect(page.locator('[data-bg]')).toHaveAttribute('width', /[1-9]\d+/);
   const logo = page.getByRole('link', { name: 'Meet Nick Lafferty, Founding Marketing Engineer' });
   await logo.hover();
@@ -16,6 +20,19 @@ test('homepage renders its scene and preserves logo member navigation', async ({
   await expect(page).toHaveURL(/#member-nick-lafferty$/);
   await expect(page.locator('iframe[title="Upcoming Growth Circuit events"]')).toHaveAttribute('src', /luma.com\/embed\/calendar/);
   expect(errors).toEqual([]);
+
+  const blocks = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((text) => JSON.parse(text));
+  expect(blocks.map((block) => block['@type'])).toEqual(['Organization', 'WebSite', 'FAQPage']);
+  const visibleFaq = await page.locator('.faq details').evaluateAll((nodes) => nodes.map((node) => ({
+    question: node.querySelector('summary')?.childNodes[0]?.textContent?.trim(),
+    answer: node.querySelector('p')?.textContent?.trim(),
+  })));
+  const faq = blocks.find((block) => block['@type'] === 'FAQPage');
+  expect(faq.mainEntity.map((item: { name: string; acceptedAnswer: { text: string } }) => ({
+    question: item.name,
+    answer: item.acceptedAnswer.text,
+  }))).toEqual(visibleFaq);
+  expect(JSON.stringify(blocks)).not.toContain('SearchAction');
 });
 
 test('both homepage forms submit through the newsletter API', async ({ page }) => {
