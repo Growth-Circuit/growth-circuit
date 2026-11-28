@@ -1,5 +1,6 @@
 import type { Thread } from "@/data/forum";
 import type { CommunityPostView, CommunityReplyView } from "@/lib/community";
+import type { HostedGrowthCircuitEvent } from "@/lib/luma-hosted-events";
 
 const siteUrl = import.meta.env.PUBLIC_SITE_URL || "https://growthcircuit.club";
 
@@ -291,6 +292,90 @@ export function jobsIssueJsonLd(issue: ArchiveIssue) {
       sameAs: "https://www.linkedin.com/in/lucyjanehoyle",
     },
   ]);
+}
+
+const eventAttendanceMode = {
+  offline: "https://schema.org/OfflineEventAttendanceMode",
+  online: "https://schema.org/OnlineEventAttendanceMode",
+  mixed: "https://schema.org/MixedEventAttendanceMode",
+} as const;
+
+const growthCircuitOrganizer = {
+  "@type": "Organization",
+  name: "Growth Circuit",
+  url: "https://growthcircuit.club",
+};
+
+function placeJsonLd(event: HostedGrowthCircuitEvent) {
+  const place = event.place;
+  if (!place) return;
+  const name = place.name || [place.locality, place.region].filter((part) => part).join(", ");
+  if (!name) return;
+  const address = place.locality || place.region
+    ? {
+        "@type": "PostalAddress",
+        ...(place.locality ? { addressLocality: place.locality } : {}),
+        ...(place.region ? { addressRegion: place.region } : {}),
+      }
+    : undefined;
+  return {
+    "@type": "Place",
+    name,
+    ...(address ? { address } : {}),
+  };
+}
+
+function eventLocation(event: HostedGrowthCircuitEvent) {
+  const virtual = { "@type": "VirtualLocation", url: event.url };
+  if (event.attendance === "online") return virtual;
+  const place = placeJsonLd(event);
+  if (event.attendance === "mixed") return place ? [place, virtual] : virtual;
+  return place;
+}
+
+function hostedEventJsonLd(event: HostedGrowthCircuitEvent) {
+  const location = eventLocation(event);
+  return {
+    "@type": "Event",
+    name: event.name,
+    startDate: event.startAt,
+    ...(event.endAt ? { endDate: event.endAt } : {}),
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: eventAttendanceMode[event.attendance],
+    url: event.url,
+    ...(event.image ? { image: event.image } : {}),
+    ...(event.description ? { description: event.description } : {}),
+    organizer: growthCircuitOrganizer,
+    ...(location ? { location } : {}),
+    ...(event.offer
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: event.offer.price,
+            priceCurrency: event.offer.currency,
+            url: event.url,
+            ...(event.offer.soldOut === undefined
+              ? {}
+              : { availability: event.offer.soldOut ? "https://schema.org/SoldOut" : "https://schema.org/InStock" }),
+          },
+        }
+      : {}),
+  };
+}
+
+export function eventsItemListJsonLd(events: HostedGrowthCircuitEvent[]) {
+  if (!events.length) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    numberOfItems: events.length,
+    url: canonical("/events"),
+    itemListElement: events.map((event, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: hostedEventJsonLd(event),
+    })),
+  };
 }
 
 export function communityExcerpt(markdown: string, maxLength = 180) {

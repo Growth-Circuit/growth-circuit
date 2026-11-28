@@ -21,6 +21,7 @@ function entry(overrides: Record<string, unknown> = {}, event: Record<string, un
       location_type: "meet",
       geo_address_visibility: "public",
       virtual_info: { url: "https://meet.google.com/secret-room" },
+      coordinate: { latitude: 40.6721, longitude: -73.9698 },
       ...event,
     },
     ...overrides,
@@ -49,7 +50,19 @@ describe("hosted Growth Circuit events", () => {
       detail: "9:00 to 10:00am ET, Grand Army Plaza, Brooklyn, NY",
     });
     expect(events[1].detail).toBe("12:30 to 1:00pm ET, Online");
-    expect(JSON.stringify(events)).not.toMatch(/secret|guest|@|zoom|meet\.google|3rd St|full_address/i);
+    expect(events[0]).toMatchObject({
+      startAt: "2026-11-27T09:00:00-05:00",
+      endAt: "2026-11-27T10:00:00-05:00",
+      attendance: "offline",
+      place: { name: "Grand Army Plaza", locality: "Brooklyn", region: "NY" },
+    });
+    expect(events[1]).toMatchObject({
+      startAt: "2026-12-04T12:30:00-05:00",
+      endAt: "2026-12-04T13:00:00-05:00",
+      attendance: "online",
+    });
+    expect(events[1].place).toBeUndefined();
+    expect(JSON.stringify(events)).not.toMatch(/secret|guest|@|zoom|meet\.google|3rd St|full_address|latitude|longitude/i);
   });
 
   it("drops third-party, private, pending, past, and off-calendar events", () => {
@@ -76,6 +89,8 @@ describe("hosted Growth Circuit events", () => {
     ], now);
     expect(events[0].detail).toBe("12:30 to 1:00pm ET");
     expect(events[0].detail).not.toMatch(/3rd|Brooklyn/);
+    expect(events[0].place).toBeUndefined();
+    expect(events[0].attendance).toBe("offline");
   });
 
   it("returns no events for an empty calendar and unavailable when Luma fails", async () => {

@@ -3,12 +3,20 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import { listHostedGrowthCircuitEvents, GROWTH_CIRCUIT_CALENDAR_URL } from "@/lib/luma-hosted-events";
 import { EVENTS_DESCRIPTION } from "@/lib/page-copy";
+import { eventsItemListJsonLd } from "@/lib/seo";
 
 const calendar = await listHostedGrowthCircuitEvents();
 const events = calendar.status === "ok" ? calendar.events : [];
+const eventsJsonLd = eventsItemListJsonLd(events);
 ---
 
-<BaseLayout title="Events" description={EVENTS_DESCRIPTION} path="/events" bodyClass="sky-page pivot-page">
+<BaseLayout
+  title="Events"
+  description={EVENTS_DESCRIPTION}
+  path="/events"
+  bodyClass="sky-page pivot-page"
+  jsonLd={eventsJsonLd ? [eventsJsonLd] : []}
+>
   <section class="shell listing-hero">
     <p class="eyebrow">Growth Circuit in New York</p>
     <h1>Upcoming Growth Circuit events.</h1>

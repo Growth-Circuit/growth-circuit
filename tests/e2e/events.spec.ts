@@ -21,5 +21,10 @@ test("events lists Growth Circuit Luma events and not the newsletter roundup", a
   await expect(page.getByText("The calendar isn't loading right now.")).toHaveCount(0);
 
   const html = await page.content();
-  expect(html).not.toMatch(/zoom\.us|meet\.google|@tryprofound|@carta|featured_guests|guest_count/i);
+  expect(html).not.toMatch(/zoom\.us|meet\.google|@tryprofound|@carta|featured_guests|guest_count|full_address|latitude|longitude/i);
+  const jsonLd = (await page.locator('script[type="application/ld+json"]').allTextContents()).join("\n");
+  expect(jsonLd).toContain('"@type":"ItemList"');
+  expect(jsonLd).toContain('"@type":"Event"');
+  expect(jsonLd).toContain("https://schema.org/EventScheduled");
+  expect(jsonLd).not.toMatch(/zoom\.us|meet\.google|full_address|latitude|longitude|featured_guests|streetAddress/i);
 });
