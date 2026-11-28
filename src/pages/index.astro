@@ -8,11 +8,13 @@ import CommunityLogoWall from "@/components/CommunityLogoWall.astro";
 import NewsletterSignup from "@/components/NewsletterSignup.astro";
 import LumaCalendar from "@/components/LumaCalendar.astro";
 import { featuredMembers, memberAnchor } from "@/data/featured-community";
+import { homepageFaq } from "@/data/homepage-faq";
 import { HOME_DESCRIPTION, HOME_LEDE, HOME_TITLE } from "@/lib/page-copy";
+import { faqPageJsonLd } from "@/lib/seo";
 ---
 <!doctype html>
 <html lang="en"><head>
-<SiteHead title={HOME_TITLE} appendSiteName={false} description={HOME_DESCRIPTION} />
+<SiteHead title={HOME_TITLE} appendSiteName={false} description={HOME_DESCRIPTION} jsonLd={[faqPageJsonLd(homepageFaq)]} />
 </head><body class="gc-home" id="gc-site"><a class="skip" href="#main-content">Skip to content</a><main>
 <div class="gc" data-homepage-scene>
   <div class="stage" data-stage="1" role="img" aria-label="An illustrated Brooklyn street beside Prospect Park, with the Manhattan skyline behind it, moving from morning to night as you scroll.">
@@ -103,10 +105,7 @@ import { HOME_DESCRIPTION, HOME_LEDE, HOME_TITLE } from "@/lib/page-copy";
         <div class="faq">
           <h2 class="big">A few things you might be wondering.</h2>
           <div class="faqlist">
-            <details><summary>Is this for marketers or engineers?<span class="plus" aria-hidden="true"></span></summary><p>Both, and anyone building growth systems. Your job title matters less than your interest in the work and willingness to share what you’re learning.</p></details>
-            <details><summary>Do I have to live in New York?<span class="plus" aria-hidden="true"></span></summary><p>No. The newsletter includes NYC and virtual events, so you can find something to join from wherever you are. Our in-person gatherings are in New York.</p></details>
-            <details><summary>Can I come to an event on my own?<span class="plus" aria-hidden="true"></span></summary><p>Yes! Public events are a way to meet people. Browse the events above for details and RSVP requirements, and come by yourself or bring a friend.</p></details>
-            <details><summary>What happens after I subscribe?<span class="plus" aria-hidden="true"></span></summary><p>Confirm your email and we’ll send you the most recent list of events. A few days later, you’ll get an invitation to join us on WhatsApp. You can keep reading the newsletter whether or not you join the group.</p></details>
+            {homepageFaq.map((item) => <details><summary>{item.question}<span class="plus" aria-hidden="true"></span></summary><p>{item.answer}</p></details>)}
           </div>
         </div>
       </div>
